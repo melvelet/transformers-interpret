@@ -1,3 +1,4 @@
+from .ner import NERExplainer, TokenClassificationExplainer
 from .question_answering import QuestionAnsweringExplainer
 from .sequence_classification import SequenceClassificationExplainer
 from .zero_shot_classification import ZeroShotClassificationExplainer
