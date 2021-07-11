@@ -36,25 +36,15 @@ class NERExplainer(BaseExplainer):
         self.internal_batch_size = None
         self.n_steps = 50
 
-    def __call__(
-        self,
-        text: str,
-        embedding_type: int,
-        ignore_tokens: list = [],
-        internal_batch_size: int = None,
-        n_steps: int = None,
-    ) -> dict:
+        self.label2id = model.config.label2id
+        self.id2label = model.config.id2label
 
-        if n_steps:
-            self.n_steps = n_steps
-        if internal_batch_size:
-            self.internal_batch_size = internal_batch_size
+    def encode(self, text: str = None) -> list:
+        return self.tokenizer.encode(text, add_special_tokens=False)
 
-    def encode(self, text: str):
-        return super().encode(text=text)
-
-    def decode(self, input_ids: torch.Tensor) -> List[str]:
-        return super().decode(input_ids)
+    def decode(self, input_ids: torch.Tensor) -> list:
+        "Decode 'input_ids' to string using tokenizer"
+        return self.tokenizer.convert_ids_to_tokens(input_ids[0])
 
     @property
     def word_attributions(self):
@@ -68,6 +58,37 @@ class NERExplainer(BaseExplainer):
 
     def _calculate_attributions(self):
         return super()._calculate_attributions()
+
+    def _get_predicted_tokens(self, text: str):
+        token_mappings = []
+        inputs = self.tokenizer(text, return_tensors="pt")
+        outputs = self.model(**inputs)
+        tokens = self.decode(inputs["input_ids"])
+
+        preds = torch.softmax(outputs[0], dim=1)
+        for i, pred in enumerate(preds[0]):
+            idx = int(torch.argmax(pred))
+            token_mappings.append((self.id2label[idx],i))
+        
+        print(token_mappings)
+
+        return token_mappings
+
+    def __call__(
+        self,
+        text: str,
+        embedding_type: int = 0,
+        ignore_tokens: list = [],
+        internal_batch_size: int = None,
+        n_steps: int = None,
+    ) -> dict:
+
+        if n_steps:
+            self.n_steps = n_steps
+        if internal_batch_size:
+            self.internal_batch_size = internal_batch_size
+
+        self._get_predicted_tokens(text)
 
 
 TokenClassificationExplainer = NERExplainer
