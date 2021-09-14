@@ -307,6 +307,7 @@ class ZeroShotClassificationExplainer(
             self.n_steps = n_steps
         if internal_batch_size:
             self.internal_batch_size = internal_batch_size
+            
         self.attributions = []
         self.pred_probs = []
         self.include_hypothesis = include_hypothesis
