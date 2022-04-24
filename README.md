@@ -10,11 +10,11 @@
 
 <p align="center">
     <a href="https://opensource.org/licenses/Apache-2.0">
-        <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/> 
+        <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/>
     </a>
     <img src="./images/coverage.svg">
     <a href="https://github.com/cdpierse/transformers-interpret/releases">
-        <img src="https://img.shields.io/pypi/v/transformers_interpret?label=version"/> 
+        <img src="https://img.shields.io/pypi/v/transformers_interpret?label=version"/>
     </a>
     <a href="https://app.circleci.com/pipelines/github/cdpierse/transformers-interpret">
         <img src="https://circleci.com/gh/cdpierse/transformers-interpret.svg?style=shield&circle-token=de18bfcb7476a5a47b8ad39b8cb1d61f5ae9ed52">
@@ -181,7 +181,7 @@ For a detailed explanation of this example please checkout this [multiclass clas
 
 <details><summary>Click to expand</summary>
 
-This explainer is an extension of the `SequenceClassificationExplainer` and is thus compatible with all sequence classification models from the Transformers package. The key change in this explainer is that it caclulates attributions for each label in the model's config and returns a dictionary of word attributions w.r.t to each label. The `visualize()` method also displays a table of attributions with attributions calculated per label. 
+This explainer is an extension of the `SequenceClassificationExplainer` and is thus compatible with all sequence classification models from the Transformers package. The key change in this explainer is that it caclulates attributions for each label in the model's config and returns a dictionary of word attributions w.r.t to each label. The `visualize()` method also displays a table of attributions with attributions calculated per label.
 
 ```python
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -197,7 +197,7 @@ cls_explainer = MultiLabelClassificationExplainer(model, tokenizer)
 
 word_attributions = cls_explainer("There were many aspects of the film I liked, but it was frightening and gross in parts. My parents hated it.")
 ```
-This produces a dictionary of word attributions mapping labels to a list of tuples for each word and it's attribution score. 
+This produces a dictionary of word attributions mapping labels to a list of tuples for each word and it's attribution score.
 <details><summary>Click to see word attribution dictionary</summary>
 
 ```python
@@ -397,7 +397,7 @@ This produces a dictionary of word attributions mapping labels to a list of tupl
 
 #### Visualize MultiLabel Classification attributions
 
-Sometimes the numeric attributions can be difficult to read particularly in instances where there is a lot of text. To help with that we also provide the `visualize()` method that utilizes Captum's in built viz library to create a HTML file highlighting the attributions. For this explainer attributions will be show w.r.t to each label. 
+Sometimes the numeric attributions can be difficult to read particularly in instances where there is a lot of text. To help with that we also provide the `visualize()` method that utilizes Captum's in built viz library to create a HTML file highlighting the attributions. For this explainer attributions will be show w.r.t to each label.
 
 If you are in a notebook, calls to the `visualize()` method will display the visualization in-line. Alternatively you can pass a filepath in as an argument and an HTML file will be created, allowing you to view the explanation HTML in your browser.
 
@@ -545,7 +545,7 @@ zero_shot_explainer.visualize("zero_shot.html")
 </details>
 
 ### Question Answering Explainer (Experimental)
-    
+
 <details><summary>Click to expand</summary>
 
 _This is currently an experimental explainer under active development and is not yet fully tested. The explainers' API is subject to change as are the attribution methods, if you find any bugs please let me know._
