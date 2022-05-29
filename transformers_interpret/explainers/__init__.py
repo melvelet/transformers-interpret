@@ -1,4 +1,5 @@
 from .multilabel_classification import MultiLabelClassificationExplainer
 from .question_answering import QuestionAnsweringExplainer
 from .sequence_classification import SequenceClassificationExplainer
+from .token_classification import TokenClassificationExplainer
 from .zero_shot_classification import ZeroShotClassificationExplainer

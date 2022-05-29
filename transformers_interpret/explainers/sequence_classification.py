@@ -26,7 +26,7 @@ class SequenceClassificationExplainer(BaseExplainer):
     To do this provide either a valid `index` for the class label's output or if the outputs
     have provided labels you can pass a `class_name`.
 
-    This explainer also allows for attributions with respect to a particlar embedding type.
+    This explainer also allows for attributions with respect to a particular embedding type.
     This can be selected by passing a `embedding_type`. The default value is `0` which
     is for word_embeddings, if `1` is passed then attributions are w.r.t to position_embeddings.
     If a model does not take position ids in its forward method (distilbert) a warning will
@@ -41,6 +41,7 @@ class SequenceClassificationExplainer(BaseExplainer):
         tokenizer: PreTrainedTokenizer,
         attribution_type: str = "lig",
         custom_labels: Optional[List[str]] = None,
+        token_index: Optional[Union[List[int], None]] = None,
     ):
         """
         Args:
@@ -50,6 +51,9 @@ class SequenceClassificationExplainer(BaseExplainer):
             custom_labels (List[str], optional): Applies custom labels to label2id and id2label configs.
                                                  Labels must be same length as the base model configs' labels.
                                                  Labels and ids are applied index-wise. Defaults to None.
+            token_index (Union[List[int], None]): Use attention only from specified indices
+                                                        (needed for token classification).
+                                                        If list is empty, use attention from all tokens.
 
         Raises:
             AttributionTypeNotSupportedError:
@@ -73,6 +77,8 @@ class SequenceClassificationExplainer(BaseExplainer):
         else:
             self.label2id = model.config.label2id
             self.id2label = model.config.id2label
+
+        self.token_index = token_index
 
         self.attributions: Union[None, LIGAttributions] = None
         self.input_ids: torch.Tensor = torch.Tensor()
@@ -187,16 +193,25 @@ class SequenceClassificationExplainer(BaseExplainer):
         else:
             preds = self.model(input_ids, attention_mask)[0]
 
+        # print('here', preds.shape)
+
         # if it is a single output node
         if len(preds[0]) == 1:
             self._single_node_output = True
             self.pred_probs = torch.sigmoid(preds)[0][0]
             return torch.sigmoid(preds)[:, :]
 
-        self.pred_probs = torch.softmax(preds, dim=1)[0][self.selected_index]
-        return torch.softmax(preds, dim=1)[:, self.selected_index]
+        if self.token_index is not None:
+            # print('self.token_index', self.token_index)
+            self.pred_probs = torch.softmax(preds, dim=1)[0][self.token_index[0] + 1, self.selected_index]
+            # print('shape', torch.softmax(preds, dim=1)[0].shape)
+            return torch.softmax(preds, dim=1)[:, self.token_index[0] + 1, self.selected_index]
+        
+        else:
+            self.pred_probs = torch.softmax(preds, dim=1)[0][self.selected_index]
+            return torch.softmax(preds, dim=1)[:, self.selected_index]
 
-    def _calculate_attributions(self, embeddings: Embedding, index: int = None, class_name: str = None):  # type: ignore
+    def _calculate_attributions(self, embeddings: Embedding, class_index: int = None, class_name: str = None):  # type: ignore
         (
             self.input_ids,
             self.ref_input_ids,
@@ -210,8 +225,8 @@ class SequenceClassificationExplainer(BaseExplainer):
 
         self.attention_mask = self._make_attention_mask(self.input_ids)
 
-        if index is not None:
-            self.selected_index = index
+        if class_index is not None:
+            self.selected_index = class_index
         elif class_name is not None:
             if class_name in self.label2id.keys():
                 self.selected_index = int(self.label2id[class_name])
@@ -223,6 +238,11 @@ class SequenceClassificationExplainer(BaseExplainer):
         else:
             self.selected_index = int(self.predicted_class_index)
 
+        # print('self.selected_index', self.selected_index)
+
+        # for i in self.token_index:
+        #     self.ref_input_ids[0][i] = 1
+
         reference_tokens = [token.replace("Ġ", "") for token in self.decode(self.input_ids)]
         lig = LIGAttributions(
             self._forward,
@@ -232,6 +252,7 @@ class SequenceClassificationExplainer(BaseExplainer):
             self.ref_input_ids,
             self.sep_idx,
             self.attention_mask,
+            target_idx=self.selected_index,
             position_ids=self.position_ids,
             ref_position_ids=self.ref_position_ids,
             internal_batch_size=self.internal_batch_size,
@@ -243,7 +264,7 @@ class SequenceClassificationExplainer(BaseExplainer):
     def _run(
         self,
         text: str,
-        index: int = None,
+        class_index: int = None,
         class_name: str = None,
         embedding_type: int = None,
     ) -> list:  # type: ignore
@@ -265,13 +286,13 @@ class SequenceClassificationExplainer(BaseExplainer):
 
         self.text = self._clean_text(text)
 
-        self._calculate_attributions(embeddings=embeddings, index=index, class_name=class_name)
+        self._calculate_attributions(embeddings=embeddings, class_index=class_index, class_name=class_name)
         return self.word_attributions  # type: ignore
 
     def __call__(
         self,
         text: str,
-        index: int = None,
+        class_index: int = None,
         class_name: str = None,
         embedding_type: int = 0,
         internal_batch_size: int = None,
@@ -285,7 +306,7 @@ class SequenceClassificationExplainer(BaseExplainer):
         To do this provide either a valid `index` for the class label's output or if the outputs
         have provided labels you can pass a `class_name`.
 
-        This explainer also allows for attributions with respect to a particlar embedding type.
+        This explainer also allows for attributions with respect to a particular embedding type.
         This can be selected by passing a `embedding_type`. The default value is `0` which
         is for word_embeddings, if `1` is passed then attributions are w.r.t to position_embeddings.
         If a model does not take position ids in its forward method (distilbert) a warning will
@@ -293,7 +314,7 @@ class SequenceClassificationExplainer(BaseExplainer):
 
         Args:
             text (str): Text to provide attributions for.
-            index (int, optional): Optional output index to provide attributions for. Defaults to None.
+            class_index (int, optional): Optional output index to provide attributions for. Defaults to None.
             class_name (str, optional): Optional output class name to provide attributions for. Defaults to None.
             embedding_type (int, optional): The embedding type word(0) or position(1) to calculate attributions for. Defaults to 0.
             internal_batch_size (int, optional): Divides total #steps * #examples
@@ -311,7 +332,7 @@ class SequenceClassificationExplainer(BaseExplainer):
             self.n_steps = n_steps
         if internal_batch_size:
             self.internal_batch_size = internal_batch_size
-        return self._run(text, index, class_name, embedding_type=embedding_type)
+        return self._run(text, class_index, class_name, embedding_type=embedding_type)
 
     def __str__(self):
         s = f"{self.__class__.__name__}("

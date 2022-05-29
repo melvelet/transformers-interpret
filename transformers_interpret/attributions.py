@@ -31,6 +31,7 @@ class LIGAttributions(Attributions):
         ref_position_ids: torch.Tensor = None,
         internal_batch_size: int = None,
         n_steps: int = 50,
+        target_idx: int = None,
     ):
         super().__init__(custom_forward, embeddings, tokens)
         self.input_ids = input_ids
@@ -44,6 +45,14 @@ class LIGAttributions(Attributions):
         self.n_steps = n_steps
 
         self.lig = LayerIntegratedGradients(self.custom_forward, self.embeddings)
+        # print('self.ref_input_ids', self.ref_input_ids)
+        # print('self.ref_token_type_ids', self.ref_token_type_ids)
+        # print('self.ref_position_ids', self.ref_position_ids)
+        # print('self.input_ids', self.input_ids)
+        # print('self.token_type_ids', self.token_type_ids)
+        # print('self.position_ids', self.position_ids)
+
+        # print('target', target_idx)
 
         if self.token_type_ids is not None and self.position_ids is not None:
             self._attributions, self.delta = self.lig.attribute(
@@ -53,6 +62,7 @@ class LIGAttributions(Attributions):
                     self.ref_token_type_ids,
                     self.ref_position_ids,
                 ),
+                # target=[target_idx] if target_idx else None,
                 return_convergence_delta=True,
                 additional_forward_args=(self.attention_mask),
                 internal_batch_size=self.internal_batch_size,

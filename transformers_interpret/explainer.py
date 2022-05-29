@@ -166,10 +166,12 @@ class BaseExplainer(ABC):
         ref_position_ids = ref_position_ids.unsqueeze(0).expand_as(input_ids)
         return (position_ids, ref_position_ids)
 
-    def _make_attention_mask(self, input_ids: torch.Tensor) -> torch.Tensor:
+    @staticmethod
+    def _make_attention_mask(input_ids: torch.Tensor) -> torch.Tensor:
         return torch.ones_like(input_ids)
 
-    def _clean_text(self, text: str) -> str:
+    @staticmethod
+    def _clean_text(text: str) -> str:
         text = re.sub("([.,!?()])", r" \1 ", text)
         text = re.sub("\s{2,}", " ", text)
         return text
