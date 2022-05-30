@@ -1,6 +1,5 @@
 from typing import Dict, List, Optional, Tuple, Union
 
-import torch
 from captum.attr import visualization as viz
 from transformers import PreTrainedModel, PreTrainedTokenizer
 
@@ -58,7 +57,7 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
         else:
             raise ValueError("Attributions have not yet been calculated. Please call the explainer on text first.")
 
-    def visualize(self, html_filepath: str = None, true_class: str = None):
+    def visualize(self, token_index: int = None, class_index: int = None, html_filepath: str = None, true_class: str = None):
         """
         Visualizes word attributions. If in a notebook table will be displayed inline.
 
@@ -70,21 +69,43 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
         """
         tokens = [token.replace("Ġ", "") for token in self.decode(self.input_ids)]
 
-        score_viz = [
-            self.attributions[i].visualize_attributions(  # type: ignore
-                self.pred_probs[i],
-                "",  # including a predicted class name does not make sense for this explainer
-                "n/a" if not true_class else true_class,  # no true class name for this explainer by default
-                f"{i}",
-                tokens,
-            )
-            for i in range(len(self.attributions))
-        ]
+        if token_index is not None:
+            print(f'Prediction for token {token_index} ({self.input_tokens[token_index + 1]})')
+            score_viz = [
+                self.attributions[i][token_index].visualize_attributions(  # type: ignore
+                    self.pred_probs[token_index][i],
+                    "",  # including a predicted class name does not make sense for this explainer
+                    "n/a" if not true_class else true_class,  # no true class name for this explainer by default
+                    f"{self.labels[i]}",
+                    tokens,
+                )
+                for i in range(len(self.attributions))
+            ]
+
+        elif class_index is not None:
+            print(f'Prediction for class {class_index} ({self.labels[class_index]})')
+            score_viz = [
+                self.attributions[class_index][i].visualize_attributions(  # type: ignore
+                    self.pred_probs[i][class_index],
+                    self.labels[class_index],  # including a predicted class name does not make sense for this explainer
+                    "n/a" if not true_class else true_class,  # no true class name for this explainer by default
+                    f"{i} ({self.input_tokens[i + 1]})",
+                    tokens,
+                )
+                for i in range(len(self.attributions[class_index]))
+            ]
+        else:
+            raise Exception('Either a class index or a token index must be specified.')
 
         html = viz.visualize_text(score_viz)
 
-        new_html_data = html._repr_html_().replace("Predicted Label", "Prediction Score")
-        new_html_data = new_html_data.replace("True Label", "n/a")
+        new_html_data = html._repr_html_()
+        if token_index is not None:
+            new_html_data = new_html_data \
+                .replace("Predicted Label", "Prediction Score")\
+                .replace("True Label", f"Token {token_index} ({self.input_tokens[token_index + 1]})")
+        elif class_index is not None:
+            new_html_data = new_html_data.replace("True Label", self.labels[class_index])
         html.data = new_html_data
 
         if html_filepath:
@@ -135,22 +156,23 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
         if internal_batch_size:
             self.internal_batch_size = internal_batch_size
 
-        self.attributions = []
-        self.pred_probs = []
-        self.labels = list(self.label2id.keys())
-        self.label_probs_dict = {}
         self.input_tokens = self.tokenizer.convert_ids_to_tokens(self.tokenizer.encode(text))
-        self.input_length = len(self.input_tokens) - 2
+        self.input_length = len([tok for tok in self.input_tokens if tok not in ['[CLS]', '[SEP]']])
+        self.attributions = []
+        self.pred_probs = [[] for _ in range(self.input_length)]
+        self.labels = list(self.id2label.values())  # assumes that it is sorted
+        self.label_probs_dict = {}
         explainer = None
 
         for label_j in range(self.model.config.num_labels):
             self.attributions.append([])
+            self.pred_probs.append([])
             self.label_probs_dict[self.id2label[label_j]] = []
 
             for token_i in range(self.input_length):
                 if token_index is None or token_i == token_index:
                     if class_index is None or label_j == class_index:
-                        print('class', label_j, 'token', token_i)
+                        print('Predicting class', label_j, 'token', token_i)
                         explainer = SequenceClassificationExplainer(
                             model=self.model,
                             tokenizer=self.tokenizer,
@@ -160,45 +182,16 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
                         explainer(text, label_j, None, embedding_type)
 
                         self.attributions[label_j].append(explainer.attributions)
-                        self.pred_probs.append(explainer.pred_probs)
+                        self.pred_probs[token_i].append(explainer.pred_probs)
+                        # print('explainer.predicted_class_index', explainer.predicted_class_index, explainer.predicted_class_name, 'explainer.pred_class', explainer.pred_class)
                         self.label_probs_dict[self.id2label[label_j]].append(explainer.pred_probs)
                 else:
                     self.attributions[label_j].append(None)
-                    self.pred_probs.append(None)
+                    self.pred_probs[token_i].append(None)
                     self.label_probs_dict[self.id2label[label_j]].append(None)
 
         self.input_ids = explainer.input_ids if explainer is not None else None
         return self.word_attributions
-
-    def _forward(  # type: ignore
-            self,
-            input_ids: torch.Tensor,
-            position_ids: torch.Tensor = None,
-            attention_mask: torch.Tensor = None,
-    ):
-
-        if self.accepts_position_ids:
-            preds = self.model(
-                input_ids,
-                position_ids=position_ids,
-                attention_mask=attention_mask,
-            )
-            preds = preds[0]
-
-        else:
-            preds = self.model(input_ids, attention_mask)[0]
-
-        # print('here', preds.shape)
-
-        # if it is a single output node
-        if len(preds[0]) == 1:
-            self._single_node_output = True
-            self.pred_probs = torch.sigmoid(preds)[0][0]
-            return torch.sigmoid(preds)[:, :]
-
-        self.pred_probs = torch.softmax(preds, dim=1)[0][self.token_index, self.selected_index]
-        # print('shape', self.pred_probs)
-        return torch.softmax(preds, dim=1)[:, self.token_index, self.selected_index]
 
     def __str__(self):
         s = f"{self.__class__.__name__}("

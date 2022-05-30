@@ -113,7 +113,9 @@ class SequenceClassificationExplainer(BaseExplainer):
         if len(self.input_ids) > 0:
             # we call this before _forward() so it has to be calculated twice
             preds = self.model(self.input_ids)[0]
-            self.pred_class = torch.argmax(torch.softmax(preds, dim=0)[0])
+            # print('preds', torch.softmax(preds, dim=2))
+            self.pred_class = torch.argmax(torch.softmax(preds, dim=2)[0], dim=1)
+            # print('self.pred_class', self.pred_class, 'softmax', torch.softmax(preds, dim=2))
             return torch.argmax(torch.softmax(preds, dim=1)[0]).cpu().detach().numpy()
 
         else:
@@ -193,8 +195,6 @@ class SequenceClassificationExplainer(BaseExplainer):
         else:
             preds = self.model(input_ids, attention_mask)[0]
 
-        # print('here', preds.shape)
-
         # if it is a single output node
         if len(preds[0]) == 1:
             self._single_node_output = True
@@ -202,11 +202,10 @@ class SequenceClassificationExplainer(BaseExplainer):
             return torch.sigmoid(preds)[:, :]
 
         if self.token_index is not None:
-            # print('self.token_index', self.token_index)
-            self.pred_probs = torch.softmax(preds, dim=1)[0][self.token_index[0] + 1, self.selected_index]
-            # print('shape', torch.softmax(preds, dim=1)[0].shape)
-            return torch.softmax(preds, dim=1)[:, self.token_index[0] + 1, self.selected_index]
-        
+            self.pred_probs = torch.softmax(preds, dim=2)[0][self.token_index[0] + 1, self.selected_index]
+            # print('shape dim=1', torch.softmax(preds, dim=1)[0].shape)
+            return torch.softmax(preds, dim=2)[:, self.token_index[0] + 1, self.selected_index]
+
         else:
             self.pred_probs = torch.softmax(preds, dim=1)[0][self.selected_index]
             return torch.softmax(preds, dim=1)[:, self.selected_index]
