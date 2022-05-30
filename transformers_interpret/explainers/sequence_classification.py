@@ -204,7 +204,7 @@ class SequenceClassificationExplainer(BaseExplainer):
         if self.token_index is not None:
             self.pred_probs = torch.softmax(preds, dim=2)[0][self.token_index[0] + 1, self.selected_index]
             # print('shape dim=1', torch.softmax(preds, dim=1)[0].shape)
-            return torch.softmax(preds, dim=2)[:, self.token_index[0] + 1, self.selected_index]
+            return torch.softmax(preds, dim=2)[:, self.token_index[0], self.selected_index]
 
         else:
             self.pred_probs = torch.softmax(preds, dim=1)[0][self.selected_index]

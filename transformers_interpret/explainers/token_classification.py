@@ -49,10 +49,10 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
                     self.labels,
                     [dict(
                         zip(
-                            [f"{str(i).zfill(2)} ({self.input_tokens[i + 1]})" for i in range(self.input_length)],
+                            [f"{str(i).zfill(2)} ({self.input_tokens[i]})" for i in range(self.input_length)],
                             [get_word_attributions(attr) for attr in self.attributions[label_i]],
                         )) for label_i, _ in enumerate(self.labels)]
-            ))
+                ))
 
         else:
             raise ValueError("Attributions have not yet been calculated. Please call the explainer on text first.")
@@ -70,7 +70,7 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
         tokens = [token.replace("Ġ", "") for token in self.decode(self.input_ids)]
 
         if token_index is not None:
-            print(f'Prediction for token {token_index} ({self.input_tokens[token_index + 1]})')
+            print(f'Prediction for token {token_index} ({self.input_tokens[token_index]})')
             score_viz = [
                 self.attributions[i][token_index].visualize_attributions(  # type: ignore
                     self.pred_probs[token_index][i],
@@ -156,8 +156,8 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
         if internal_batch_size:
             self.internal_batch_size = internal_batch_size
 
-        self.input_tokens = self.tokenizer.convert_ids_to_tokens(self.tokenizer.encode(text))
-        self.input_length = len([tok for tok in self.input_tokens if tok not in ['[CLS]', '[SEP]']])
+        self.input_tokens = [tok.replace("Ġ", "") for tok in self.tokenizer.convert_ids_to_tokens(self.tokenizer.encode(text))]
+        self.input_length = len(self.input_tokens)
         self.attributions = []
         self.pred_probs = [[] for _ in range(self.input_length)]
         self.labels = list(self.id2label.values())  # assumes that it is sorted
@@ -170,7 +170,8 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
             self.label_probs_dict[self.id2label[label_j]] = []
 
             for token_i in range(self.input_length):
-                if token_index is None or token_i == token_index:
+                if self.input_tokens[token_i] not in ['[CLS]', '[SEP]', '<s>', '</s>']\
+                        and (token_index is None or token_i == token_index):
                     if class_index is None or label_j == class_index:
                         print('Predicting class', label_j, 'token', token_i)
                         explainer = SequenceClassificationExplainer(
@@ -183,7 +184,7 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
 
                         self.attributions[label_j].append(explainer.attributions)
                         self.pred_probs[token_i].append(explainer.pred_probs)
-                        # print('explainer.predicted_class_index', explainer.predicted_class_index, explainer.predicted_class_name, 'explainer.pred_class', explainer.pred_class)
+                        # print('explainer.predicted_class_index', explainer.predicted_class_index, explainer.predicted_class_name)
                         self.label_probs_dict[self.id2label[label_j]].append(explainer.pred_probs)
                 else:
                     self.attributions[label_j].append(None)
