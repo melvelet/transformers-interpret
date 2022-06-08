@@ -39,7 +39,25 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
 
     @property
     def word_attributions(self) -> dict:
-        "Returns the word attributions for model and the text provided. Raises error if attributions not calculated."
+        """Returns the word attributions for model and the text provided. Raises error if attributions not calculated."""
+        def get_word_attributions(attr):
+            return attr.word_attributions if attr is not None else attr
+
+        if self.attributions != []:
+            return dict(
+                zip(
+                    self.labels,
+                    [[get_word_attributions(attr) for attr in self.attributions[label_i]]
+                        for label_i in range(len(self.labels))]
+                ))
+
+        else:
+            raise ValueError("Attributions have not yet been calculated. Please call the explainer on text first.")
+
+    @property
+    def word_attributions_with_strings(self) -> dict:
+        """Returns the word attributions for model and the text provided, also showing the token value for increased readability.
+        Raises error if attributions not calculated."""
         def get_word_attributions(attr):
             return attr.word_attributions if attr is not None else attr
 
@@ -51,7 +69,7 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
                         zip(
                             [f"{str(i).zfill(2)} ({self.input_tokens[i]})" for i in range(self.input_length)],
                             [get_word_attributions(attr) for attr in self.attributions[label_i]],
-                        )) for label_i, _ in enumerate(self.labels)]
+                        )) for label_i in range(len(self.labels))]
                 ))
 
         else:
@@ -121,6 +139,7 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
             embedding_type: int = 0,
             token_index: Optional[Union[int, None]] = None,
             class_index: Optional[Union[int, None]] = None,
+            token_class_index_tuples: Optional[Union[List[Tuple[int, int]], None]] = None,
             internal_batch_size: int = None,
             n_steps: int = None,
     ) -> dict:
@@ -170,26 +189,27 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
             self.label_probs_dict[self.id2label[label_j]] = []
 
             for token_i in range(self.input_length):
-                if self.input_tokens[token_i] not in ['[CLS]', '[SEP]', '<s>', '</s>']\
-                        and (token_index is None or token_i == token_index):
-                    if class_index is None or label_j == class_index:
-                        print('Predicting class', label_j, 'token', token_i)
-                        explainer = SequenceClassificationExplainer(
-                            model=self.model,
-                            tokenizer=self.tokenizer,
-                            attribution_type=self.attribution_type,
-                            token_index=[token_i],
-                        )
-                        explainer(text, label_j, None, embedding_type)
-
-                        self.attributions[label_j].append(explainer.attributions)
-                        self.pred_probs[token_i].append(explainer.pred_probs)
-                        # print('explainer.predicted_class_index', explainer.predicted_class_index, explainer.predicted_class_name)
-                        self.label_probs_dict[self.id2label[label_j]].append(explainer.pred_probs)
-                else:
+                if self.input_tokens[token_i] in ['[CLS]', '[SEP]', '<s>', '</s>']\
+                        or (class_index is not None and label_j != class_index)\
+                        or (token_index is not None and token_i != token_index) \
+                        or (token_class_index_tuples is not None and (token_i, label_j) not in token_class_index_tuples):
                     self.attributions[label_j].append(None)
                     self.pred_probs[token_i].append(None)
                     self.label_probs_dict[self.id2label[label_j]].append(None)
+                else:
+                    print('Predicting class', label_j, 'token', token_i)
+                    explainer = SequenceClassificationExplainer(
+                        model=self.model,
+                        tokenizer=self.tokenizer,
+                        attribution_type=self.attribution_type,
+                        token_index=[token_i],
+                    )
+                    explainer(text, label_j, None, embedding_type)
+
+                    self.attributions[label_j].append(explainer.attributions)
+                    self.pred_probs[token_i].append(explainer.pred_probs)
+                    # print('explainer.predicted_class_index', explainer.predicted_class_index, explainer.predicted_class_name)
+                    self.label_probs_dict[self.id2label[label_j]].append(explainer.pred_probs)
 
         self.input_ids = explainer.input_ids if explainer is not None else None
         return self.word_attributions
