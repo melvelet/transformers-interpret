@@ -175,7 +175,8 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
         if internal_batch_size:
             self.internal_batch_size = internal_batch_size
 
-        self.input_tokens = [tok.replace("Ġ", "") for tok in self.tokenizer.convert_ids_to_tokens(self.tokenizer.encode(text))]
+        self.input_token_ids = self.tokenizer.encode(text)
+        self.input_tokens = [tok.replace("Ġ", "") for tok in self.tokenizer.convert_ids_to_tokens(self.input_token_ids)]
         self.input_length = len(self.input_tokens)
         self.attributions = []
         self.pred_probs = [[] for _ in range(self.input_length)]
@@ -197,7 +198,7 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
                     self.pred_probs[token_i].append(None)
                     self.label_probs_dict[self.id2label[label_j]].append(None)
                 else:
-                    print('Predicting class', label_j, 'token', token_i)
+                    print('Predicting class', label_j, 'for token', token_i)
                     explainer = SequenceClassificationExplainer(
                         model=self.model,
                         tokenizer=self.tokenizer,
