@@ -1,4 +1,5 @@
-from typing import List
+from statistics import mean
+from typing import List, Callable, Dict
 
 import torch
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
@@ -19,6 +20,11 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False):
         return mask
 
     return indices.tolist()
+
+
+def calculate_compsuff(comprehensiveness: Dict, sufficiency: Dict):
+    return {k: comprehensiveness[k] - sufficiency[k]
+            for k in comprehensiveness}
 
 
 class NERSentenceEvaluator:
@@ -63,7 +69,7 @@ class NERSentenceEvaluator:
             new_conf = scores[e['index']][self.label2id[e['entity']]].item()
             # new_label = self.id2label[scores[e['index']].argmax(axis=-1).item()]
             # print('old_conf', e['score'], 'new_conf', new_conf, 'old_label', e['entity'], 'new_label', new_label, 'diff', e['score'] - new_conf)
-            e['comprehensiveness'][str(k)] = e['score'] - new_conf
+            e['comprehensiveness'][k] = e['score'] - new_conf
 
     def calculate_sufficiency(self, k):
         for e in self.entities:
@@ -77,13 +83,49 @@ class NERSentenceEvaluator:
             new_conf = scores[e['index']][self.label2id[e['entity']]].item()
             # new_label = self.id2label[scores[e['index']].argmax(axis=-1).item()]
             # print('old_conf', e['score'], 'new_conf', new_conf, 'old_label', e['entity'], 'new_label', new_label, 'diff', e['score'] - new_conf)
-            e['sufficiency'][str(k)] = e['score'] - new_conf
+            e['sufficiency'][k] = e['score'] - new_conf
 
-    def __call__(self, input: str, k_values: List[int] = [1]):
-        self.input_str = input
+    def calculate_average_scores_for_sentence(self):
+        def _calculate_mean(attr: str, squared: bool = False):
+            if squared:
+                return {k: mean([e[attr][k]**2 for e in self.entities])
+                        for k in self.entities[0][attr]}
+            return {k: mean([e[attr][k] for e in self.entities])
+                    for k in self.entities[0][attr]}
+
+        if self.entities is None \
+                or len(self.entities[0]['comprehensiveness']) == 0 \
+                or len(self.entities[0]['sufficiency']) == 0:
+            raise ValueError("Scores have not yet been calculated. Please call the evaluator on text first.")
+
+        return {
+            'mean': {
+                'comprehensiveness': _calculate_mean('comprehensiveness'),
+                'sufficiency': _calculate_mean('sufficiency'),
+                'compdiff': calculate_compsuff(
+                    comprehensiveness=_calculate_mean('comprehensiveness'),
+                    sufficiency=_calculate_mean('sufficiency'),
+                )
+            },
+            'squared_mean': {
+                'comprehensiveness': _calculate_mean('comprehensiveness', squared=True),
+                'sufficiency': _calculate_mean('sufficiency', squared=True),
+                'compdiff': calculate_compsuff(
+                    comprehensiveness=_calculate_mean('comprehensiveness', squared=True),
+                    sufficiency=_calculate_mean('sufficiency', squared=True),
+                )
+            },
+        }
+
+    def __call__(self, input_: str, k_values: List[int] = [1]):
+        self.input_str = input_
         self.execute_base_classification()
         self.calculate_attribution_scores()
         for k in k_values:
             self.calculate_comprehensiveness(k)
             self.calculate_sufficiency(k)
-        # print(self.entities)
+
+        return {
+            'scores': self.calculate_average_scores_for_sentence(),
+            'entities': self.entities,
+        }
