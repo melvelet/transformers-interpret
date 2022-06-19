@@ -198,7 +198,7 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
                     self.pred_probs[token_i].append(None)
                     self.label_probs_dict[self.id2label[label_j]].append(None)
                 else:
-                    print('Predicting class', label_j, 'for token', token_i)
+                    print(f'Attribution for class={label_j} token={token_i}', end='\r')
                     explainer = SequenceClassificationExplainer(
                         model=self.model,
                         tokenizer=self.tokenizer,
@@ -209,7 +209,6 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
 
                     self.attributions[label_j].append(explainer.attributions)
                     self.pred_probs[token_i].append(explainer.pred_probs)
-                    # print('explainer.predicted_class_index', explainer.predicted_class_index, explainer.predicted_class_name)
                     self.label_probs_dict[self.id2label[label_j]].append(explainer.pred_probs)
 
         self.input_ids = explainer.input_ids if explainer is not None else None

@@ -2,6 +2,7 @@ from statistics import mean
 from typing import List, Callable, Dict
 
 import torch
+from datasets import Dataset
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
 
 from transformers_interpret import TokenClassificationExplainer
@@ -50,6 +51,7 @@ class NERSentenceEvaluator:
         self.explainer = TokenClassificationExplainer(self.model, self.tokenizer, self.attribution_type)
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
         self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples)
+        print(len(self.explainer.input_tokens))
         self.input_token_ids = self.explainer.input_token_ids
         self.input_tokens = self.explainer.input_tokens
         word_attributions = self.explainer.word_attributions
@@ -87,15 +89,17 @@ class NERSentenceEvaluator:
 
     def calculate_average_scores_for_sentence(self):
         def _calculate_mean(attr: str, squared: bool = False):
+            entities = self.entities[0][attr] if self.entities else []
             if squared:
                 return {k: mean([e[attr][k]**2 for e in self.entities])
-                        for k in self.entities[0][attr]}
+                        for k in entities}
             return {k: mean([e[attr][k] for e in self.entities])
-                    for k in self.entities[0][attr]}
+                    for k in entities}
 
         if self.entities is None \
-                or len(self.entities[0]['comprehensiveness']) == 0 \
-                or len(self.entities[0]['sufficiency']) == 0:
+                or (len(self.entities) > 0
+                    and (len(self.entities[0]['comprehensiveness']) == 0
+                    or len(self.entities[0]['sufficiency']) == 0)):
             raise ValueError("Scores have not yet been calculated. Please call the evaluator on text first.")
 
         return {
@@ -129,3 +133,62 @@ class NERSentenceEvaluator:
             'scores': self.calculate_average_scores_for_sentence(),
             'entities': self.entities,
         }
+
+
+class NERDatasetEvaluator:
+    def __init__(self,
+                 pipeline: Pipeline,
+                 dataset: Dataset,
+                 attribution_type: str = "lig",
+                 ):
+        self.pipeline = pipeline
+        self.dataset = dataset
+        self.attribution_type = attribution_type
+        self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type)
+        self.raw_scores: List[Dict] = []
+        self.raw_entities: List[Dict] = []
+
+    def calculate_average_scores_for_dataset(self, k_values):
+        def _calculate_mean(attr: str, squared: bool = False):
+            if squared:
+                return {k: mean([e['squared_mean'][attr][k]**2 for e in self.raw_scores])
+                        for k in k_values}
+            return {k: mean([e['mean'][attr][k] for e in self.raw_scores])
+                    for k in k_values}
+
+        if len(self.raw_scores) == 0:
+            raise ValueError("Scores have not yet been calculated. Please call the evaluator on a dataset first.")
+
+        return {
+            'mean': {
+                'comprehensiveness': _calculate_mean('comprehensiveness'),
+                'sufficiency': _calculate_mean('sufficiency'),
+                'compdiff': calculate_compsuff(
+                    comprehensiveness=_calculate_mean('comprehensiveness'),
+                    sufficiency=_calculate_mean('sufficiency'),
+                )
+            },
+            'squared_mean': {
+                'comprehensiveness': _calculate_mean('comprehensiveness', squared=True),
+                'sufficiency': _calculate_mean('sufficiency', squared=True),
+                'compdiff': calculate_compsuff(
+                    comprehensiveness=_calculate_mean('comprehensiveness', squared=True),
+                    sufficiency=_calculate_mean('sufficiency', squared=True),
+                )
+            },
+        }
+
+    def __call__(self, k_values: List[int] = [1]):
+        for i, document in enumerate(self.dataset):
+            for j, passage in enumerate(document['passages']):
+                print('Passage', j)
+                if len(passage['text']) > 1:
+                    print('len(passage[\'text\']) > 1', passage)
+                    exit(-1)
+                result = self.evaluator(passage['text'][0], k_values)
+                self.raw_scores.append(result['scores'])
+                self.raw_entities.append(result['entities'])
+
+        print(self.raw_scores)
+
+        return {'scores': self.calculate_average_scores_for_dataset(k_values)}
