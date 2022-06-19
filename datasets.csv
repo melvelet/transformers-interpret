@@ -1,0 +1,646 @@
+dataset_name,config_name,description,number_entities,entities,entities_count,passages_count,passages_char_count,mean_passages_char_count,number_splits,splits
+an_em,an_em_bigbio_kb,"AnEM corpus is a domain- and species-independent resource manually annotated for anatomical
+entity mentions using a fine-grained classification system. The corpus consists of 500 documents
+(over 90,000 words) selected randomly from citation abstracts and full-text papers with
+the aim of making the corpus representative of the entire available biomedical scientific
+literature. The corpus annotation covers mentions of both healthy and pathological anatomical
+entities and contains over 3,000 annotated mentions.
+",11,"Cellular_component, Organ, Tissue, Multi-tissue_structure, Anatomical_system, Organism_subdivision, Immaterial_anatomical_entity, Developing_anatomical_structure, Organism_substance, Cell, Pathological_formation",3135,500,627688,1255.376,3,"train, test, validation"
+anat_em,anat_em_bigbio_kb,"The extended Anatomical Entity Mention corpus (AnatEM) consists of 1212 documents (approx. 250,000 words)
+manually annotated to identify over 13,000 mentions of anatomical entities. Each annotation is assigned one
+of 12 granularity-based types such as Cellular component, Tissue and Organ, defined with reference to the
+Common Anatomy Reference Ontology.
+",12,"Cellular_component, Organ, Tissue, Multi-tissue_structure, Cancer, Anatomical_system, Organism_subdivision, Immaterial_anatomical_entity, Developing_anatomical_structure, Organism_substance, Cell, Pathological_formation",13701,1212,1705270,1406.9884488448845,3,"train, test, validation"
+ask_a_patient,ask_a_patient_bigbio_kb,"
+The AskAPatient dataset contains medical concepts written on social media mapped to how they are formally written in medical ontologies (SNOMED-CT and AMT).
+",1,social_media_text,173240,173240,2238807,12.923152851535443,30,"train_0, train_1, train_2, train_3, train_4, train_5, train_6, train_7, train_8, train_9, validation_0, validation_1, validation_2, validation_3, validation_4, validation_5, validation_6, validation_7, validation_8, validation_9, test_0, test_1, test_2, test_3, test_4, test_5, test_6, test_7, test_8, test_9"
+bc5cdr,bc5cdr_bigbio_kb,"The BioCreative V Chemical Disease Relation (CDR) dataset is a large annotated text corpus of
+human annotations of all chemicals, diseases and their interactions in 1,500 PubMed articles.
+",2,"Chemical, Disease",29271,3000,1975456,658.4853333333333,3,"train, test, validation"
+bioinfer,bioinfer_bigbio_kb,"A corpus targeted at protein, gene, and RNA relationships which serves as a resource for the development of 
+information extraction systems and their components such as parsers and domain analyzers. Currently, the corpus 
+contains 1100 sentences from abstracts of biomedical research articles annotated for relationships, named entities, 
+as well as syntactic dependencies.
+",6,"Protein_family_or_group, Gene, DNA_family_or_group, Gene/protein/RNA, Protein_complex, Individual_protein",4421,1100,204374,185.79454545454544,2,"train, test"
+bionlp_shared_task_2009,bionlp_shared_task_2009_bigbio_kb,"The BioNLP Shared Task 2009 was organized by GENIA Project and its corpora were curated based
+on the annotations of the publicly available GENIA Event corpus and an unreleased (blind) section
+of the GENIA Event corpus annotations, used for evaluation.
+",2,"Protein, Entity",15497,1210,1845147,1524.914876033058,3,"train, test, validation"
+bionlp_st_2011_epi,bionlp_st_2011_epi_bigbio_kb,"The dataset of the Epigenetics and Post-translational Modifications (EPI) task
+of BioNLP Shared Task 2011.
+",2,"Protein, Entity",16675,1240,1863359,1502.7088709677419,3,"train, validation, test"
+bionlp_st_2011_ge,bionlp_st_2011_ge_bigbio_kb,"The BioNLP-ST GE task has been promoting development of fine-grained information extraction (IE) from biomedical
+documents, since 2009. Particularly, it has focused on the domain of NFkB as a model domain of Biomedical IE.
+The GENIA task aims at extracting events occurring upon genes or gene products, which are typed as ""Protein""
+without differentiating genes from gene products. Other types of physical entities, e.g. cells, cell components,
+are not differentiated from each other, and their type is given as ""Entity"".
+",2,"Protein, Entity",22277,1514,2386723,1576.4352708058125,3,"train, validation, test"
+bionlp_st_2011_id,bionlp_st_2011_id_bigbio_kb,"The dataset of the Infectious Diseases (ID) task of
+BioNLP Shared Task 2011.
+",6,"Chemical, Protein, Organism, Regulon-operon, Entity, Two-component-system",12788,316,891569,2821.4208860759495,3,"train, validation, test"
+bionlp_st_2011_rel,bionlp_st_2011_rel_bigbio_kb,"The Entity Relations (REL) task is a supporting task of the BioNLP Shared Task 2011.
+The task concerns the extraction of two types of part-of relations between a
+gene/protein and an associated entity.
+",2,"Protein, Entity",24895,1210,1845147,1524.914876033058,3,"train, validation, test"
+bionlp_st_2013_cg,bionlp_st_2013_cg_bigbio_kb,"the Cancer Genetics (CG) is a event extraction task and a main task of the BioNLP Shared Task (ST) 2013.
+The CG task is an information extraction task targeting the recognition of events in text,
+represented as structured n-ary associations of given physical entities. In addition to
+addressing the cancer domain, the CG task is differentiated from previous event extraction
+tasks in the BioNLP ST series in addressing a wide range of pathological processes and multiple
+levels of biological organization, ranging from the molecular through the cellular and organ
+levels up to whole organisms. Final test set submissions were accepted from six teams
+",18,"Cellular_component, Organ, Organism, Amino_acid, Tissue, Multi-tissue_structure, Cancer, Anatomical_system, Immaterial_anatomical_entity, DNA_domain_or_region, Organism_subdivision, Organism_substance, Developing_anatomical_structure, Simple_chemical, Gene_or_gene_product, Cell, Protein_domain_or_region, Pathological_formation",21654,600,916797,1527.995,3,"train, validation, test"
+bionlp_st_2013_ge,bionlp_st_2013_ge_bigbio_kb,"The BioNLP-ST GE task has been promoting development of fine-grained
+information extraction (IE) from biomedical
+documents, since 2009. Particularly, it has focused on the domain of
+NFkB as a model domain of Biomedical IE
+",4,"Anaphora, Protein, Binding, Entity",12726,776,1267514,1633.3943298969073,3,"train, validation, test"
+bionlp_st_2013_gro,bionlp_st_2013_gro_bigbio_kb,"GRO Task: Populating the Gene Regulation Ontology with events and
+relations. A data set from the bio NLP shared tasks competition from 2013
+",75,"Ligand, GeneProduct, Stress, Agonist, CellComponent, bHLH, Intron, Function, CatalyticActivity, Phenotype, RegulatoryDNARegion, TranscriptionCorepressor, Virus, EukaryoticCell, Peptide, GeneralTranscriptionFactor, BindingAssay, Ion, AminoAcid, HMGTF, TBP, ForkheadWingedHelixTF, Tissue, ProteinSubunit, DNABindingDomainOfProtein, ZincCoordinatingDomainTF, OrganicChemical, Nucleus, Prokaryote, ProteinComplex, Promoter, tRNA, MutantProtein, MessengerRNA, TranscriptionActivator, Chemical, HomeoboxTF, Antagonist, Protein, DNARegion, FusionProtein, TranscriptionFactor, MolecularStructure, LivingEntity, Nucleotide, TranscriptionFactorComplex, TranscriptionRepressor, Gene, Exon, Enhancer, OpenReadingFrame, TranscriptionCofactor, Enzyme, ProteinDomain, Cell, ZincCoordinatingDomain, ReporterGene, bHLHTF, RNA, Lipid, Sequence, Chromatin, ExperimentalMethod, Locus, HMG, Chromosome, DNA, Transcript, TranscriptionRegulator, TranscriptionCoactivator, RNAPolymeraseII, MutatedProtein, ProteinBindingSiteOfDNA, ComplexOfProteinAndRNA, Eukaryote",11819,300,392387,1307.9566666666667,3,"train, validation, test"
+bionlp_st_2013_pc,bionlp_st_2013_pc_bigbio_kb,"the Pathway Curation (PC) task is a main event extraction task of the BioNLP shared task (ST) 2013.
+The PC task concerns the automatic extraction of biomolecular reactions from text.
+The task setting, representation and semantics are defined with respect to pathway
+model standards and ontologies (SBML, BioPAX, SBO) and documents selected by relevance
+to specific model reactions. Two BioNLP ST 2013 participants successfully completed
+the PC task. The highest achieved F-score, 52.8%, indicates that event extraction is
+a promising approach to supporting pathway curation efforts.
+",4,"Cellular_component, Gene_or_gene_product, Complex, Simple_chemical",15901,525,762111,1451.64,3,"train, validation, test"
+bionlp_st_2019_bb,bionlp_st_2019_bb_bigbio_kb,"The task focuses on the extraction of the locations and phenotypes of
+microorganisms from PubMed abstracts and full-text excerpts, and the
+characterization of these entities with respect to reference knowledge
+sources (NCBI taxonomy, OntoBiotope ontology). The task is motivated by
+the importance of the knowledge on biodiversity for fundamental research
+and applications in microbiology.
+
+",3,"Habitat, Phenotype, Microorganism",3456,295,305827,1036.7016949152542,3,"train, validation, test"
+biored,biored_bigbio_kb,"Relation Extraction corpus with multiple entity types (e.g., gene/protein, disease, chemical) and relation pairs (e.g., gene-disease; chemical-chemical), on a set of 600 PubMed articles
+",6,"['SequenceVariant'], ['DiseaseOrPhenotypicFeature'], ['OrganismTaxon'], ['ChemicalEntity'], ['CellLine'], ['GeneOrGeneProduct']",21227,1200,999903,833.2525,3,"train, test, validation"
+biorelex,biorelex_bigbio_kb,"BioRelEx is a biological relation extraction dataset. Version 1.0 contains 2010 annotated sentences that describe
+binding interactions between various biological entities (proteins, chemicals, etc.). 1405 sentences are for training,
+another 201 sentences are for validation. They are publicly available at https://github.com/YerevaNN/BioRelEx/releases.
+Another 404 sentences are for testing which are kept private for at this Codalab competition https:
+//competitions.codalab.org/competitions/20468. All sentences contain words ""bind"", ""bound"" or ""binding"". For every
+sentence we provide: 1) Complete annotations of all biological entities that appear in the sentence 2) Entity types (32
+types) and grounding information for most of the proteins and families (links to uniprot, interpro and other databases)
+3) Coreference between entities in the same sentence (e.g. abbreviations and synonyms) 4) Binding interactions between
+the annotated entities 5) Binding interaction types: positive, negative (A does not bind B) and neutral (A may bind to
+B)
+",31,"protein-isoform, protein-motif, chemical, protein, assay, tissue, process, experimental-construct, protein-region, experiment-tag, cell, protein-DNA-complex, protein-family, fusion-protein, amino-acid, organism, organelle, protein-RNA-complex, protein-domain, mutation, RNA, RNA-family, gene, parameter, peptide, reagent, drug, DNA, protein-complex, brand, disease",7880,1606,270233,168.26463262764634,2,"train, validation"
+bioscope,bioscope_bigbio_kb,"The BioScope corpus consists of medical and biological texts annotated for negation, speculation and their linguistic 
+scope. This was done to allow a comparison between the development of systems for negation/hedge detection and scope 
+resolution. The BioScope corpus was annotated by two independent linguists following the guidelines written by our 
+linguist expert before the annotation of the corpus was initiated.
+",2,"negation, speculation",7403,20924,2460155,117.57575033454407,1,train
+bioscope,bioscope_abstracts_bigbio_kb,"The BioScope corpus consists of medical and biological texts annotated for negation, speculation and their linguistic 
+scope. This was done to allow a comparison between the development of systems for negation/hedge detection and scope 
+resolution. The BioScope corpus was annotated by two independent linguists following the guidelines written by our 
+linguist expert before the annotation of the corpus was initiated.
+",2,"negation, speculation",4378,11871,1903867,160.37966472917194,1,train
+bioscope,bioscope_papers_bigbio_kb,"The BioScope corpus consists of medical and biological texts annotated for negation, speculation and their linguistic 
+scope. This was done to allow a comparison between the development of systems for negation/hedge detection and scope 
+resolution. The BioScope corpus was annotated by two independent linguists following the guidelines written by our 
+linguist expert before the annotation of the corpus was initiated.
+",2,"negation, speculation",1044,2670,385635,144.43258426966293,1,train
+bioscope,bioscope_medical_texts_bigbio_kb,"The BioScope corpus consists of medical and biological texts annotated for negation, speculation and their linguistic 
+scope. This was done to allow a comparison between the development of systems for negation/hedge detection and scope 
+resolution. The BioScope corpus was annotated by two independent linguists following the guidelines written by our 
+linguist expert before the annotation of the corpus was initiated.
+",2,"negation, speculation",1981,6383,170653,26.73554754817484,1,train
+cadec,cadec_bigbio_kb,"The CADEC corpus (CSIRO Adverse Drug Event Corpus) is is a new rich annotated corpus of medical forum posts on patient-
+reported Adverse Drug Events (ADEs). The corpus is sourced from posts on social media, and contains text that is
+largely written in colloquial language and often deviates from formal English grammar and punctuation rules.
+Annotations contain mentions of concepts such as drugs, adverse events, symptoms, and diseases linked to their
+corresponding concepts in controlled vocabularies, i.e., SNOMED Clinical Terms and MedDRA. The quality of the
+annotations is ensured by annotation guidelines, multi-stage annotations, measuring inter-annotator agreement, and
+final review of the annotations by a clinical terminologist. This corpus is useful for those studies in the area of
+information extraction, or more generally text mining, from social media to detect possible adverse drug reactions from
+direct patient reports. The dataset contains three views: original (entities annotated in the posts), meddra (entities
+normalized with meddra codes), sct (entities normalized with SNOMED CT codes).
+",5,"ADR, Finding, Symptom, Drug, Disease",9111,1250,575453,460.3624,1,train
+cellfinder,cellfinder_bigbio_kb,"The CellFinder project aims to create a stem cell data repository by linking information from existing public databases
+ and by performing text mining on the research literature. The first version of the corpus is composed
+ of 10 full text documents containing more than 2,100 sentences, 65,000 tokens and 5,200 annotations for entities.
+ The corpus has been annotated with six types of entities (anatomical parts, cell components, cell lines, cell types,
+ genes/protein and species) with an overall inter-annotator agreement around 80%.
+(see https://www.informatik.hu-berlin.de/de/forschung/gebiete/wbi/resources/cellfinder/).
+",0,,0,0,0,0,0,
+cellfinder,cellfinder_splits_bigbio_kb,"The CellFinder project aims to create a stem cell data repository by linking information from existing public databases
+ and by performing text mining on the research literature. The first version of the corpus is composed
+ of 10 full text documents containing more than 2,100 sentences, 65,000 tokens and 5,200 annotations for entities.
+ The corpus has been annotated with six types of entities (anatomical parts, cell components, cell lines, cell types,
+ genes/protein and species) with an overall inter-annotator agreement around 80%.
+(see https://www.informatik.hu-berlin.de/de/forschung/gebiete/wbi/resources/cellfinder/).
+",0,,0,0,0,0,0,
+chebi_nactem,chebi_nactem_abstr_ann1_bigbio_kb,"The ChEBI corpus contains 199 annotated abstracts and 100 annotated full papers.
+All documents in the corpus have been annotated for named entities and relations between these.
+In total, our corpus provides over 15000 named entity annotations and over 6,000 relations between entities.
+",6,"Chemical, Protein, Metabolite, Biological_Activity, Spectral_Data, Species",5551,199,223127,1121.2412060301508,1,train
+chebi_nactem,chebi_nactem_abstr_ann2_bigbio_kb,"The ChEBI corpus contains 199 annotated abstracts and 100 annotated full papers.
+All documents in the corpus have been annotated for named entities and relations between these.
+In total, our corpus provides over 15000 named entity annotations and over 6,000 relations between entities.
+",6,"Chemical, Protein, Metabolite, Biological_Activity, Spectral_Data, Species",5614,199,223127,1121.2412060301508,1,train
+chebi_nactem,chebi_nactem_fullpaper_bigbio_kb,"The ChEBI corpus contains 199 annotated abstracts and 100 annotated full papers.
+All documents in the corpus have been annotated for named entities and relations between these.
+In total, our corpus provides over 15000 named entity annotations and over 6,000 relations between entities.
+",0,,0,0,0,0,0,
+chemdner,chemdner_bigbio_kb,"We present the CHEMDNER corpus, a collection of 10,000 PubMed abstracts that contain a total of 84,355 chemical entity
+mentions labeled manually by expert chemistry literature curators, following annotation guidelines specifically
+defined for this task. The abstracts of the CHEMDNER corpus were selected to be representative for all major chemical
+disciplines. Each of the chemical entity mentions was manually labeled according to its structure-associated chemical
+entity mention (SACEM) class: abbreviation, family, formula, identifier, multiple, systematic and trivial.
+",1,Chemical,84327,20000,13920572,696.0286,3,"train, test, validation"
+chemprot,chemprot_bigbio_kb,"The BioCreative VI Chemical-Protein interaction dataset identifies entities of chemicals and proteins and their likely relation to one other. Compounds are generally agonists (activators) or antagonists (inhibitors) of proteins.
+",0,,0,0,0,0,0,
+chia,chia_bigbio_kb,"A large annotated corpus of patient eligibility criteria extracted from 1,000 interventional, Phase IV clinical
+trials registered in ClinicalTrials.gov. This dataset includes 12,409 annotated eligibility criteria, represented
+by 41,487 distinctive entities of 15 entity types and 25,017 relationships of 12 relationship types.
+",0,,0,0,0,0,0,
+citation_gia_test_collection,citation_gia_test_collection_bigbio_kb,"The Citation GIA Test Collection was recently created for gene 
+indexing at the NLM and includes 151 PubMed abstracts with both 
+mention-level and document-level annotations. 
+They are selected because both have a focus on human genes.
+",3,"FamilyName, Gene, DomainMotif",1382,302,229882,761.1986754966888,1,test
+cord_ner,cord_ner_bigbio_kb,"CORD-NER dataset covers 75 fine-grained entity types: In addition to the common biomedical entity types (e.g., genes, chemicals and diseases), it covers many new entity types related explicitly to the COVID-19 studies (e.g., coronaviruses, viral proteins, evolution, materials, substrates and immune responses), which may benefit research on COVID-19 related virus, spreading mechanisms, and potential vaccines. CORD-NER annotation is a combination of four sources with different NER methods.
+",50,"ORDINAL, GENE_OR_GENOME, CELL_OR_MOLECULAR_DYSFUNCTION, ORG, GPE, EUKARYOTE, PERSON, EVOLUTION, SUBSTRATE, NORP, LIVESTOCK, THERAPEUTIC_OR_PREVENTIVE_PROCEDURE, LAW, CELL_FUNCTION, WILDLIFE, LABORATORY_OR_TEST_RESULT, TIME, BODY_PART_ORGAN_OR_ORGAN_COMPONENT, DIAGNOSTIC_PROCEDURE, MONEY, ORGAN_OR_TISSUE_FUNCTION, DAILY_OR_RECREATIONAL_ACTIVITY, BACTERIUM, LOC, SIGN_OR_SYMPTOM, DISEASE_OR_SYNDROME, MATERIAL, IMMUNE_RESPONSE, ORGANISM, CORONAVIRUS, DATE, RESEARCH_ACTIVITY, BODY_SUBSTANCE, INDIVIDUAL_BEHAVIOR, LABORATORY_PROCEDURE, MOLECULAR_FUNCTION, TISSUE, FAC, SOCIAL_BEHAVIOR, FOOD, PRODUCT, VIRUS, VIRAL_PROTEIN, ANATOMICAL_STRUCTURE, CHEMICAL, CELL, QUANTITY, CARDINAL, CELL_COMPONENT, GROUP",10388644,88500,406731598,4595.837265536723,1,train
+ddi_corpus,ddi_corpus_bigbio_kb,"The DDI corpus has been manually annotated with drugs and pharmacokinetics and pharmacodynamics
+interactions. It contains 1025 documents from two different sources: DrugBank database and MedLine.
+",4,"DRUG, DRUG_N, BRAND, GROUP",18491,1017,1209491,1189.2733529990167,2,"train, test"
+diann_iber_eval,diann_iber_eval_bigbio_kb,"DIANN's corpus consists of a collection of 500 abstracts from Elsevier journal papers
+related to the biomedical domain, where both Spanish and English versions are available.
+
+This dataset contains annotations for disabilities appearing in these abstracts,
+usually expressed either with a specific word, such as ""blindness"", or as the limitation
+or lack of a human function, such as ""lack of vision"".
+
+(Spanish)
+El corpus DIANN se compone de una colección de 500 resúmenes de artículos de revista Elsevier
+del ámbito biomédico, con versiones en español e inglés.
+
+Este conjunto de datos contiene anotaciones para discapacidades que aparecen en dichos resúmenes,
+expresadas por medio de palabras específicas, como ""ablepsia"", or como la limitación o falta de
+una función, como ""falta de visión"".
+",0,,0,0,0,0,0,
+diann_iber_eval,diann_iber_eval_en_bigbio_kb,"DIANN's corpus consists of a collection of 500 abstracts from Elsevier journal papers
+related to the biomedical domain, where both Spanish and English versions are available.
+
+This dataset contains annotations for disabilities appearing in these abstracts,
+usually expressed either with a specific word, such as ""blindness"", or as the limitation
+or lack of a human function, such as ""lack of vision"".
+
+(Spanish)
+El corpus DIANN se compone de una colección de 500 resúmenes de artículos de revista Elsevier
+del ámbito biomédico, con versiones en español e inglés.
+
+Este conjunto de datos contiene anotaciones para discapacidades que aparecen en dichos resúmenes,
+expresadas por medio de palabras específicas, como ""ablepsia"", or como la limitación o falta de
+una función, como ""falta de visión"".
+",0,,0,0,0,0,0,
+diann_iber_eval,diann_iber_eval_es_bigbio_kb,"DIANN's corpus consists of a collection of 500 abstracts from Elsevier journal papers
+related to the biomedical domain, where both Spanish and English versions are available.
+
+This dataset contains annotations for disabilities appearing in these abstracts,
+usually expressed either with a specific word, such as ""blindness"", or as the limitation
+or lack of a human function, such as ""lack of vision"".
+
+(Spanish)
+El corpus DIANN se compone de una colección de 500 resúmenes de artículos de revista Elsevier
+del ámbito biomédico, con versiones en español e inglés.
+
+Este conjunto de datos contiene anotaciones para discapacidades que aparecen en dichos resúmenes,
+expresadas por medio de palabras específicas, como ""ablepsia"", or como la limitación o falta de
+una función, como ""falta de visión"".
+",0,,0,0,0,0,0,
+distemist,distemist_bigbio_kb,"The DisTEMIST corpus is a collection of 1000 clinical cases with disease annotations linked with Snomed-CT concepts.
+All documents are released in the context of the BioASQ DisTEMIST track for CLEF 2022.
+",1,ENFERMEDAD,8065,750,1758414,2344.552,1,train
+ebm_pico,ebm_pico_bigbio_kb,"This corpus release contains 4,993 abstracts annotated with (P)articipants,
+(I)nterventions, and (O)utcomes. Training labels are sourced from AMT workers and
+aggregated to reduce noise. Test labels are collected from medical professionals.
+",17,"Outcome_Pain, Intervention_Control, Participant_Age, Participant_Sex, Intervention_Educational, Outcome_Other, Outcome_Adverse-effects, Outcome_Physical, Participant_Sample-size, Intervention_Surgical, Participant_Condition, Outcome_Mental, Intervention_Pharmacological, Intervention_Other, Intervention_Psychological, Intervention_Physical, Outcome_Mortality",88106,4933,7985077,1618.7060612203527,2,"train, test"
+euadr,euadr_bigbio_kb,"Corpora with specific entities and relationships annotated are essential to train and evaluate text-mining systems that are developed to extract specific structured information from a large corpus. In this paper we describe an approach where a named-entity recognition system produces a first annotation and annotators revise this annotation using a web-based interface. The agreement figures achieved show that the inter-annotator agreement is much better than the agreement with the system provided annotations. The corpus has been annotated for drugs, disorders, genes and their inter-relationships. For each of the drug–disorder, drug–target, and target–disorder relations three experts have annotated a set of 100 abstracts. These annotated relationships will be used to train and evaluate text-mining software to capture these relationships in texts.
+
+",5,", Chemicals & Drugs, Diseases & Disorders, Genes & Molecular Sequences, SNP & Sequence variations",13577,600,451486,752.4766666666667,1,train
+genetag,genetaggold_bigbio_kb,"Named entity recognition (NER) is an important first step for text mining the biomedical literature.
+Evaluating the performance of biomedical NER systems is impossible without a standardized test corpus.
+The annotation of such a corpus for gene/protein name NER is a difficult process due to the complexity
+of gene/protein names. We describe the construction and annotation of GENETAG, a corpus of 20K MEDLINE®
+sentences for gene/protein NER. 15K GENETAG sentences were used for the BioCreAtIvE Task 1A Competition..
+",1,NEWGENE,17866,15000,2333715,155.581,3,"train, test, validation"
+genetag,genetagcorrect_bigbio_kb,"Named entity recognition (NER) is an important first step for text mining the biomedical literature.
+Evaluating the performance of biomedical NER systems is impossible without a standardized test corpus.
+The annotation of such a corpus for gene/protein name NER is a difficult process due to the complexity
+of gene/protein names. We describe the construction and annotation of GENETAG, a corpus of 20K MEDLINE®
+sentences for gene/protein NER. 15K GENETAG sentences were used for the BioCreAtIvE Task 1A Competition..
+",1,NEWGENE,13020,15000,2333715,155.581,3,"train, test, validation"
+genia_ptm_event_corpus,genia_ptm_event_corpus_bigbio_kb,"Post-translational-modiﬁcations (PTM), amino acid modiﬁcations of proteins after translation, are one of the posterior
+processes of protein biosynthesis for many proteins, and they are critical for determining protein function such as its
+activity state, localization, turnover and interactions with other biomolecules. While there have been many studies of
+information extraction targeting individual PTM types, there was until recently little effort to address extraction of
+multiple PTM types at once in a unified framework.
+",2,"Protein, Entity",1007,112,144772,1292.607142857143,1,train
+genia_term_corpus,genia_term_corpus_bigbio_kb,"The identification of linguistic expressions referring to entities of interest in molecular biology such as proteins,
+genes and cells is a fundamental task in biomolecular text mining. The GENIA technical term annotation covers the
+identification of  physical biological entities as well as other important terms. The corpus annotation covers the full
+1,999 abstracts of the primary GENIA corpus.
+",50,", cell_component, (AND cell_type cell_type), (AND DNA_family_or_group DNA_family_or_group), (AND other_name other_name other_name), protein_N/A, DNA_N/A, protein_substructure, (AND RNA_molecule RNA_molecule), RNA_domain_or_region, protein_molecule, DNA_domain_or_region, DNA_molecule, protein_family_or_group, RNA_molecule, (AND other_name other_name), carbohydrate, body_part, (AND protein_family_or_group protein_family_or_group), tissue, (AND protein_subunit protein_subunit), cell_line, other_name, cell_type, virus, nucleotide, mono_cell, lipid, protein_domain_or_region, (AND cell_line cell_line), other_artificial_source, (OR other_name other_name), (AND multi_cell multi_cell), RNA_family_or_group, DNA_family_or_group, inorganic, multi_cell, other_organic_compound, peptide, (AND protein_molecule protein_molecule), (AND protein_domain_or_region protein_domain_or_region), protein_complex, (OR DNA_domain_or_region DNA_domain_or_region), (AND DNA_domain_or_region DNA_domain_or_region), polynucleotide, DNA_substructure, amino_acid_monomer, protein_subunit, atom, (AND DNA_domain_or_region DNA_domain_or_region DNA_domain_or_region)",97850,4000,2991578,747.8945,1,train
+gnormplus,gnormplus_bigbio_kb,"We re-annotated two existing gene corpora. The BioCreative II GN corpus is a widely used data set for benchmarking GN
+tools and includes document-level annotations for a total of 543 articles (281 in its training set; and 262 in test).
+The Citation GIA Test Collection was recently created for gene indexing at the NLM and includes 151 PubMed abstracts
+with both mention-level and document-level annotations. They are selected because both have a focus on human genes.
+For both corpora, we added annotations of gene families and protein domains. For the BioCreative GN corpus, we also
+added mention-level gene annotations. As a result, in our new corpus, there are a total of 694 PubMed articles.
+PubTator was used as our annotation tool along with BioC formats.
+",3,"FamilyName, Gene, DomainMotif",9257,1086,737900,679.4659300184162,2,"train, test"
+hprd50,hprd50_bigbio_kb,"HPRD50 is a dataset of randomly selected, hand-annotated abstracts of biomedical papers
+referenced by the Human Protein Reference Database (HPRD). It is parsed in XML format,
+splitting each abstract into sentences, and in each sentence there may be entities and
+interactions between those entities. In this particular dataset, entities are all
+proteins and interactions are thus protein-protein interactions.
+
+Moreover, all entities are normalized to the HPRD database. These normalized terms are
+stored in each entity's 'type' attribute in the source XML. This means the dataset can
+determine e.g. that ""Janus kinase 2"" and ""Jak2"" are referencing the same normalized
+entity.
+
+Because the dataset contains entities and relations, it is suitable for Named Entity
+Recognition and Relation Extraction.
+",1,protein,405,145,22903,157.95172413793102,2,"train, test"
+jnlpba,jnlpba_bigbio_kb,"NER For Bio-Entities
+",11,"1, 6, 4, 7, 5, 8, 10, 0, 9, 3, 2",1187180,0,0,0,2,"train, validation"
+linnaeus,linnaeus_bigbio_kb,"Linnaeus is a novel corpus of full-text documents manually annotated for species mentions.
+",0,,0,0,0,0,0,
+linnaeus,linnaeus_filtered_bigbio_kb,"Linnaeus is a novel corpus of full-text documents manually annotated for species mentions.
+",0,,0,0,0,0,0,
+mantra_gsc,mantra_gsc_es_emea_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",0,,0,0,0,0,0,
+mantra_gsc,mantra_gsc_es_medline_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",0,,0,0,0,0,0,
+mantra_gsc,mantra_gsc_fr_emea_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",10,"PROC, OBJC|CHEM, DEVI, CHEM, PHEN, LIVB, PHYS, DISO, ANAT, OBJC",431,100,14007,140.07,1,train
+mantra_gsc,mantra_gsc_fr_medline_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",11,"PROC, GEOG, Manufactured Object, DEVI, CHEM, PHEN, LIVB, PHYS, DISO, ANAT, OBJC",279,100,7862,78.62,1,train
+mantra_gsc,mantra_gsc_fr_patents_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",10,"PROC, Amino Acid, Peptide, or Protein|Enzyme|Receptor, DEVI, CHEM, PHEN, LIVB, PHYS, DISO, ANAT, OBJC",342,50,18797,375.94,1,train
+mantra_gsc,mantra_gsc_de_emea_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",10,"PROC, OBJC|CHEM, DEVI, CHEM, PHEN, LIVB, PHYS, DISO, ANAT, OBJC",425,100,13134,131.34,1,train
+mantra_gsc,mantra_gsc_de_medline_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",14,"PROC, Research Device, GEOG, Mental or Behavioral Dysfunction, DEVI, Manufactured Object, CHEM, PHEN, LIVB, PHYS, DISO, ANAT, OBJC, Research Activity",309,100,7662,76.62,1,train
+mantra_gsc,mantra_gsc_de_patents_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",10,"PROC, Amino Acid, Peptide, or Protein|Enzyme|Receptor, DEVI, CHEM, PHEN, LIVB, PHYS, DISO, ANAT, OBJC",348,50,17736,354.72,1,train
+mantra_gsc,mantra_gsc_nl_emea_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",0,,0,0,0,0,0,
+mantra_gsc,mantra_gsc_nl_medline_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",10,"PROC, GEOG, DEVI, CHEM, PHEN, LIVB, PHYS, DISO, ANAT, OBJC",243,100,6343,63.43,1,train
+mantra_gsc,mantra_gsc_en_emea_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",0,,0,0,0,0,0,
+mantra_gsc,mantra_gsc_en_medline_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",14,"PROC, Research Device, GEOG, Manufactured Object, DEVI, Mental or Behavioral Dysfunction, CHEM, PHEN, LIVB, PHYS, DISO, ANAT, OBJC, Research Activity",1177,400,27822,69.555,1,train
+mantra_gsc,mantra_gsc_en_patents_bigbio_kb,"We selected text units from different parallel corpora (Medline abstract titles, drug labels, biomedical patent claims)
+in English, French, German, Spanish, and Dutch. Three annotators per language independently annotated the biomedical
+concepts, based on a subset of the Unified Medical Language System and covering a wide range of semantic groups.
+",10,"PROC, Amino Acid, Peptide, or Protein|Enzyme|Receptor, DEVI, CHEM, PHEN, LIVB, PHYS, DISO, ANAT, OBJC",353,50,16141,322.82,1,train
+medmentions,medmentions_full_bigbio_kb,"MedMentions is a new manually annotated resource for the recognition of biomedical concepts.
+What distinguishes MedMentions from other annotated biomedical corpora is its size (over 4,000
+abstracts and over 350,000 linked mentions), as well as the size of the concept ontology (over
+3 million concepts from UMLS 2017) and its broad coverage of biomedical disciplines.
+
+Corpus: The MedMentions corpus consists of 4,392 papers (Titles and Abstracts) randomly selected
+from among papers released on PubMed in 2016, that were in the biomedical field, published in
+the English language, and had both a Title and an Abstract.
+
+Annotators: We recruited a team of professional annotators with rich experience in biomedical
+content curation to exhaustively annotate all UMLS® (2017AA full version) entity mentions in
+these papers.
+
+Annotation quality: We did not collect stringent IAA (Inter-annotator agreement) data. To gain
+insight on the annotation quality of MedMentions, we randomly selected eight papers from the
+annotated corpus, containing a total of 469 concepts. Two biologists ('Reviewer') who did not
+participate in the annotation task then each reviewed four papers. The agreement between
+Reviewers and Annotators, an estimate of the Precision of the annotations, was 97.3%.
+",54,"T170, T060, T044, T167, T121, T126, T109, UnknownType, T123, T040, T100, T067, T184, T037, T070, T081, T201, T169, T052, T129, T028, T043, T101, T048, T047, T114, T061, T058, T002, T023, T007, T098, T078, T046, T045, T196, T074, T077, T097, T062, T025, T073, T041, T059, T032, T083, T033, T079, T082, T204, T191, T080, T116, T015",385098,8784,6945085,790.6517531876138,3,"train, test, validation"
+medmentions,medmentions_st21pv_bigbio_kb,"MedMentions is a new manually annotated resource for the recognition of biomedical concepts.
+What distinguishes MedMentions from other annotated biomedical corpora is its size (over 4,000
+abstracts and over 350,000 linked mentions), as well as the size of the concept ontology (over
+3 million concepts from UMLS 2017) and its broad coverage of biomedical disciplines.
+
+Corpus: The MedMentions corpus consists of 4,392 papers (Titles and Abstracts) randomly selected
+from among papers released on PubMed in 2016, that were in the biomedical field, published in
+the English language, and had both a Title and an Abstract.
+
+Annotators: We recruited a team of professional annotators with rich experience in biomedical
+content curation to exhaustively annotate all UMLS® (2017AA full version) entity mentions in
+these papers.
+
+Annotation quality: We did not collect stringent IAA (Inter-annotator agreement) data. To gain
+insight on the annotation quality of MedMentions, we randomly selected eight papers from the
+annotated corpus, containing a total of 469 concepts. Two biologists ('Reviewer') who did not
+participate in the annotation task then each reviewed four papers. The agreement between
+Reviewers and Annotators, an estimate of the Precision of the annotations, was 97.3%.
+",21,"T170, T022, T037, T103, T038, T201, T031, T017, T058, T092, T007, T098, T074, T097, T062, T168, T091, T033, T082, T005, T204",203282,8784,6945085,790.6517531876138,3,"train, test, validation"
+mirna,mirna_bigbio_kb,"The corpus consists of 301 Medline citations. The documents were screened for
+mentions of miRNA in the abstract text. Gene, disease and miRNA entities were manually
+annotated. The corpus comprises of two separate files, a train and a test set, coming
+from 201 and 100 documents respectively. 
+",0,,0,0,0,0,0,
+mlee,mlee_bigbio_kb,"MLEE is an event extraction corpus consisting of manually annotated abstracts of papers
+on angiogenesis. It contains annotations for entities, relations, events and coreferences
+The annotations span molecular, cellular, tissue, and organ-level processes.
+",16,"Drug_or_compound, Cellular_component, Organ, Organism, Tissue, Multi-tissue_structure, Anatomical_system, Organism_subdivision, DNA_domain_or_region, Immaterial_anatomical_entity, Organism_substance, Developing_anatomical_structure, Gene_or_gene_product, Cell, Protein_domain_or_region, Pathological_formation",8291,262,402344,1535.6641221374045,3,"train, validation, test"
+muchmore,muchmore_bigbio_kb,"The corpus used in the MuchMore project is a parallel corpus of English-German scientific
+medical abstracts obtained from the Springer Link web site. The corpus consists
+approximately of 1 million tokens for each language. Abstracts are from 41 medical
+journals, each of which constitutes a relatively homogeneous medical sub-domain (e.g.
+Neurology, Radiology, etc.). The corpus of downloaded HTML documents is normalized in
+various ways, in order to produce a clean, plain text version, consisting of a title, abstract
+and keywords. Additionally, the corpus was aligned on the sentence level.
+
+Automatic (!) annotation includes: Part-of-Speech; Morphology (inflection and
+decomposition); Chunks; Semantic Classes (UMLS: Unified Medical Language System,
+MeSH: Medical Subject Headings, EuroWordNet); Semantic Relations from UMLS.
+",1,umlsterm,345838,15630,16009519,1024.2814459373,1,train
+muchmore,muchmore_en_bigbio_kb,"The corpus used in the MuchMore project is a parallel corpus of English-German scientific
+medical abstracts obtained from the Springer Link web site. The corpus consists
+approximately of 1 million tokens for each language. Abstracts are from 41 medical
+journals, each of which constitutes a relatively homogeneous medical sub-domain (e.g.
+Neurology, Radiology, etc.). The corpus of downloaded HTML documents is normalized in
+various ways, in order to produce a clean, plain text version, consisting of a title, abstract
+and keywords. Additionally, the corpus was aligned on the sentence level.
+
+Automatic (!) annotation includes: Part-of-Speech; Morphology (inflection and
+decomposition); Chunks; Semantic Classes (UMLS: Unified Medical Language System,
+MeSH: Medical Subject Headings, EuroWordNet); Semantic Relations from UMLS.
+",1,umlsterm,233242,7822,7583968,969.5689082076195,1,train
+muchmore,muchmore_de_bigbio_kb,"The corpus used in the MuchMore project is a parallel corpus of English-German scientific
+medical abstracts obtained from the Springer Link web site. The corpus consists
+approximately of 1 million tokens for each language. Abstracts are from 41 medical
+journals, each of which constitutes a relatively homogeneous medical sub-domain (e.g.
+Neurology, Radiology, etc.). The corpus of downloaded HTML documents is normalized in
+various ways, in order to produce a clean, plain text version, consisting of a title, abstract
+and keywords. Additionally, the corpus was aligned on the sentence level.
+
+Automatic (!) annotation includes: Part-of-Speech; Morphology (inflection and
+decomposition); Chunks; Semantic Classes (UMLS: Unified Medical Language System,
+MeSH: Medical Subject Headings, EuroWordNet); Semantic Relations from UMLS.
+",1,umlsterm,112596,7808,8425551,1079.0920850409836,1,train
+mutation_finder,mutation_finder_bigbio_kb,"Gold standard corpus for mutation extraction systems consisting of 1515 human-annotated mutation mentions in 813
+MEDLINE abstracts. This corpus is divided into development and test subsets. Interannotator agreement on this corpus,
+judged on fifty abstracts, was 94%.
+",1,variant,1457,1591,1141857,717.6976744186046,2,"validation, test"
+n2c2_2006_deid,n2c2_2006_deid_bigbio_kb,"The data for the de-identification challenge came from Partners Healthcare and
+included solely medical discharge summaries. We prepared the data for the
+challengeby annotating and by replacing all authentic PHI with realistic
+surrogates.
+
+Given the above definitions, we marked the authentic PHI in the records in two stages.
+In the first stage, we used an automatic system.31 In the second stage, we validated
+the output of the automatic system manually. Three annotators, including undergraduate
+and graduate students and a professor, serially made three manual passes over each record.
+They marked and discussed the PHI tags they disagreed on and finalized these tags
+after discussion.
+
+The original dataset does not have spans for each entity. The spans are
+computed in this loader and the final text that correspond with the
+tags is preserved  in the source format
+",0,,0,0,0,0,0,
+n2c2_2009,n2c2_2009_bigbio_kb,"The Third i2b2 Workshop on Natural Language Processing Challenges for Clinical Records
+focused on the identification of medications, their dosages, modes (routes) of administration,
+frequencies, durations, and reasons for administration in discharge summaries.
+The third i2b2 challenge—that is, the medication challenge—extends information
+extraction to relation extraction; it requires extraction of medications and
+medication-related information followed by determination of which medication
+belongs to which medication-related details.
+
+The medication challenge was designed as an information extraction task.
+The goal, for each discharge summary, was to extract the following information
+on medications experienced by the patient:
+1. Medications (m): including names, brand names, generics, and collective names of prescription substances,
+over the counter medications, and other biological substances for which the patient is the experiencer.
+2. Dosages (do): indicating the amount of a medication used in each administration.
+3. Modes (mo): indicating the route for administering the medication.
+4. Frequencies (f): indicating how often each dose of the medication should be taken.
+5. Durations (du): indicating how long the medication is to be administered.
+6. Reasons (r): stating the medical reason for which the medication is given.
+7. Certainty (c): stating whether the event occurs. Certainty can be expressed by uncertainty words,
+e.g., “suggested”, or via modals, e.g., “should” indicates suggestion.
+8. Event (e): stating on whether the medication is started, stopped, or continued.
+9. Temporal (t): stating whether the medication was administered in the past,
+is being administered currently, or will be administered in the future, to the extent
+that this information is expressed in the tense of the verbs and auxiliary verbs used to express events.
+10. List/narrative (ln): indicating whether the medication information appears in a
+list structure or in narrative running text in the discharge summary.
+
+The medication challenge asked that systems extract the text corresponding to each of the fields
+for each of the mentions of the medications that were experienced by the patients.
+
+The values for the set of fields related to a medication mention, if presented within a
+two-line window of the mention, were linked in order to create what we defined as an ‘entry’.
+If the value of a field for a mention were not specified within a two-line window,
+then the value ‘nm’ for ‘not mentioned’ was entered and the offsets were left unspecified.
+
+Since the dataset annotations were crowd-sourced, it contains various violations that are handled
+throughout the data loader via means of exception catching or conditional statements. e.g.
+annotation: anticoagulation, while in text all words are to be separated by space which
+means words at end of sentence will always contain `.` and hence won't be an exact match
+i.e. `anticoagulation` != `anticoagulation.` from doc_id: 818404
+",0,,0,0,0,0,0,
+n2c2_2010,n2c2_2010_bigbio_kb,"The i2b2/VA corpus contained de-identified discharge summaries from Beth Israel
+Deaconess Medical Center, Partners Healthcare, and University of Pittsburgh Medical
+Center (UPMC). In addition, UPMC contributed de-identified progress notes to the
+i2b2/VA corpus. This dataset contains the records from Beth Israel and Partners.
+
+The 2010 i2b2/VA Workshop on Natural Language Processing Challenges for Clinical Records comprises three tasks:
+1) a concept extraction task focused on the extraction of medical concepts from patient reports;
+2) an assertion classification task focused on assigning assertion types for medical problem concepts;
+3) a relation classification task focused on assigning relation types that hold between medical problems,
+tests, and treatments.
+
+i2b2 and the VA provided an annotated reference standard corpus for the three tasks.
+Using this reference standard, 22 systems were developed for concept extraction,
+21 for assertion classification, and 16 for relation classification.
+",0,,0,0,0,0,0,
+n2c2_2014_deid,n2c2_2014_bigbio_kb,"The 2014 i2b2/UTHealth Natural Language Processing (NLP) shared task featured two tracks.
+The first of these was the de-identification track focused on identifying protected health
+information (PHI) in longitudinal clinical narratives.
+
+TRACK 1: NER PHI
+
+HIPAA requires that patient medical records have all identifying information removed in order to
+protect patient privacy. There are 18 categories of Protected Health Information (PHI) identifiers of the
+patient or of relatives, employers, or household members of the patient that must be removed in order
+for a file to be considered de-identified.
+In order to de-identify the records, each file has PHI marked up. All PHI has an
+XML tag indicating its category and type, where applicable. For the purposes of this task,
+the 18 HIPAA categories have been grouped into 6 main categories and 25 sub categories
+",0,,0,0,0,0,0,
+n2c2_2018_track2,n2c2_2018_track2_bigbio_kb,"The National NLP Clinical Challenges (n2c2), organized in 2018, continued the
+legacy of i2b2 (Informatics for Biology and the Bedside), adding 2 new tracks and 2
+new sets of data to the shared tasks organized since 2006. Track 2 of 2018
+n2c2 shared tasks focused on the extraction of medications, with their signature
+information, and adverse drug events (ADEs) from clinical narratives.
+This track built on our previous medication challenge, but added a special focus on ADEs.
+
+ADEs are injuries resulting from a medical intervention related to a drugs and
+can include allergic reactions, drug interactions, overdoses, and medication errors.
+Collectively, ADEs are estimated to account for 30% of all hospital adverse
+events; however, ADEs are preventable. Identifying potential drug interactions,
+overdoses, allergies, and errors at the point of care and alerting the caregivers of
+potential ADEs can improve health delivery, reduce the risk of ADEs, and improve health
+outcomes.
+
+A step in this direction requires processing narratives of clinical records
+that often elaborate on the medications given to a patient, as well as the known
+allergies, reactions, and adverse events of the patient. Extraction of this information
+from narratives complements the structured medication information that can be
+obtained from prescriptions, allowing a more thorough assessment of potential ADEs
+before they happen.
+
+The 2018 n2c2 shared task Track 2, hereon referred to as the ADE track,
+tackled these natural language processing tasks in 3 different steps,
+which we refer to as tasks:
+1. Concept Extraction: identification of concepts related to medications,
+their signature information, and ADEs
+2. Relation Classification: linking the previously mentioned concepts to
+their medication  by identifying relations on gold standard concepts
+3. End-to-End: building end-to-end systems that process raw narrative text
+to discover concepts and find relations of those concepts to their medications
+
+Shared tasks provide a venue for head-to-head comparison of systems developed
+for the same task and on the same data, allowing researchers to identify the state
+of the art in a particular task, learn from it, and build on it.
+",0,,0,0,0,0,0,
+ncbi_disease,ncbi_disease_bigbio_kb,"The NCBI disease corpus is fully annotated at the mention and concept level to serve as a research
+resource for the biomedical natural language processing community.
+",4,"Modifier, SpecificDisease, DiseaseClass, CompositeMention",6881,1584,1014349,640.3718434343434,3,"train, test, validation"
+nlm_gene,nlm_gene_bigbio_kb,"NLM-Gene consists of 550 PubMed articles, from 156 journals, and contains more than 15 thousand unique gene names,
+corresponding to more than five thousand gene identifiers (NCBI Gene taxonomy). This corpus contains gene annotation
+data from 28 organisms. The annotated articles contain on average 29 gene names, and 10 gene identifiers per article.
+These characteristics demonstrate that this article set is an important benchmark dataset to test the accuracy of gene
+recognition algorithms both on multi-species and ambiguous data. The NLM-Gene corpus will be invaluable for advancing
+text-mining techniques for gene identification tasks in biomedical text.
+",5,"Other, STARGENE, Gene, Domain, GENERIF",15553,1100,991536,901.3963636363636,2,"train, test"
+nlmchem,nlmchem_bigbio_kb,"NLM-Chem corpus consists of 150 full-text articles from the PubMed Central Open Access dataset,
+comprising 67 different chemical journals, aiming to cover a general distribution of usage of chemical
+names in the biomedical literature.
+Articles were selected so that human annotation was most valuable (meaning that they were rich in bio-entities,
+and current state-of-the-art named entity recognition systems disagreed on bio-entity recognition.
+",1,Chemical,38339,10310,4861074,471.49117361784675,3,"train, test, validation"
+osiris,osiris_bigbio_kb,"The OSIRIS corpus is a set of MEDLINE abstracts manually annotated
+with human variation mentions. The corpus is distributed under the terms
+of the Creative Commons Attribution License
+Creative Commons Attribution 3.0 Unported License,
+which permits unrestricted use, distribution, and reproduction in any medium,
+provided the original work is properly cited (Furlong et al, BMC Bioinformatics 2008, 9:84).
+",2,"gene, variant",1230,210,172056,819.3142857142857,1,train
+pdr,pdr_bigbio_kb,"
+The corpus of plant-disease relation consists of plants and diseases and their relation to PubMed abstract.
+The corpus consists of about 2400 plant and disease entities and 300 annotated relations from 179 abstracts.
+",0,,0,0,0,0,0,
+pico_extraction,pico_extraction_bigbio_kb,"This dataset contains annotations for Participants, Interventions, and Outcomes (referred to as PICO task).
+For 423 sentences, annotations collected by 3 medical experts are available.
+To get the final annotations, we perform the majority voting.
+",3,"participant, intervention, outcome",844,421,60430,143.53919239904988,1,train
+progene,progene_bigbio_kb,"The Protein/Gene corpus was developed at the JULIE Lab Jena under supervision of Prof. Udo Hahn.
+The executing scientist was Dr. Joachim Wermter.
+The main annotator was Dr. Rico Pusch who is an expert in biology.
+The corpus was developed in the context of the StemNet project (http://www.stemnet.de/).
+",1,progene_text,595140,362270,55683080,153.7060203715461,30,"split_0_validation, split_0_test, split_0_train, split_1_validation, split_1_test, split_1_train, split_2_validation, split_2_test, split_2_train, split_3_validation, split_3_test, split_3_train, split_4_validation, split_4_test, split_4_train, split_5_validation, split_5_test, split_5_train, split_6_validation, split_6_test, split_6_train, split_7_validation, split_7_test, split_7_train, split_8_validation, split_8_test, split_8_train, split_9_validation, split_9_test, split_9_train"
+psytar,psytar_bigbio_kb,"The ""Psychiatric Treatment Adverse Reactions"" (PsyTAR) dataset contains 891 drugs
+reviews posted by patients on ""askapatient.com"", about the effectiveness and adverse
+drug events associated with Zoloft, Lexapro, Cymbalta, and Effexor XR.
+
+This dataset can be used for (multi-label) sentence classification of Adverse Drug
+Reaction (ADR), Withdrawal Symptoms (WDs), Sign/Symptoms/Illness (SSIs), Drug
+Indications (DIs), Drug Effectiveness (EF), Drug Infectiveness (INF) and Others, as well
+as for recognition of 5 different types of named entity (in the categories ADRs, WDs,
+SSIs and DIs)
+",0,,0,0,0,0,0,
+pubtator_central,pubtator_central_sample_bigbio_kb,"PubTator Central (PTC, https://www.ncbi.nlm.nih.gov/research/pubtator/) is a web service for
+exploring and retrieving bioconcept annotations in full text biomedical articles. PTC provides
+automated annotations from state-of-the-art text mining systems for genes/proteins, genetic
+variants, diseases, chemicals, species and cell lines, all available for immediate download. PTC
+annotates PubMed (30 million abstracts), the PMC Open Access Subset and the Author Manuscript
+Collection (3 million full text articles). Updated entity identification methods and a
+disambiguation module based on cutting-edge deep learning techniques provide increased accuracy.
+",5,"Chemical, ProteinMutation, Gene, Disease, Species",208,8,19454,2431.75,1,train
+pubtator_central,pubtator_central_bigbio_kb,"PubTator Central (PTC, https://www.ncbi.nlm.nih.gov/research/pubtator/) is a web service for
+exploring and retrieving bioconcept annotations in full text biomedical articles. PTC provides
+automated annotations from state-of-the-art text mining systems for genes/proteins, genetic
+variants, diseases, chemicals, species and cell lines, all available for immediate download. PTC
+annotates PubMed (30 million abstracts), the PMC Open Access Subset and the Author Manuscript
+Collection (3 million full text articles). Updated entity identification methods and a
+disambiguation module based on cutting-edge deep learning techniques provide increased accuracy.
+",0,,0,0,0,0,0,
+scai_chemical,scai_chemical_bigbio_kb,"SCAI Chemical is a corpus of MEDLINE abstracts that has been annotated
+to give an overview of the different chemical name classes
+found in MEDLINE text.
+",9,", FAMILY, MODIFIER, IUPAC, TRIVIALVAR, PARTIUPAC, ABBREVIATION, TRIVIAL, SUM",1320,100,154864,1548.64,1,train
+scai_disease,scai_disease_bigbio_kb,"SCAI Disease is a dataset annotated in 2010 with mentions of diseases and
+adverse effects. It is a corpus containing 400 randomly selected MEDLINE
+abstracts generated using ‘Disease OR Adverse effect’ as a PubMed query. This
+evaluation corpus was annotated by two individuals who hold a Master’s degree
+in life sciences.
+",2,"DISEASE, ADVERSE",2241,400,630193,1575.4825,1,train
+seth_corpus,seth_corpus_bigbio_kb,SNP named entity recognition corpus consisting of 630 PubMed citations.,3,"Gene, RS, SNP",3219,630,759824,1206.0698412698412,1,train
+spl_adr_200db,spl_adr_200db_train_bigbio_kb,"The United States Food and Drug Administration (FDA) partnered with the National Library
+of Medicine to create a pilot dataset containing standardised information about known
+adverse reactions for 200 FDA-approved drugs. The Structured Product Labels (SPLs),
+the documents FDA uses to exchange information about drugs and other products, were
+manually annotated for adverse reactions at the mention level to facilitate development
+and evaluation of text mining tools for extraction of ADRs from all SPLs.  The ADRs were
+then normalised to the Unified Medical Language System (UMLS) and to the Medical
+Dictionary for Regulatory Activities (MedDRA).
+",6,"Severity, Factor, DrugClass, Animal, Negation, AdverseReaction",15722,239,1769683,7404.531380753138,1,train
+spl_adr_200db,spl_adr_200db_unannotated_bigbio_kb,"The United States Food and Drug Administration (FDA) partnered with the National Library
+of Medicine to create a pilot dataset containing standardised information about known
+adverse reactions for 200 FDA-approved drugs. The Structured Product Labels (SPLs),
+the documents FDA uses to exchange information about drugs and other products, were
+manually annotated for adverse reactions at the mention level to facilitate development
+and evaluation of text mining tools for extraction of ADRs from all SPLs.  The ADRs were
+then normalised to the Unified Medical Language System (UMLS) and to the Medical
+Dictionary for Regulatory Activities (MedDRA).
+",0,,0,4311,28952558,6715.97262816052,1,train
+thomas2011,thomas2011_bigbio_kb,"SNP normalization corpus downloaded from (http://www.scai.fraunhofer.de/snp-normalization-corpus.html).
+SNPs are associated with unambiguous dbSNP identifiers.
+",2,"Protein Sequence Mutation, Nucleotide Sequence Mutation",527,0,0,0,1,test
+tmvar_v1,tmvar_v1_bigbio_kb,"This dataset contains 500 PubMed articles manually annotated with mutation mentions of various kinds. It can be used for NER tasks only.
+The dataset is split into train(334) and test(166) splits",3,"ProteinMutation, DNAMutation, SNP",1431,1000,811615,811.615,2,"train, test"
+tmvar_v2,tmvar_v2_bigbio_kb,"This dataset contains 158 PubMed articles manually annotated with mutation mentions of various kinds and dbsnp normalizations for each of them.
+It can be used for NER tasks and NED tasks, This dataset has a single split",3,"ProteinMutation, DNAMutation, SNP",674,316,258660,818.5443037974684,1,train
+tmvar_v3,tmvar_v3_bigbio_kb,"This dataset contains 500 PubMed articles manually annotated with mutation mentions of various kinds and dbsnp normalizations for each of them. 
+In addition, it contains variant normalization options such as allele-specific identifiers from the ClinGen Allele Registry
+It can be used for NER tasks and NED tasks, This dataset does NOT have splits",10,"['Gene'], ['OtherMutation'], ['DNAMutation'], ['Species'], ['DNAAllele'], ['SNP'], ['ProteinMutation'], ['CellLine'], ['AcidChange'], ['ProteinAllele']",7837,1000,811380,811.38,1,test
+twadrl,twadrl_bigbio_kb,"
+The TwADR-L dataset contains medical concepts written on social media (Twitter) mapped to how they are formally written in medical ontologies (SIDER 4). ",1,social_media_text,50740,50740,799570,15.758178951517541,30,"train_0, train_1, train_2, train_3, train_4, train_5, train_6, train_7, train_8, train_9, validation_0, validation_1, validation_2, validation_3, validation_4, validation_5, validation_6, validation_7, validation_8, validation_9, test_0, test_1, test_2, test_3, test_4, test_5, test_6, test_7, test_8, test_9"
+verspoor_2013,verspoor_2013_bigbio_kb,"This dataset contains annotations for a small corpus of full text journal publications
+on the subject of inherited colorectal cancer. It is suitable for Named Entity Recognition and
+Relation Extraction tasks. It uses the Variome Annotation Schema,  a schema that aims to
+capture the core concepts and relations relevant to cataloguing  and interpreting human
+genetic variation and its relationship to disease, as described in the published literature.
+The schema was inspired by the needs of the database curators of the International Society
+for Gastrointestinal Hereditary Tumours (InSiGHT) database, but is intended to have
+application to genetic variation information in a range of diseases.",13,"gene, age, cohort-patient, gender, Disorder, Concepts_Ideas, Physiology, ethnicity, Phenomena, body-part, mutation, disease, size",6991,120,279095,2325.7916666666665,1,train
