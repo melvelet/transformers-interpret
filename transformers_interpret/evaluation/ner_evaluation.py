@@ -1,6 +1,5 @@
-from statistics import mean
-from typing import List, Callable, Dict
-
+from statistics import mean, median, stdev, variance, StatisticsError
+from typing import List, Dict
 import torch
 from datasets import Dataset
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
@@ -51,7 +50,6 @@ class NERSentenceEvaluator:
         self.explainer = TokenClassificationExplainer(self.model, self.tokenizer, self.attribution_type)
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
         self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples)
-        print(len(self.explainer.input_tokens))
         self.input_token_ids = self.explainer.input_token_ids
         self.input_tokens = self.explainer.input_tokens
         word_attributions = self.explainer.word_attributions
@@ -102,6 +100,9 @@ class NERSentenceEvaluator:
                     or len(self.entities[0]['sufficiency']) == 0)):
             raise ValueError("Scores have not yet been calculated. Please call the evaluator on text first.")
 
+        if len(self.entities) == 0:
+            return None
+
         return {
             'mean': {
                 'comprehensiveness': _calculate_mean('comprehensiveness'),
@@ -132,6 +133,7 @@ class NERSentenceEvaluator:
         return {
             'scores': self.calculate_average_scores_for_sentence(),
             'entities': self.entities,
+            'tokens': len(self.input_tokens),
         }
 
 
@@ -149,46 +151,101 @@ class NERDatasetEvaluator:
         self.raw_entities: List[Dict] = []
 
     def calculate_average_scores_for_dataset(self, k_values):
-        def _calculate_mean(attr: str, squared: bool = False):
-            if squared:
-                return {k: mean([e['squared_mean'][attr][k]**2 for e in self.raw_scores])
+        def _calculate_statistical_function(attr: str, squared: bool = False, func: str = None):
+            if func == 'median':
+                func = median
+            elif func == 'stdev':
+                func = stdev
+            elif func == 'variance':
+                func = variance
+            else:
+                func = mean
+
+            try:
+                if squared:
+                    return {k: func([e['squared_mean'][attr][k]**2 for e in self.raw_scores if e is not None])
+                            for k in k_values}
+                return {k: func([e['mean'][attr][k] for e in self.raw_scores if e is not None])
                         for k in k_values}
-            return {k: mean([e['mean'][attr][k] for e in self.raw_scores])
-                    for k in k_values}
+            except StatisticsError:
+                print(f"Can't calculate {func.__name__}. Too few data points...")
+                return None
 
         if len(self.raw_scores) == 0:
             raise ValueError("Scores have not yet been calculated. Please call the evaluator on a dataset first.")
 
+        # Check if at least one sentence has a score
+        if not any(self.raw_scores):
+            return None
+
         return {
             'mean': {
-                'comprehensiveness': _calculate_mean('comprehensiveness'),
-                'sufficiency': _calculate_mean('sufficiency'),
+                'comprehensiveness': _calculate_statistical_function('comprehensiveness'),
+                'sufficiency': _calculate_statistical_function('sufficiency'),
                 'compdiff': calculate_compsuff(
-                    comprehensiveness=_calculate_mean('comprehensiveness'),
-                    sufficiency=_calculate_mean('sufficiency'),
+                    comprehensiveness=_calculate_statistical_function('comprehensiveness'),
+                    sufficiency=_calculate_statistical_function('sufficiency'),
                 )
             },
             'squared_mean': {
-                'comprehensiveness': _calculate_mean('comprehensiveness', squared=True),
-                'sufficiency': _calculate_mean('sufficiency', squared=True),
+                'comprehensiveness': _calculate_statistical_function('comprehensiveness', squared=True),
+                'sufficiency': _calculate_statistical_function('sufficiency', squared=True),
                 'compdiff': calculate_compsuff(
-                    comprehensiveness=_calculate_mean('comprehensiveness', squared=True),
-                    sufficiency=_calculate_mean('sufficiency', squared=True),
+                    comprehensiveness=_calculate_statistical_function('comprehensiveness', squared=True),
+                    sufficiency=_calculate_statistical_function('sufficiency', squared=True),
                 )
+            },
+            'median': {
+                'comprehensiveness': _calculate_statistical_function('comprehensiveness', func='median'),
+                'sufficiency': _calculate_statistical_function('sufficiency', func='median'),
+            },
+            'stdev': {
+                'comprehensiveness': _calculate_statistical_function('comprehensiveness', func='stdev'),
+                'sufficiency': _calculate_statistical_function('sufficiency', func='stdev'),
+            },
+            'variance': {
+                'comprehensiveness': _calculate_statistical_function('comprehensiveness', func='variance'),
+                'sufficiency': _calculate_statistical_function('sufficiency', func='variance'),
             },
         }
 
     def __call__(self, k_values: List[int] = [1]):
+        passages = 0
+        entities = 0
+        tokens = 0
+        passages_without_entities = 0
         for i, document in enumerate(self.dataset):
-            for j, passage in enumerate(document['passages']):
-                print('Passage', j)
+            for passage in document['passages']:
+                passages += 1
+                print('Passage', passages, end='\r', flush=True)
                 if len(passage['text']) > 1:
                     print('len(passage[\'text\']) > 1', passage)
                     exit(-1)
                 result = self.evaluator(passage['text'][0], k_values)
                 self.raw_scores.append(result['scores'])
                 self.raw_entities.append(result['entities'])
+                entities += len(result['entities'])
+                if len(result['entities']) == 0:
+                    passages_without_entities += 1
+                tokens += result['tokens']
+            if i >= 1:
+                break
+        return {
+            'scores': self.calculate_average_scores_for_dataset(k_values),
+            'stats': {
+                'passages': passages,
+                'entities': entities,
+                'avg_entities': entities / passages,
+                'tokens': tokens,
+                'avg_tokens': tokens / passages,
+                'passages_without_entities': passages_without_entities,
+            },
+            'settings': {
+                'model': self.pipeline.model.config._name_or_path,
+                'tokenizer': self.pipeline.tokenizer.name_or_path,
+                'dataset': self.dataset.info.config_name,
+                'attribution_type': self.attribution_type,
+                'k_values': k_values,
+            },
+        }
 
-        print(self.raw_scores)
-
-        return {'scores': self.calculate_average_scores_for_dataset(k_values)}
