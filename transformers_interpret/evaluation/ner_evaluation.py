@@ -216,8 +216,8 @@ class NERDatasetEvaluator:
         start_time = datetime.now()
         for split in self.dataset:
             for document in split:
-                if passages > 5:
-                    break
+                # if passages > 5:
+                #     break
                 for passage in document['passages']:
                     passages += 1
                     print('Passage', passages, end='\r', flush=True)

@@ -26,17 +26,18 @@ dataset = [load_dataset(**load_dataset_kwargs, split='train'), load_dataset(**lo
 pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
 evaluator = NERDatasetEvaluator(pipeline, dataset)
 
-result = evaluator(k_values=[2])
+# result = evaluator(k_values=[2, 3, 4, 5, 6, 7, 8, 9, 10])
+result = evaluator(k_values=[2, 5, 10])
 
 print(result)
 
 end_time = datetime.datetime.now()
 
-with open(f'results/{dataset_name}/{end_time}_scores.json', 'w+') as f:
+with open(f'results/{dataset_name}/{huggingface_model}/{end_time}_scores.json', 'w+') as f:
     json.dump(result, f)
 
-with open(f'results/{dataset_name}/{end_time}_raw_scores.json', 'w+') as f:
+with open(f'results/{dataset_name}/{huggingface_model}/{end_time}_raw_scores.json', 'w+') as f:
     json.dump(str(evaluator.raw_scores), f)
 
-with open(f'results/{dataset_name}/{end_time}_raw_entities.json', 'w+') as f:
+with open(f'results/{dataset_name}/{huggingface_model}/{end_time}_raw_entities.json', 'w+') as f:
     json.dump(str(evaluator.raw_entities), f)
