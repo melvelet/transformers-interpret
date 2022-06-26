@@ -33,13 +33,13 @@ class NERSentenceEvaluator:
                  pipeline: Pipeline,
                  attribution_type: str = "lig"):
         self.pipeline = pipeline
-        self.model = pipeline.model
-        self.tokenizer = pipeline.tokenizer
-        self.attribution_type = attribution_type
+        self.model: PreTrainedModel = pipeline.model
+        self.tokenizer: PreTrainedTokenizer = pipeline.tokenizer
+        self.attribution_type: str = attribution_type
         self.label2id = self.model.config.label2id
         self.id2label = self.model.config.id2label
         self.entities = None
-        self.explainer = None
+        self.explainer = TokenClassificationExplainer(self.model, self.tokenizer, self.attribution_type)
         self.input_str = None
         self.input_tokens = None
         self.input_token_ids = None
@@ -48,7 +48,6 @@ class NERSentenceEvaluator:
         self.entities = self.pipeline(self.input_str)
 
     def calculate_attribution_scores(self):
-        self.explainer = TokenClassificationExplainer(self.model, self.tokenizer, self.attribution_type)
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
         self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples)
         self.input_token_ids = self.explainer.input_token_ids
@@ -68,8 +67,6 @@ class NERSentenceEvaluator:
             pred = self.model(masked_input)
             scores = torch.softmax(pred.logits, dim=-1)[0]
             new_conf = scores[e['index']][self.label2id[e['entity']]].item()
-            # new_label = self.id2label[scores[e['index']].argmax(axis=-1).item()]
-            # print('old_conf', e['score'], 'new_conf', new_conf, 'old_label', e['entity'], 'new_label', new_label, 'diff', e['score'] - new_conf)
             e['comprehensiveness'][k] = e['score'] - new_conf
 
     def calculate_sufficiency(self, k):
