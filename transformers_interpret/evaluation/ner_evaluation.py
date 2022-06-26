@@ -1,3 +1,4 @@
+from datetime import datetime
 from statistics import mean, median, stdev, variance, StatisticsError
 from typing import List, Dict
 import torch
@@ -144,11 +145,12 @@ class NERDatasetEvaluator:
                  attribution_type: str = "lig",
                  ):
         self.pipeline = pipeline
-        self.dataset = dataset
+        self.dataset = dataset if isinstance(dataset, list) else [dataset]
         self.attribution_type = attribution_type
         self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type)
         self.raw_scores: List[Dict] = []
         self.raw_entities: List[Dict] = []
+        self.scores = None
 
     def calculate_average_scores_for_dataset(self, k_values):
         def _calculate_statistical_function(attr: str, squared: bool = False, func: str = None):
@@ -214,23 +216,30 @@ class NERDatasetEvaluator:
         entities = 0
         tokens = 0
         passages_without_entities = 0
-        for i, document in enumerate(self.dataset):
-            for passage in document['passages']:
-                passages += 1
-                print('Passage', passages, end='\r', flush=True)
-                if len(passage['text']) > 1:
-                    print('len(passage[\'text\']) > 1', passage)
-                    exit(-1)
-                result = self.evaluator(passage['text'][0], k_values)
-                self.raw_scores.append(result['scores'])
-                self.raw_entities.append(result['entities'])
-                entities += len(result['entities'])
-                if len(result['entities']) == 0:
-                    passages_without_entities += 1
-                tokens += result['tokens']
-            if i >= 1:
-                break
-        return {
+        start_time = datetime.now()
+        i = 0
+        for split in self.dataset:
+            for document in split:
+                i += 1
+                if i > 5:
+                    break
+                for passage in document['passages']:
+                    passages += 1
+                    print('Passage', passages, end='\r', flush=True)
+                    if len(passage['text']) > 1:
+                        print('len(passage[\'text\']) > 1', passage)
+                        exit(-1)
+                    result = self.evaluator(passage['text'][0], k_values)
+                    self.raw_scores.append(result['scores'])
+                    self.raw_entities.append(result['entities'])
+                    entities += len(result['entities'])
+                    if len(result['entities']) == 0:
+                        passages_without_entities += 1
+                    tokens += result['tokens']
+
+        end_time = datetime.now()
+        duration = end_time - start_time
+        self.scores = {
             'scores': self.calculate_average_scores_for_dataset(k_values),
             'stats': {
                 'passages': passages,
@@ -243,9 +252,19 @@ class NERDatasetEvaluator:
             'settings': {
                 'model': self.pipeline.model.config._name_or_path,
                 'tokenizer': self.pipeline.tokenizer.name_or_path,
-                'dataset': self.dataset.info.config_name,
+                'dataset': [dataset.info.config_name for dataset in self.dataset],
                 'attribution_type': self.attribution_type,
                 'k_values': k_values,
             },
+            'timing': {
+                'start_time': str(start_time),
+                'end_time': str(end_time),
+                'duration': str(duration),
+                'per_passage': str(duration / passages),
+                'per_entity': str(duration / entities),
+                'per_token': str(duration / tokens),
+            },
         }
+
+        return self.scores
 
