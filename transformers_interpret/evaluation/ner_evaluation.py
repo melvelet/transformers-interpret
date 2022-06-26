@@ -214,11 +214,9 @@ class NERDatasetEvaluator:
         tokens = 0
         passages_without_entities = 0
         start_time = datetime.now()
-        i = 0
         for split in self.dataset:
             for document in split:
-                i += 1
-                if i > 5:
+                if passages > 5:
                     break
                 for passage in document['passages']:
                     passages += 1
@@ -239,6 +237,7 @@ class NERDatasetEvaluator:
         self.scores = {
             'scores': self.calculate_average_scores_for_dataset(k_values),
             'stats': {
+                'splits': len(self.dataset),
                 'passages': passages,
                 'entities': entities,
                 'avg_entities': entities / passages,
