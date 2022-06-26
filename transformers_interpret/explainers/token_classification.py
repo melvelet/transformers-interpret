@@ -190,7 +190,7 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
             self.label_probs_dict[self.id2label[label_j]] = []
 
             for token_i in range(self.input_length):
-                if self.input_tokens[token_i] in ['[CLS]', '[SEP]', '<s>', '</s>']\
+                if self.input_token_ids[token_i] in [self.tokenizer.cls_token_id, self.tokenizer.sep_token_id]\
                         or (class_index is not None and label_j != class_index)\
                         or (token_index is not None and token_i != token_index) \
                         or (token_class_index_tuples is not None and (token_i, label_j) not in token_class_index_tuples):
@@ -198,7 +198,7 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
                     self.pred_probs[token_i].append(None)
                     self.label_probs_dict[self.id2label[label_j]].append(None)
                 else:
-                    print(f'Attribution for class={label_j} token={token_i}', end='\r', flush=True)
+                    # print(f'Attribution for class={label_j} token={token_i}', end='\r', flush=True)
                     explainer = SequenceClassificationExplainer(
                         model=self.model,
                         tokenizer=self.tokenizer,

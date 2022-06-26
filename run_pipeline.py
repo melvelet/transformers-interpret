@@ -30,8 +30,13 @@ result = evaluator(k_values=[2])
 
 print(result)
 
-with open(f'results/{dataset_name}_{str(datetime.datetime.now())}.json', 'w+') as f:
-    json.dumps(result)
+end_time = datetime.datetime.now()
 
-with open(f'results/{dataset_name}_{str(datetime.datetime.now())}_scores.json', 'w+') as f:
-    json.dumps(evaluator.scores)
+with open(f'results/{dataset_name}_{end_time}_scores.json', 'w+') as f:
+    json.dump(result, f)
+
+with open(f'results/{dataset_name}_{end_time}_raw_scores.json', 'w+') as f:
+    json.dump(evaluator.raw_scores, f)
+
+with open(f'results/{dataset_name}_{end_time}_raw_entities.json', 'w+') as f:
+    json.dump(evaluator.raw_entities, f)

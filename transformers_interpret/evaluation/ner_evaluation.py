@@ -257,6 +257,7 @@ class NERDatasetEvaluator:
                 'start_time': str(start_time),
                 'end_time': str(end_time),
                 'duration': str(duration),
+                'per_k_value': str(duration / len(k_values)),
                 'per_passage': str(duration / passages),
                 'per_entity': str(duration / entities),
                 'per_token': str(duration / tokens),
