@@ -32,11 +32,11 @@ print(result)
 
 end_time = datetime.datetime.now()
 
-with open(f'results/{dataset_name}_{end_time}_scores.json', 'w+') as f:
+with open(f'results/{dataset_name}/{end_time}_scores.json', 'w+') as f:
     json.dump(result, f)
 
-with open(f'results/{dataset_name}_{end_time}_raw_scores.json', 'w+') as f:
+with open(f'results/{dataset_name}/{end_time}_raw_scores.json', 'w+') as f:
     json.dump(str(evaluator.raw_scores), f)
 
-with open(f'results/{dataset_name}_{end_time}_raw_entities.json', 'w+') as f:
+with open(f'results/{dataset_name}/{end_time}_raw_entities.json', 'w+') as f:
     json.dump(str(evaluator.raw_entities), f)
