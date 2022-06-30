@@ -1,5 +1,4 @@
 import spacy
-from spacy.pipeline.senter import DEFAULT_SENTER_MODEL
 
 
 class InputTruncator:
