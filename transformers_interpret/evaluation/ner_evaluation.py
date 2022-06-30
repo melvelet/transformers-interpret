@@ -1,6 +1,6 @@
 from datetime import datetime
 from statistics import mean, median, stdev, variance, StatisticsError
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Optional
 import torch
 from datasets import Dataset
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
@@ -200,7 +200,7 @@ class NERDatasetEvaluator:
             },
         }
 
-    def __call__(self, k_values: List[int] = [1], continuous: bool = False):
+    def __call__(self, k_values: List[int] = [1], continuous: bool = False, max_documents: Optional[Union[int, None]] = None):
         passages = 0
         entities = 0
         tokens = 0
@@ -208,7 +208,7 @@ class NERDatasetEvaluator:
         start_time = datetime.now()
         for split in self.dataset:
             for document in split:
-                if passages > 5:
+                if max_documents and passages > max_documents:
                     break
                 for passage in document['passages']:
                     passages += 1
