@@ -1,11 +1,11 @@
 from datetime import datetime
 from statistics import mean, median, stdev, variance, StatisticsError
-from typing import List, Dict
+from typing import List, Dict, Union
 import torch
 from datasets import Dataset
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
 
-from evaluation.input_truncator import InputTruncator
+from transformers_interpret.evaluation import InputTruncator
 from transformers_interpret import TokenClassificationExplainer
 
 
@@ -136,7 +136,7 @@ class NERSentenceEvaluator:
 class NERDatasetEvaluator:
     def __init__(self,
                  pipeline: Pipeline,
-                 dataset: Dataset,
+                 dataset: Union[Dataset, List[Dataset]],
                  attribution_type: str = "lig",
                  ):
         self.pipeline = pipeline

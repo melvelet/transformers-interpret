@@ -2,9 +2,9 @@ import datetime
 import json
 from pprint import pprint
 import transformers
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline, AutoConfig
+from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline, AutoConfig
 from transformers_interpret import TokenClassificationExplainer, MultiLabelClassificationExplainer
-from transformers_interpret.evaluation.ner_evaluation import NERSentenceEvaluator, NERDatasetEvaluator
+from transformers_interpret.evaluation import NERDatasetEvaluator
 from bigbio.dataloader import BigBioConfigHelpers
 from datasets import load_dataset
 
