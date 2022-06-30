@@ -12,6 +12,7 @@ class InputTruncator:
         tokens = []
         included_sentences = []
         for i, sent in enumerate(sentences):
+            print(i, str(sent))
             input_tokens_sent = self.tokenizer.tokenize(str(sent))
             if len(tokens) + len(input_tokens_sent) <= self.max_tokens - 2:
                 tokens.extend(input_tokens_sent)
@@ -20,5 +21,4 @@ class InputTruncator:
                 break
         assert len(included_sentences) > 0
         result_document = ' '.join(included_sentences)
-        print(result_document)
         return result_document
