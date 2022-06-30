@@ -5,6 +5,7 @@ import torch
 from datasets import Dataset
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
 
+from evaluation.input_truncator import InputTruncator
 from transformers_interpret import TokenClassificationExplainer
 
 
@@ -145,6 +146,7 @@ class NERDatasetEvaluator:
         self.raw_scores: List[Dict] = []
         self.raw_entities: List[Dict] = []
         self.scores = None
+        self.input_truncator = InputTruncator(self.pipeline.tokenizer, max_tokens=512)
 
     def calculate_average_scores_for_dataset(self, k_values):
         def _calculate_statistical_function(attr: str, squared: bool = False, func: str = None):
@@ -210,11 +212,12 @@ class NERDatasetEvaluator:
                     break
                 for passage in document['passages']:
                     passages += 1
-                    print('Passage', passages, end='\r', flush=True)
+                    print('Passage', passages)
                     if len(passage['text']) > 1:
                         print('len(passage[\'text\']) > 1', passage)
                         exit(-1)
-                    result = self.evaluator(passage['text'][0], k_values, continuous)
+                    input_document = self.input_truncator(passage['text'][0])
+                    result = self.evaluator(input_document, k_values, continuous)
                     self.raw_scores.extend(result['scores'])
                     self.raw_entities.append(result['entities'])
                     entities += len(result['entities'])
