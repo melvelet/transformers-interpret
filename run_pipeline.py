@@ -38,7 +38,7 @@ pprint(result)
 
 end_time = datetime.datetime.now()
 
-base_file_name = f"results/{dataset_name}|{huggingface_model}|{attribution_type}|{k_values}|{'cont' if continuous else 'topk'}|{end_time}"
+base_file_name = f"results/{dataset_name}|{huggingface_model.replace('/', '_')}|{attribution_type}|{k_values}|{'cont' if continuous else 'topk'}|{end_time}"
 
 with open(f'{base_file_name}_scores.json', 'w+') as f:
     json.dump(result, f)
