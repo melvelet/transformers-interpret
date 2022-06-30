@@ -27,17 +27,21 @@ pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
 evaluator = NERDatasetEvaluator(pipeline, dataset)
 
 # result = evaluator(k_values=[2, 3, 4, 5, 6, 7, 8, 9, 10])
-result = evaluator(k_values=[2, 5, 10])
+k_values = [2, 5, 10]
+continuous = False
+result = evaluator(k_values=k_values, continuous=continuous)
 
-print(result)
+pprint(result)
 
 end_time = datetime.datetime.now()
 
-with open(f'results/{dataset_name}/{huggingface_model}/{end_time}_scores.json', 'w+') as f:
+base_file_name = f"results/{dataset_name}|{huggingface_model}|{k_values}|{'cont' if continuous else 'topk'}|{end_time}"
+
+with open(f'{base_file_name}_scores.json', 'w+') as f:
     json.dump(result, f)
 
-with open(f'results/{dataset_name}/{huggingface_model}/{end_time}_raw_scores.json', 'w+') as f:
+with open(f'{base_file_name}_raw_scores.json', 'w+') as f:
     json.dump(str(evaluator.raw_scores), f)
 
-with open(f'results/{dataset_name}/{huggingface_model}/{end_time}_raw_entities.json', 'w+') as f:
+with open(f'{base_file_name}_raw_entities.json', 'w+') as f:
     json.dump(str(evaluator.raw_entities), f)
