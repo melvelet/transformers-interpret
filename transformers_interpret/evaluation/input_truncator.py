@@ -13,7 +13,7 @@ class InputTruncator:
         included_sentences = []
         truncated_tokens = 0
         for i, sent in enumerate(sentences):
-            print(i, str(sent))
+            # print(i, str(sent))
             input_tokens_sent = self.tokenizer.tokenize(str(sent))
             if len(tokens) + len(input_tokens_sent) <= self.max_tokens - 2 and truncated_tokens == 0:
                 tokens.extend(input_tokens_sent)
