@@ -212,22 +212,23 @@ class NERDatasetEvaluator:
             for document in split:
                 if max_documents and passages > max_documents:
                     break
-                for passage in document['passages']:
-                    passages += 1
-                    print('Passage', passages)
-                    if len(passage['text']) > 1:
-                        print('len(passage[\'text\']) > 1', passage)
-                        exit(-1)
-                    input_document, truncated = self.input_truncator(passage['text'][0])
-                    truncated_tokens += truncated
-                    truncated_documents += 1 if truncated > 0 else 0
-                    result = self.evaluator(input_document, k_values, continuous)
-                    self.raw_scores.extend(result['scores'])
-                    self.raw_entities.append(result['entities'])
-                    entities += len(result['entities'])
-                    if len(result['entities']) == 0:
-                        passages_without_entities += 1
-                    tokens += result['tokens']
+                raw_input_text = ' '. join([passage['text'] for passage in document['passages']])
+                passages += 1
+                print('Passage', passages)
+                print(raw_input_text)
+                if max([len(i['text']) for i in document['passages']]) > 1:
+                    print('len(passage[\'text\']) > 1', document)
+                    exit(-1)
+                input_document, truncated = self.input_truncator(raw_input_text)
+                truncated_tokens += truncated
+                truncated_documents += 1 if truncated > 0 else 0
+                result = self.evaluator(input_document, k_values, continuous)
+                self.raw_scores.extend(result['scores'])
+                self.raw_entities.append(result['entities'])
+                entities += len(result['entities'])
+                if len(result['entities']) == 0:
+                    passages_without_entities += 1
+                tokens += result['tokens']
 
         end_time = datetime.now()
         duration = end_time - start_time
