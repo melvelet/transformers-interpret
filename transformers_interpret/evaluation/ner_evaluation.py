@@ -212,7 +212,8 @@ class NERDatasetEvaluator:
             for document in split:
                 if max_documents and passages > max_documents:
                     break
-                raw_input_text = ' '. join([passage['text'] for passage in document['passages']])
+                raw_input_text = ' '. join([i[0] for i in [passage['text'] for passage in document['passages']]])\
+                    .replace('(ABSTRACT TRUNCATED AT 250 WORDS)', '')
                 passages += 1
                 print('Passage', passages)
                 print(raw_input_text)
