@@ -216,7 +216,6 @@ class NERDatasetEvaluator:
                     .replace('(ABSTRACT TRUNCATED AT 250 WORDS)', '')
                 passages += 1
                 print('Passage', passages)
-                print(raw_input_text)
                 if max([len(i['text']) for i in document['passages']]) > 1:
                     print('len(passage[\'text\']) > 1', document)
                     exit(-1)
