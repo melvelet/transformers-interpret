@@ -205,6 +205,8 @@ class NERDatasetEvaluator:
         entities = 0
         tokens = 0
         passages_without_entities = 0
+        truncated_tokens = 0
+        truncated_documents = 0
         start_time = datetime.now()
         for split in self.dataset:
             for document in split:
@@ -216,7 +218,9 @@ class NERDatasetEvaluator:
                     if len(passage['text']) > 1:
                         print('len(passage[\'text\']) > 1', passage)
                         exit(-1)
-                    input_document = self.input_truncator(passage['text'][0])
+                    input_document, truncated = self.input_truncator(passage['text'][0])
+                    truncated_tokens += truncated
+                    truncated_documents += 1 if truncated > 0 else 0
                     result = self.evaluator(input_document, k_values, continuous)
                     self.raw_scores.extend(result['scores'])
                     self.raw_entities.append(result['entities'])
@@ -237,11 +241,15 @@ class NERDatasetEvaluator:
                 'tokens': tokens,
                 'avg_tokens': tokens / passages,
                 'passages_without_entities': passages_without_entities,
+                'truncated_documents': truncated_documents,
+                'truncated_documents_ratio': truncated_documents / passages,
+                'truncated_tokens': truncated_tokens,
+                'avg_truncated_tokens': truncated_tokens / truncated_documents if truncated_documents > 0 else 0,
             },
             'settings': {
                 'model': self.pipeline.model.config._name_or_path,
                 'tokenizer': self.pipeline.tokenizer.name_or_path,
-                'dataset': set([dataset.info.config_name for dataset in self.dataset]),
+                'dataset': list(set([dataset.info.config_name for dataset in self.dataset])),
                 'splits': [split for split in self.dataset[0].info.splits],
                 'attribution_type': self.attribution_type,
                 'k_values': k_values,

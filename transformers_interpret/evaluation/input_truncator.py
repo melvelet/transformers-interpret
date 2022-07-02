@@ -11,14 +11,15 @@ class InputTruncator:
         sentences = list(self.sentence_segmentation(input_seq).sents)
         tokens = []
         included_sentences = []
+        truncated_tokens = 0
         for i, sent in enumerate(sentences):
             print(i, str(sent))
             input_tokens_sent = self.tokenizer.tokenize(str(sent))
-            if len(tokens) + len(input_tokens_sent) <= self.max_tokens - 2:
+            if len(tokens) + len(input_tokens_sent) <= self.max_tokens - 2 and truncated_tokens == 0:
                 tokens.extend(input_tokens_sent)
                 included_sentences.append(str(sent))
             else:
-                break
+                truncated_tokens += len(input_tokens_sent)
         assert len(included_sentences) > 0
         result_document = ' '.join(included_sentences)
-        return result_document
+        return result_document, truncated_tokens
