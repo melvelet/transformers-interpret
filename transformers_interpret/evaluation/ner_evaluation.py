@@ -140,13 +140,14 @@ class NERDatasetEvaluator:
                  attribution_type: str = "lig",
                  ):
         self.pipeline = pipeline
+        self.input_pre_processor = InputPreProcessor(self.pipeline.tokenizer, max_tokens=512)
         self.dataset = dataset
+        self.label2id = self.input_pre_processor.get_labels_from_dataset(self.dataset)
         self.attribution_type = attribution_type
         self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type)
         self.raw_scores: List[Dict] = []
         self.raw_entities: List[Dict] = []
         self.scores = None
-        self.input_pre_processor = InputPreProcessor(self.pipeline.tokenizer, max_tokens=512)
 
     def calculate_average_scores_for_dataset(self, k_values):
         def _calculate_statistical_function(attr: str, squared: bool = False, func: str = None):

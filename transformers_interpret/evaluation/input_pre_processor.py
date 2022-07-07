@@ -1,5 +1,3 @@
-from pprint import pprint
-
 import spacy
 import torch
 
@@ -22,7 +20,8 @@ class InputPreProcessor:
         }
         return result_document
 
-    def create_labels(self, document, tokens):
+    @staticmethod
+    def create_labels(document, tokens):
         def _check_for_offset_overlap(token_offset, entity_offset):
             return token_offset[0] != token_offset[1]\
                    and token_offset[0] >= entity_offset[0] and token_offset[1] <= entity_offset[1]
@@ -61,6 +60,15 @@ class InputPreProcessor:
         result_document = ' '.join(included_sentences)
         return result_document, truncated_tokens
 
-    def get_labels_from_dataset(self, dataset):
-        pass
+    @staticmethod
+    def get_labels_from_dataset(dataset):
+        seen_labels = list(set([entity['type'] for split in dataset for document in dataset[split] for entity in document['entities']]))
+        labels = ['O']
+        labels.extend(
+            sorted(seen_labels)
+        )
 
+        label2id = {label: i for i, label in enumerate(labels)}
+        print(label2id)
+
+        return label2id
