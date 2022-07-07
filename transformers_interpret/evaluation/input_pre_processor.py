@@ -69,6 +69,8 @@ class InputPreProcessor:
         )
 
         label2id = {label: i for i, label in enumerate(labels)}
-        print(label2id)
+        id2label = {y: x for x, y in label2id.items()}
+        print('label2id', label2id)
+        print('id2label', id2label)
 
         return label2id
