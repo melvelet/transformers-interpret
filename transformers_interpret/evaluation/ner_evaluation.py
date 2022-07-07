@@ -140,9 +140,8 @@ class NERDatasetEvaluator:
                  attribution_type: str = "lig",
                  ):
         self.pipeline = pipeline
-        self.input_pre_processor = InputPreProcessor(self.pipeline.tokenizer, max_tokens=512)
         self.dataset = dataset
-        self.label2id = self.input_pre_processor.get_labels_from_dataset(self.dataset)
+        self.input_pre_processor = InputPreProcessor(self.pipeline.tokenizer, None, max_tokens=512)
         self.attribution_type = attribution_type
         self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type)
         self.raw_scores: List[Dict] = []
@@ -203,7 +202,8 @@ class NERDatasetEvaluator:
 
     def __call__(self, k_values: List[int] = [1], continuous: bool = False, max_documents: Optional[Union[int, None]] = None):
         passages = 0
-        entities = 0
+        found_entities = 0
+        annotated_entities = 0
         tokens = 0
         passages_without_entities = 0
         truncated_tokens = 0
@@ -221,10 +221,11 @@ class NERDatasetEvaluator:
                 input_document = self.input_pre_processor(document)
                 truncated_tokens += self.input_pre_processor.stats['truncated_tokens']
                 truncated_documents += 1 if self.input_pre_processor.stats['is_truncated'] > 0 else 0
+                annotated_entities += self.input_pre_processor.stats['annotated_entities']
                 result = self.evaluator(input_document, k_values, continuous)
                 self.raw_scores.extend(result['scores'])
                 self.raw_entities.append(result['entities'])
-                entities += len(result['entities'])
+                found_entities += len(result['entities'])
                 if len(result['entities']) == 0:
                     passages_without_entities += 1
                 tokens += result['tokens']
@@ -236,8 +237,11 @@ class NERDatasetEvaluator:
             'stats': {
                 'splits': len(self.dataset),
                 'passages': passages,
-                'entities': entities,
-                'avg_entities': entities / passages,
+                'annotated_entities': annotated_entities,
+                'avg_annotated_entities': annotated_entities / passages,
+                'found_entities': found_entities,
+                'avg_found_entities': found_entities / passages,
+                'found_to_annotated_entities_ratio': found_entities / annotated_entities,
                 'tokens': tokens,
                 'avg_tokens': tokens / passages,
                 'passages_without_entities': passages_without_entities,

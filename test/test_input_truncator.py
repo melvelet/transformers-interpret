@@ -45,7 +45,7 @@ INPUT_SEQ = 'Recognizing biomedical entities (NER) such as genes, chemicals or d
 
 def test_truncate_to_512_tokens():
     input_length = len(BERT_TOKENIZER(INPUT_SEQ)['input_ids'])
-    sut = InputPreProcessor(BERT_TOKENIZER, max_tokens=512)
+    sut = InputPreProcessor(BERT_TOKENIZER, None, max_tokens=512)
     result = sut(INPUT_SEQ)
     result_length = len(BERT_TOKENIZER(result)['input_ids'])
     assert input_length != result_length

@@ -3,10 +3,11 @@ from transformers import AutoTokenizer
 
 huggingface_model = 'dslim/bert-base-NER'
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
+label2id = {'O': 0, 'Chemical': 1, 'Disease': 2}
 
 
 def test_call():
-    sut = InputPreProcessor(tokenizer, 512)
+    sut = InputPreProcessor(tokenizer, label2id, 512)
     example_document = get_example_document()
     result = sut(example_document)
 

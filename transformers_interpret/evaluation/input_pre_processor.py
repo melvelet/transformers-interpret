@@ -1,45 +1,65 @@
+from pprint import pprint
+
 import spacy
 import torch
 
 
+def get_labels_from_dataset(dataset):
+    seen_labels = list(set(
+        [entity['type'] for split in dataset for document in dataset[split] for entity in document['entities']]
+    ))
+    labels = ['O']
+    labels.extend(
+        sorted(seen_labels)
+    )
+
+    label2id = {label: i for i, label in enumerate(labels)}
+    id2label = {y: x for x, y in label2id.items()}
+
+    return label2id, id2label
+
+
 class InputPreProcessor:
-    def __init__(self, tokenizer, max_tokens: int = 512):
+    def __init__(self, tokenizer, label2id, max_tokens: int = 512):
         self.tokenizer = tokenizer
         self.max_tokens = max_tokens
         self.sentence_segmentation = spacy.load("en_core_web_sm")
+        self.label2id = label2id
 
     def __call__(self, input_document):
         raw_input_text = ''. join([i[0] for i in [passage['text'] for passage in input_document['passages']]])\
             .replace('(ABSTRACT TRUNCATED AT 250 WORDS)', '')
-        result_document, truncated_tokens = self.truncate_input(raw_input_text)
-        tokens = self.tokenizer(result_document, return_offsets_mapping=True)
+        result_text, truncated_tokens = self.truncate_input(raw_input_text)
+        tokens = self.tokenizer(result_text, return_offsets_mapping=True)
         labels = self.create_labels(input_document, tokens)
+        result_document = {
+            'id': input_document['id'],
+            'document_id': input_document['document_id'],
+            'labels': labels,
+        }
+        result_document.update(tokens)
+        pprint(result_document)
         self.stats = {
             'truncated_tokens': truncated_tokens,
             'is_truncated': truncated_tokens > 0,
+            'annotated_entities': len(input_document['entities']),
         }
         return result_document
 
-    @staticmethod
-    def create_labels(document, tokens):
-        def _check_for_offset_overlap(token_offset, entity_offset):
-            return token_offset[0] != token_offset[1]\
-                   and token_offset[0] >= entity_offset[0] and token_offset[1] <= entity_offset[1]
+    def create_labels(self, document, tokens):
+        def _check_for_offset_overlap(tok_offset, ent_offset):
+            return tok_offset[0] != tok_offset[1]\
+                   and tok_offset[0] >= ent_offset[0] and tok_offset[1] <= ent_offset[1]
 
         labels = []
-        texts = []
-        for token_idx, tok_offset in enumerate(tokens['offset_mapping']):
-            label = 'O'
-            text = ''
+        for token_idx, token_offset in enumerate(tokens['offset_mapping']):
+            label = self.label2id['O']
             for entity in document['entities']:
                 entity_class = entity['type']
-                entity_text = entity['text'][0]
                 entity_offset = entity['offsets'][0]
-                if _check_for_offset_overlap(tok_offset, entity_offset):
-                    label = entity_class
-                    text = entity_text
+                if _check_for_offset_overlap(token_offset, entity_offset):
+                    label = self.label2id[entity_class]
             labels.append(label)
-            texts.append(text)
 
         return torch.IntTensor(labels)
 
@@ -59,18 +79,3 @@ class InputPreProcessor:
         assert len(included_sentences) > 0
         result_document = ' '.join(included_sentences)
         return result_document, truncated_tokens
-
-    @staticmethod
-    def get_labels_from_dataset(dataset):
-        seen_labels = list(set([entity['type'] for split in dataset for document in dataset[split] for entity in document['entities']]))
-        labels = ['O']
-        labels.extend(
-            sorted(seen_labels)
-        )
-
-        label2id = {label: i for i, label in enumerate(labels)}
-        id2label = {y: x for x, y in label2id.items()}
-        print('label2id', label2id)
-        print('id2label', id2label)
-
-        return label2id
