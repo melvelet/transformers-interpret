@@ -1,6 +1,6 @@
 from transformers import AutoTokenizer
 
-from evaluation.input_truncator import InputTruncator
+from evaluation.input_pre_processor import InputPreProcessor
 
 BERT_TOKENIZER = AutoTokenizer.from_pretrained("dslim/bert-base-NER")
 INPUT_SEQ = 'Recognizing biomedical entities (NER) such as genes, chemicals or diseases in unstructured scientific ' \
@@ -45,7 +45,7 @@ INPUT_SEQ = 'Recognizing biomedical entities (NER) such as genes, chemicals or d
 
 def test_truncate_to_512_tokens():
     input_length = len(BERT_TOKENIZER(INPUT_SEQ)['input_ids'])
-    sut = InputTruncator(BERT_TOKENIZER, max_tokens=512)
+    sut = InputPreProcessor(BERT_TOKENIZER, max_tokens=512)
     result = sut(INPUT_SEQ)
     result_length = len(BERT_TOKENIZER(result)['input_ids'])
     assert input_length != result_length

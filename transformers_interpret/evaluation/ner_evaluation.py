@@ -5,7 +5,7 @@ import torch
 from datasets import Dataset
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
 
-from transformers_interpret.evaluation import InputTruncator
+from transformers_interpret.evaluation import InputPreProcessor
 from transformers_interpret import TokenClassificationExplainer
 
 
@@ -140,13 +140,13 @@ class NERDatasetEvaluator:
                  attribution_type: str = "lig",
                  ):
         self.pipeline = pipeline
-        self.dataset = dataset if isinstance(dataset, list) else [dataset]
+        self.dataset = dataset
         self.attribution_type = attribution_type
         self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type)
         self.raw_scores: List[Dict] = []
         self.raw_entities: List[Dict] = []
         self.scores = None
-        self.input_truncator = InputTruncator(self.pipeline.tokenizer, max_tokens=512)
+        self.input_pre_processor = InputPreProcessor(self.pipeline.tokenizer, max_tokens=512)
 
     def calculate_average_scores_for_dataset(self, k_values):
         def _calculate_statistical_function(attr: str, squared: bool = False, func: str = None):
@@ -209,19 +209,17 @@ class NERDatasetEvaluator:
         truncated_documents = 0
         start_time = datetime.now()
         for split in self.dataset:
-            for document in split:
+            for document in self.dataset[split]:
                 if max_documents and passages > max_documents:
                     break
-                raw_input_text = ' '. join([i[0] for i in [passage['text'] for passage in document['passages']]])\
-                    .replace('(ABSTRACT TRUNCATED AT 250 WORDS)', '')
                 passages += 1
                 print('Passage', passages)
                 if max([len(i['text']) for i in document['passages']]) > 1:
                     print('len(passage[\'text\']) > 1', document)
                     exit(-1)
-                input_document, truncated = self.input_truncator(raw_input_text)
-                truncated_tokens += truncated
-                truncated_documents += 1 if truncated > 0 else 0
+                input_document = self.input_pre_processor(document)
+                truncated_tokens += self.input_pre_processor.stats['truncated_tokens']
+                truncated_documents += 1 if self.input_pre_processor.stats['is_truncated'] > 0 else 0
                 result = self.evaluator(input_document, k_values, continuous)
                 self.raw_scores.extend(result['scores'])
                 self.raw_entities.append(result['entities'])
