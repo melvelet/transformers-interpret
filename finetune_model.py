@@ -9,7 +9,7 @@ from transformers_interpret.evaluation.input_pre_processor import InputPreProces
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
-    print(predictions)
+    print(labels)
     return metric.compute(predictions=predictions, references=labels)
 
 
