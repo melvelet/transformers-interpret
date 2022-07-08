@@ -14,9 +14,16 @@ def compute_metrics(eval_pred):
 
 
 conhelps = BigBioConfigHelpers()
-dataset_name = 'cadec_bigbio_kb'
+# dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length, Disease
+# dataset_name = 'euadr_bigbio_kb'  # 5 classes, short to medium sentence length, Diseases & Disorders
+dataset_name = 'cadec_bigbio_kb'  # 5 classes, shortest documents, forum posts, Disease
+# dataset_name = 'scai_disease_bigbio_kb'  # 2 classes, long documents, DISEASE
 dataset = conhelps.for_config_name(dataset_name).load_dataset()
 
+# huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
+# huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
+# huggingface_model = 'fran-martinez/scibert_scivocab_cased_ner_jnlpba'
+# huggingface_model = 'alvaroalon2/biobert_chemical_ner'
 huggingface_model = 'dslim/bert-base-NER'
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
 
