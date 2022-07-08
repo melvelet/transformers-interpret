@@ -30,15 +30,15 @@ class InputPreProcessor:
         raw_input_text = ''. join([i[0] for i in [passage['text'] for passage in input_document['passages']]])\
             .replace('(ABSTRACT TRUNCATED AT 250 WORDS)', '')
         result_text, truncated_tokens = self.truncate_input(raw_input_text)
-        tokens = self.tokenizer(result_text, return_offsets_mapping=True)
+        tokens = self.tokenizer(result_text, padding='max_length', return_offsets_mapping=True)
         labels = self.create_labels(input_document, tokens)
         result_document = {
             'id': input_document['id'],
             'document_id': input_document['document_id'],
+            'text': result_text,
             'labels': labels,
         }
         result_document.update(tokens)
-        pprint(result_document)
         self.stats = {
             'truncated_tokens': truncated_tokens,
             'is_truncated': truncated_tokens > 0,
@@ -64,6 +64,8 @@ class InputPreProcessor:
         return torch.IntTensor(labels)
 
     def truncate_input(self, raw_input_text):
+        if not raw_input_text:
+            return '', 0
         sentences = list(self.sentence_segmentation(raw_input_text).sents)
         tokens = []
         included_sentences = []
@@ -76,6 +78,9 @@ class InputPreProcessor:
                 included_sentences.append(str(sent))
             else:
                 truncated_tokens += len(input_tokens_sent)
-        assert len(included_sentences) > 0
+        try:
+            assert len(included_sentences) > 0
+        except AssertionError as e:
+            print('AssertionError!', raw_input_text)
         result_document = ' '.join(included_sentences)
         return result_document, truncated_tokens

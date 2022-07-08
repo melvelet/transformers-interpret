@@ -208,21 +208,23 @@ class NERDatasetEvaluator:
         passages_without_entities = 0
         truncated_tokens = 0
         truncated_documents = 0
+        skipped_passages = 0
         start_time = datetime.now()
         for split in self.dataset:
             for document in self.dataset[split]:
                 if max_documents and passages > max_documents:
                     break
-                passages += 1
                 print('Passage', passages)
-                if max([len(i['text']) for i in document['passages']]) > 1:
-                    print('len(passage[\'text\']) > 1', document)
-                    exit(-1)
-                input_document = self.input_pre_processor(document)
+                pre_processed_document = self.input_pre_processor(document)
+                if len(pre_processed_document['text']) == 0:
+                    print('Text is empty -> skipped')
+                    skipped_passages += 1
+                    continue
+                passages += 1
                 truncated_tokens += self.input_pre_processor.stats['truncated_tokens']
                 truncated_documents += 1 if self.input_pre_processor.stats['is_truncated'] > 0 else 0
                 annotated_entities += self.input_pre_processor.stats['annotated_entities']
-                result = self.evaluator(input_document, k_values, continuous)
+                result = self.evaluator(pre_processed_document['text'], k_values, continuous)
                 self.raw_scores.extend(result['scores'])
                 self.raw_entities.append(result['entities'])
                 found_entities += len(result['entities'])
@@ -236,7 +238,8 @@ class NERDatasetEvaluator:
             'scores': self.calculate_average_scores_for_dataset(k_values),
             'stats': {
                 'splits': len(self.dataset),
-                'passages': passages,
+                'processed_passages': passages,
+                'skipped_passages': skipped_passages,
                 'annotated_entities': annotated_entities,
                 'avg_annotated_entities': annotated_entities / passages,
                 'found_entities': found_entities,
@@ -265,7 +268,7 @@ class NERDatasetEvaluator:
                 'duration': str(duration),
                 'per_k_value': str(duration / len(k_values)),
                 'per_passage': str(duration / passages),
-                'per_entity': str(duration / entities),
+                'per_entity': str(duration / found_entities),
                 'per_token': str(duration / tokens),
             },
         }
