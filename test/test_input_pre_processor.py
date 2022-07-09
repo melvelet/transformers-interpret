@@ -3,13 +3,17 @@ from transformers import AutoTokenizer
 
 huggingface_model = 'dslim/bert-base-NER'
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
-label2id = {'O': 0, 'Chemical': 1, 'Disease': 2}
+label2id = {'O': 0, 'B-Chemical': 1, 'I-Chemical': 2, 'B-Disease': 3, 'I-Disease': 4}
 
 
 def test_call():
     sut = InputPreProcessor(tokenizer, label2id, 512)
     example_document = get_example_document()
     result = sut(example_document)
+    assert 'labels' in result
+    assert 'text' in result
+    assert 'input_ids' in result
+    assert 'offset_mapping' in result
 
 
 def get_example_document():

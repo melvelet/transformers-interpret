@@ -1,5 +1,3 @@
-from pprint import pprint
-
 import spacy
 import torch
 
@@ -8,10 +6,11 @@ def get_labels_from_dataset(dataset):
     seen_labels = list(set(
         [entity['type'] for split in dataset for document in dataset[split] for entity in document['entities']]
     ))
+    seen_labels.sort()
     labels = ['O']
-    labels.extend(
-        sorted(seen_labels)
-    )
+    for label in seen_labels:
+        labels.append(f"B-{label}")
+        labels.append(f"I-{label}")
 
     label2id = {label: i for i, label in enumerate(labels)}
     id2label = {y: x for x, y in label2id.items()}
@@ -25,6 +24,7 @@ class InputPreProcessor:
         self.max_tokens = max_tokens
         self.sentence_segmentation = spacy.load("en_core_web_sm")
         self.label2id = label2id
+        self.id2label = {y: x for x, y in self.label2id.items()}
 
     def __call__(self, input_document):
         raw_input_text = ''. join([i[0] for i in [passage['text'] for passage in input_document['passages']]])\
@@ -32,6 +32,9 @@ class InputPreProcessor:
         result_text, truncated_tokens = self.truncate_input(raw_input_text)
         tokens = self.tokenizer(result_text, padding='max_length', return_offsets_mapping=True)
         labels = self.create_labels(input_document, tokens)
+        # tokens_str = self.tokenizer.tokenize(result_text)
+        # for t, l in zip(tokens_str, labels[1:]):
+        #     print(t, self.id2label[l.item()])
         result_document = {
             'id': input_document['id'],
             'document_id': input_document['document_id'],
@@ -52,14 +55,23 @@ class InputPreProcessor:
                    and tok_offset[0] >= ent_offset[0] and tok_offset[1] <= ent_offset[1]
 
         labels = []
+        label_previous = ''
         for token_idx, token_offset in enumerate(tokens['offset_mapping']):
-            label = self.label2id['O']
+            label = 'O'
             for entity in document['entities']:
                 entity_class = entity['type']
                 entity_offset = entity['offsets'][0]
                 if _check_for_offset_overlap(token_offset, entity_offset):
-                    label = self.label2id[entity_class]
-            labels.append(label)
+                    label = entity_class
+                    break
+
+            if label == 'O':
+                labels.append(self.label2id['O'])
+            elif label_previous == label:
+                labels.append(self.label2id[f"I-{label}"])
+            else:
+                labels.append(self.label2id[f"B-{label}"])
+            label_previous = label
 
         return torch.IntTensor(labels)
 
