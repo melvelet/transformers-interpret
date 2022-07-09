@@ -7,9 +7,16 @@ from transformers import AutoTokenizer, AutoModelForTokenClassification, Trainin
 from transformers_interpret.evaluation.input_pre_processor import InputPreProcessor, get_labels_from_dataset
 
 
+def map_to_string(x):
+    return id2label[x]
+
+
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
+    labels = map_to_string(labels)
+    predictions = map_to_string(predictions)
+    print(predictions)
     return metric.compute(predictions=predictions, references=labels)
 
 
@@ -41,9 +48,9 @@ if len(dataset) > 1:
     train_dataset = tokenized_datasets["train"]
     eval_dataset = tokenized_datasets["test"]
 else:
-    train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(math.floor(dataset_length*0.8)))
-    eval_dataset = tokenized_datasets["train"].shuffle(seed=42)\
-        .select(range(math.floor(dataset_length*0.8), dataset_length))
+    train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(math.floor(dataset_length * 0.8)))
+    eval_dataset = tokenized_datasets["train"].shuffle(seed=42) \
+        .select(range(math.floor(dataset_length * 0.8), dataset_length))
 print('train_dataset', train_dataset)
 print('eval_dataset', eval_dataset)
 
