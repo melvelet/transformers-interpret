@@ -57,7 +57,13 @@ print('eval_dataset', eval_dataset)
 training_args = TrainingArguments(
     output_dir="trained_models",
     evaluation_strategy="epoch",
-    num_train_epochs=20
+    save_strategy="epoch",
+    num_train_epochs=20,
+    learning_rate=5e-05,
+    warmup_ratio=0.0,
+    metric_for_best_model="overall_f1",
+    load_best_model_at_end=True,
+    greater_is_better=True,
 )
 metric = load_metric("seqeval")
 
