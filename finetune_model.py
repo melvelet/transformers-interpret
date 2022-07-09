@@ -14,8 +14,8 @@ def map_to_string(x):
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
-    labels = map_to_string(labels)
-    predictions = map_to_string(predictions)
+    labels = map_to_string_vec(labels)
+    predictions = map_to_string_vec(predictions)
     print(predictions)
     return metric.compute(predictions=predictions, references=labels)
 
@@ -42,6 +42,7 @@ model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pr
                                                                                          ignore_mismatched_sizes=True,
                                                                                          num_labels=len(label2id))
 tokenized_datasets = dataset.map(lambda a: pre_processor(a))
+map_to_string_vec = np.vectorize(map_to_string)
 
 dataset_length = len(dataset["train"])
 if len(dataset) > 1:
