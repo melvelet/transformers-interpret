@@ -16,7 +16,6 @@ def compute_metrics(eval_pred):
     predictions = np.argmax(logits, axis=-1)
     labels = map_to_string_vec(labels)
     predictions = map_to_string_vec(predictions)
-    print(predictions)
     return metric.compute(predictions=predictions, references=labels)
 
 
