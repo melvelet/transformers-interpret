@@ -1,3 +1,4 @@
+import math
 import os
 import numpy as np
 from datasets import load_metric
@@ -9,7 +10,6 @@ from transformers_interpret.evaluation.input_pre_processor import InputPreProces
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
-    print(labels)
     return metric.compute(predictions=predictions, references=labels)
 
 
@@ -34,15 +34,25 @@ pre_processor = InputPreProcessor(tokenizer, label2id)
 model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(huggingface_model,
                                                                                          ignore_mismatched_sizes=True,
                                                                                          num_labels=len(label2id))
+tokenized_datasets = dataset.map(lambda a: pre_processor(a))
 
 dataset_length = len(dataset["train"])
-tokenized_datasets = dataset.map(lambda a: pre_processor(a))
-train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(dataset_length//2))
-eval_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(dataset_length//2, dataset_length))
-print(train_dataset)
+if len(dataset["train"]) > 1:
+    train_dataset = tokenized_datasets["train"]
+    eval_dataset = tokenized_datasets["test"]
+else:
+    train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(math.floor(dataset_length*0.8)))
+    eval_dataset = tokenized_datasets["train"].shuffle(seed=42)\
+        .select(range(math.floor(dataset_length*0.8), dataset_length))
+print('train_dataset', train_dataset)
+print('eval_dataset', eval_dataset)
 
-training_args = TrainingArguments(output_dir="test_trainer", evaluation_strategy="epoch")
-metric = load_metric("accuracy")
+training_args = TrainingArguments(
+    output_dir="trained_models",
+    evaluation_strategy="epoch",
+    num_train_epochs=20
+)
+metric = load_metric("seqeval")
 
 trainer = Trainer(
     model=model,
@@ -53,5 +63,5 @@ trainer = Trainer(
 )
 trainer.train()
 
-os.makedirs(f"trained_models", exist_ok=True)
-model.save_pretrained(f"trained_models/{huggingface_model.replace('/', '_')}|{dataset_name}")
+os.makedirs(f"trained_models/{huggingface_model.replace('/', '_')}", exist_ok=True)
+model.save_pretrained(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}.pth")
