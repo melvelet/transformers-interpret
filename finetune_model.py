@@ -37,7 +37,7 @@ model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pr
 tokenized_datasets = dataset.map(lambda a: pre_processor(a))
 
 dataset_length = len(dataset["train"])
-if len(dataset["train"]) > 1:
+if len(dataset) > 1:
     train_dataset = tokenized_datasets["train"]
     eval_dataset = tokenized_datasets["test"]
 else:
