@@ -29,8 +29,8 @@ dataset = conhelps.for_config_name(dataset_name).load_dataset()
 # huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
 # huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
 # huggingface_model = 'fran-martinez/scibert_scivocab_cased_ner_jnlpba'
-# huggingface_model = 'alvaroalon2/biobert_chemical_ner'
-huggingface_model = 'dslim/bert-base-NER'
+huggingface_model = 'alvaroalon2/biobert_chemical_ner'
+# huggingface_model = 'dslim/bert-base-NER'
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
 
 label2id, id2label = get_labels_from_dataset(dataset)
