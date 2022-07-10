@@ -56,11 +56,14 @@ print('eval_dataset', eval_dataset)
 
 training_args = TrainingArguments(
     output_dir="trained_models",
+    label_names=label2id.keys(),
     evaluation_strategy="epoch",
     save_strategy="epoch",
-    num_train_epochs=20,
+    per_device_train_batch_size=16,
+    per_device_eval_batch_size=16,
+    num_train_epochs=10,
     learning_rate=5e-05,
-    warmup_ratio=0.0,
+    warmup_ratio=0.04,
     metric_for_best_model="overall_f1",
     load_best_model_at_end=True,
     greater_is_better=True,
