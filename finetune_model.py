@@ -1,6 +1,8 @@
 import csv
 import math
 import os
+import traceback
+
 import numpy as np
 from datasets import load_metric
 from bigbio.dataloader import BigBioConfigHelpers
@@ -52,61 +54,66 @@ for dataset_name in dataset_names:
     dataset = conhelps.for_config_name(dataset_name).load_dataset()
 
     for huggingface_model in huggingface_models:
-        tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
+        try:
+            tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
 
-        label2id, id2label = get_labels_from_dataset(dataset)
-        print(label2id)
-        pre_processor = InputPreProcessor(tokenizer, label2id)
+            label2id, id2label = get_labels_from_dataset(dataset)
+            print(label2id)
+            pre_processor = InputPreProcessor(tokenizer, label2id)
 
-        model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(huggingface_model,
-                                                                                                 ignore_mismatched_sizes=True,
-                                                                                                 num_labels=len(label2id))
-        tokenized_datasets = dataset.map(lambda a: pre_processor(a))
-        map_to_string_vec = np.vectorize(map_to_string)
+            model: AutoModelForTokenClassification = AutoModelForTokenClassification\
+                .from_pretrained(huggingface_model,
+                                 ignore_mismatched_sizes=True,
+                                 num_labels=len(label2id))
+            tokenized_datasets = dataset.map(lambda a: pre_processor(a))
+            map_to_string_vec = np.vectorize(map_to_string)
 
-        dataset_length = len(dataset["train"])
-        if len(dataset) > 1:
-            train_dataset = tokenized_datasets["train"]
-            eval_dataset = tokenized_datasets["test"]
-        else:
-            train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(math.floor(dataset_length * 0.8)))
-            eval_dataset = tokenized_datasets["train"].shuffle(seed=42) \
-                .select(range(math.floor(dataset_length * 0.8), dataset_length))
-        print('train_dataset', train_dataset)
-        print('eval_dataset', eval_dataset)
+            dataset_length = len(dataset["train"])
+            if len(dataset) > 1:
+                train_dataset = tokenized_datasets["train"]
+                eval_dataset = tokenized_datasets["test"]
+            else:
+                train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(math.floor(dataset_length * 0.8)))
+                eval_dataset = tokenized_datasets["train"].shuffle(seed=42) \
+                    .select(range(math.floor(dataset_length * 0.8), dataset_length))
+            print('train_dataset', train_dataset)
+            print('eval_dataset', eval_dataset)
 
-        training_args = TrainingArguments(
-            output_dir="trained_models",
-            # label_names=label2id.keys(),
-            evaluation_strategy="epoch",
-            save_strategy="epoch",
-            per_device_train_batch_size=16,
-            per_device_eval_batch_size=16,
-            num_train_epochs=10,
-            learning_rate=5e-05,
-            warmup_ratio=0.04,
-            metric_for_best_model="overall_f1",
-            load_best_model_at_end=True,
-            greater_is_better=True,
-        )
-        metric = load_metric("seqeval")
+            training_args = TrainingArguments(
+                output_dir="trained_models",
+                # label_names=label2id.keys(),
+                evaluation_strategy="epoch",
+                save_strategy="epoch",
+                per_device_train_batch_size=16,
+                per_device_eval_batch_size=16,
+                num_train_epochs=10,
+                learning_rate=5e-05,
+                warmup_ratio=0.04,
+                metric_for_best_model="overall_f1",
+                load_best_model_at_end=True,
+                greater_is_better=True,
+            )
+            metric = load_metric("seqeval")
 
-        trainer = Trainer(
-            model=model,
-            args=training_args,
-            train_dataset=train_dataset,
-            eval_dataset=eval_dataset,
-            compute_metrics=compute_metrics,
-        )
-        trainer.train()
-        scores = trainer.evaluate()
-        dataset_scores.append(scores['eval_overall_f1'])
+            trainer = Trainer(
+                model=model,
+                args=training_args,
+                train_dataset=train_dataset,
+                eval_dataset=eval_dataset,
+                compute_metrics=compute_metrics,
+            )
+            trainer.train()
+            scores = trainer.evaluate()
+            dataset_scores.append(scores['eval_overall_f1'])
 
-        os.makedirs(f"trained_models/{huggingface_model.replace('/', '_')}", exist_ok=True)
-        # model.save_pretrained(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}.pth")
+            os.makedirs(f"trained_models/{huggingface_model.replace('/', '_')}", exist_ok=True)
+            # model.save_pretrained(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}.pth")
+
+        except Exception as e:
+            dataset_scores.append(traceback.format_exc())
 
     csv_data.append(dataset_scores)
 
-with open('dataset_model_scores.csv', 'w+', encoding='utf-8', newline='') as f:
-    csv_writer = csv.writer(f)
-    csv_writer.writerows(csv_data)
+    with open('dataset_model_scores.csv', 'w+', encoding='utf-8', newline='') as f:
+        csv_writer = csv.writer(f)
+        csv_writer.writerows(csv_data)
