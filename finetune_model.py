@@ -2,10 +2,7 @@ import csv
 import math
 import os
 import traceback
-import gc
-
 import numpy as np
-import torch
 from datasets import load_metric
 from bigbio.dataloader import BigBioConfigHelpers
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TrainingArguments, Trainer
@@ -109,9 +106,6 @@ for dataset_name in dataset_names:
 
             os.makedirs(f"trained_models/{huggingface_model.replace('/', '_')}", exist_ok=True)
             # model.save_pretrained(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}.pth")
-
-            gc.collect()
-            torch.cuda.empty_cache()
 
         except Exception as e:
             dataset_scores.append(traceback.format_exc())
