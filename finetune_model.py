@@ -22,7 +22,6 @@ def compute_metrics(eval_pred):
     return metric.compute(predictions=predictions, references=labels)
 
 
-
 conhelps = BigBioConfigHelpers()
 # dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length, Disease
 # dataset_name = 'euadr_bigbio_kb'  # 5 classes, short to medium sentence length, Diseases & Disorders
@@ -30,7 +29,7 @@ conhelps = BigBioConfigHelpers()
 # dataset_name = 'scai_disease_bigbio_kb'  # 2 classes, long documents, DISEASE
 dataset_names = [
     'bc5cdr_bigbio_kb',
-    'euadr_bigbio_kb',
+    # 'euadr_bigbio_kb',
     'cadec_bigbio_kb',
     'scai_disease_bigbio_kb',
 ]
@@ -41,11 +40,11 @@ dataset_names = [
 # huggingface_model = 'alvaroalon2/biobert_chemical_ner'
 # huggingface_model = 'dslim/bert-base-NER'
 huggingface_models = [
-    'Jean-Baptiste/roberta-large-ner-english',
     'dbmdz/electra-large-discriminator-finetuned-conll03-english',
     'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
     'alvaroalon2/biobert_chemical_ner',
     'dslim/bert-base-NER',
+    'Jean-Baptiste/roberta-large-ner-english',
 ]
 
 csv_data = [['dataset_name'] + huggingface_models]
@@ -84,8 +83,8 @@ for dataset_name in dataset_names:
                 # label_names=label2id.keys(),
                 evaluation_strategy="epoch",
                 save_strategy="epoch",
-                per_device_train_batch_size=16,
-                per_device_eval_batch_size=16,
+                per_device_train_batch_size=8,
+                per_device_eval_batch_size=8,
                 num_train_epochs=10,
                 learning_rate=5e-05,
                 warmup_ratio=0.04,
