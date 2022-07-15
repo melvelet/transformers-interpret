@@ -1,0 +1,7 @@
+dataset_name,dbmdz/electra-large-discriminator-finetuned-conll03-english,fran-martinez/scibert_scivocab_cased_ner_jnlpba,alvaroalon2/biobert_chemical_ner,dslim/bert-base-NER,Jean-Baptiste/roberta-large-ner-english,,,,
+bc5cdr_bigbio_kb,0.684664673,,0.557632635,0.568851945,0.752927949,,,,4257 entities
+bc5cdr_disease,,,0.469567841,,,,,,
+cadec_bigbio_kb,,,0.110401802,0.10109919,0.291640212,,,,only 58 entities with Disease?
+cadec_disease,,,0,0.033707865,,,,,
+scai_disease_bigbio_kb,0.601547389,,0.50617284,0.52553389,,,,,
+scai_disease_disease,0.654205607,,,0.588401697,,,,,
