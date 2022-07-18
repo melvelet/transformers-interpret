@@ -21,11 +21,16 @@ def compute_metrics(eval_pred):
     return metric.compute(predictions=predictions, references=labels)
 
 
+batch_size = 8
+learning_rate = 5e-05
+
 conhelps = BigBioConfigHelpers()
 dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length, Disease
 # dataset_name = 'euadr_bigbio_kb'  # 5 classes, short to medium sentence length, Diseases & Disorders
 # dataset_name = 'cadec_bigbio_kb'  # 5 classes, shortest documents, forum posts, Disease
 # dataset_name = 'scai_disease_bigbio_kb'  # 2 classes, long documents, DISEASE
+# dataset_name = 'ncbi_disease_bigbio_kb'
+# dataset_name = 'verspoor_2013_bigbio_kb'
 # dataset_names = [
 #     'bc5cdr_bigbio_kb',
 #     'euadr_bigbio_kb',
@@ -66,23 +71,26 @@ map_to_string_vec = np.vectorize(map_to_string)
 dataset_length = len(dataset["train"])
 if len(dataset) > 1:
     train_dataset = tokenized_datasets["train"]
-    eval_dataset = tokenized_datasets["test"]
+    eval_dataset = tokenized_datasets["validation"]
+    test_dataset = tokenized_datasets["test"] if 'test' in tokenized_datasets else tokenized_datasets["validation"]
 else:
-    train_dataset = tokenized_datasets["train"].shuffle(seed=42).select(range(math.floor(dataset_length * 0.8)))
-    eval_dataset = tokenized_datasets["train"].shuffle(seed=42) \
-        .select(range(math.floor(dataset_length * 0.8), dataset_length))
+    shuffled_dataset = tokenized_datasets["train"].shuffle(seed=42)
+    train_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8)))
+    test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
+    eval_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.9), dataset_length))
 print('train_dataset', train_dataset)
 print('eval_dataset', eval_dataset)
+print('test_dataset', test_dataset)
 
 training_args = TrainingArguments(
     output_dir="trained_models",
     # label_names=label2id.keys(),
     evaluation_strategy="epoch",
     save_strategy="epoch",
-    per_device_train_batch_size=8,
-    per_device_eval_batch_size=8,
+    per_device_train_batch_size=batch_size,
+    per_device_eval_batch_size=batch_size,
     num_train_epochs=10,
-    learning_rate=5e-05,
+    learning_rate=learning_rate,
     warmup_ratio=0.04,
     metric_for_best_model="overall_f1",
     load_best_model_at_end=True,
@@ -98,15 +106,16 @@ trainer = Trainer(
     compute_metrics=compute_metrics,
 )
 trainer.train()
-scores = trainer.evaluate()
-# dataset_scores.append(scores['eval_overall_f1'])
+scores = trainer.evaluate(eval_dataset=test_dataset)
+score = scores['eval_overall_f1']
 print('dataset_name', dataset_name, 'huggingface_model', huggingface_model, 'f1', scores['eval_overall_f1'])
 
-# os.makedirs(f"trained_models/{huggingface_model.replace('/', '_')}", exist_ok=True)
-# model.save_pretrained(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}.pth")
+os.makedirs(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}", exist_ok=True)
+model.save_pretrained(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}/"
+                      f"score{score}_batch{batch_size}_learn{learning_rate}.pth")
 
-    # csv_data.append(dataset_scores)
-
-    # with open('dataset_model_scores.csv', 'w+', encoding='utf-8', newline='') as f:
-    #     csv_writer = csv.writer(f)
-    #     csv_writer.writerows(csv_data)
+# csv_data.append(dataset_scores)
+#
+# with open('dataset_model_scores.csv', 'w+', encoding='utf-8', newline='') as f:
+#     csv_writer = csv.writer(f)
+#     csv_writer.writerows(csv_data)
