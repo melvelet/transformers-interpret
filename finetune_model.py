@@ -110,9 +110,14 @@ scores = trainer.evaluate(eval_dataset=test_dataset)
 score = scores['eval_overall_f1']
 print('dataset_name', dataset_name, 'huggingface_model', huggingface_model, 'f1', scores['eval_overall_f1'])
 
+if dataset_name == 'bc5cdr_bigbio_kb':
+    disease_score = scores['eval_Disease']['f1']
+else:
+    disease_score = 0
+
 os.makedirs(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}", exist_ok=True)
 model.save_pretrained(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}/"
-                      f"score{score}_batch{batch_size}_learn{learning_rate}.pth")
+                      f"score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}.pth")
 
 # csv_data.append(dataset_scores)
 #
