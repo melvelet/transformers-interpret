@@ -61,7 +61,7 @@ class InputPreProcessor:
             for entity in document['entities']:
                 entity_class = entity['type']
                 entity_offset = entity['offsets'][0]
-                if _check_for_offset_overlap(token_offset, entity_offset):
+                if entity['type'] and _check_for_offset_overlap(token_offset, entity_offset):
                     label = entity_class
                     break
 
