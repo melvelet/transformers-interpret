@@ -98,10 +98,11 @@ class InputPreProcessor:
         truncated_tokens = 0
         for i, sent in enumerate(sentences):
             input_tokens_sent = self.tokenizer.tokenize(str(sent))
-            if len(tokens) + len(input_tokens_sent) - 2 <= self.max_tokens - 2 and truncated_tokens == 0:
+            if len(tokens) + len(input_tokens_sent) <= self.max_tokens - 2 and truncated_tokens == 0:
                 tokens.extend(input_tokens_sent)
             else:
-                cutoff_index = sent.start_char
+                if truncated_tokens == 0:
+                    cutoff_index = sent.start_char
                 truncated_tokens += len(input_tokens_sent)
         result_document = raw_input_text[:cutoff_index]
         return result_document, truncated_tokens
