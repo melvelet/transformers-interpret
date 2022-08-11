@@ -27,7 +27,7 @@ class InputPreProcessor:
         self.id2label = {y: x for x, y in self.label2id.items()}
 
     def __call__(self, input_document):
-        raw_input_text = ''. join([i[0] for i in [passage['text'] for passage in input_document['passages']]])\
+        raw_input_text = ' '.join([i[0] for i in [passage['text'] for passage in input_document['passages']]])\
             .replace('(ABSTRACT TRUNCATED AT 250 WORDS)', '')
         result_text, truncated_tokens = self.truncate_input(raw_input_text)
         tokens = self.tokenizer(result_text, padding='max_length', return_offsets_mapping=True)
@@ -56,13 +56,26 @@ class InputPreProcessor:
 
         labels = []
         label_previous = ''
-        for token_idx, token_offset in enumerate(tokens['offset_mapping']):
+        highest_offset = max([i[1] for i in tokens['offset_mapping']])
+        for token_idx, token in enumerate(zip(tokens['offset_mapping'], tokens['input_ids'])):
+            token_offset, token_id = token
             label = 'O'
+            token_text = self.tokenizer.decode(token_id).replace('##', '').replace('Ġ', '')
             for entity in document['entities']:
                 entity_class = entity['type']
                 entity_offset = entity['offsets'][0]
+                entity_text = entity['text'][0]
                 if entity['type'] and _check_for_offset_overlap(token_offset, entity_offset):
                     label = entity_class
+                    # if token_text not in entity_text:
+                    #     raw_input_text = ' '.join([i[0] for i in [passage['text'] for passage in document['passages']]])
+                    #     input_text, _ = self.truncate_input(raw_input_text)
+                    #     print(document['id'], 'token_text:', token_text, 'entity_text:', entity_text)
+                    #     print('token_offset:', token_offset, 'entity_offset:', entity_offset, 'highest:', highest_offset,
+                    #           'offset:', document['passages'][1]['offsets'][0][1], 'len(input_test):', len(input_text))
+                    #     # print(differ.compare(input_text, raw_input_text))
+                    #     # print(document['passages'])
+                    #     # raise Exception('Incorrect label matching')
                     break
 
             if label == 'O':
@@ -78,21 +91,17 @@ class InputPreProcessor:
     def truncate_input(self, raw_input_text):
         if not raw_input_text:
             return '', 0
-        sentences = list(self.sentence_segmentation(raw_input_text).sents)
+        split_sentences = self.sentence_segmentation(raw_input_text)
+        sentences = list(split_sentences.sents)
         tokens = []
-        included_sentences = []
+        cutoff_index = len(raw_input_text)
         truncated_tokens = 0
         for i, sent in enumerate(sentences):
-            # print(i, str(sent))
             input_tokens_sent = self.tokenizer.tokenize(str(sent))
-            if len(tokens) + len(input_tokens_sent) <= self.max_tokens - 2 and truncated_tokens == 0:
+            if len(tokens) + len(input_tokens_sent) - 2 <= self.max_tokens - 2 and truncated_tokens == 0:
                 tokens.extend(input_tokens_sent)
-                included_sentences.append(str(sent))
             else:
+                cutoff_index = sent.start_char
                 truncated_tokens += len(input_tokens_sent)
-        try:
-            assert len(included_sentences) > 0
-        except AssertionError as e:
-            print('AssertionError!', raw_input_text)
-        result_document = ' '.join(included_sentences)
+        result_document = raw_input_text[:cutoff_index]
         return result_document, truncated_tokens
