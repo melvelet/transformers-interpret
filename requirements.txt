@@ -2,3 +2,7 @@ pytest==5.4.2
 captum==0.4.1
 transformers==4.15.0
 ipython==7.31.1
+seqeval==1.2.2
+spacy==3.4.1
+# python -m spacy download en_core_web_sm
+git+https://github.com/bigscience-workshop/biomedical.git
