@@ -78,7 +78,7 @@ class InputPreProcessor:
                     #     # raise Exception('Incorrect label matching')
                     break
 
-            if label == 'O':
+            if label == 'O' or label == '':
                 labels.append(self.label2id['O'])
             elif label_previous == label:
                 labels.append(self.label2id[f"I-{label}"])

@@ -82,8 +82,10 @@ print('train_dataset', train_dataset)
 print('eval_dataset', eval_dataset)
 print('test_dataset', test_dataset)
 
+output_dir = f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}"
+os.makedirs(output_dir, exist_ok=True)
 training_args = TrainingArguments(
-    output_dir="trained_models",
+    output_dir=output_dir,
     # label_names=label2id.keys(),
     evaluation_strategy="epoch",
     save_strategy="epoch",
@@ -115,7 +117,6 @@ if dataset_name == 'bc5cdr_bigbio_kb':
 else:
     disease_score = 0
 
-os.makedirs(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}", exist_ok=True)
 model.save_pretrained(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}/"
                       f"score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}.pth")
 
