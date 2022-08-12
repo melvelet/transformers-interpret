@@ -117,8 +117,7 @@ if dataset_name == 'bc5cdr_bigbio_kb':
 else:
     disease_score = 0
 
-model.save_pretrained(f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}/"
-                      f"score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}.pth")
+model.save_pretrained(f"score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}.pth")
 
 # csv_data.append(dataset_scores)
 #
