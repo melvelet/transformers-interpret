@@ -114,10 +114,18 @@ print('dataset_name', dataset_name, 'huggingface_model', huggingface_model, 'f1'
 
 if dataset_name == 'bc5cdr_bigbio_kb':
     disease_score = scores['eval_Disease']['f1']
+elif dataset_name == 'euadr_bigbio_kb':
+    disease_score = scores['eval_Diseases & Disorders']['f1']
+elif dataset_name == 'scai_disease_bigbio_kb':
+    disease_score = scores['eval_DISEASE']['f1']
+elif dataset_name == 'ncbi_disease_bigbio_kb':
+    disease_score = scores['eval_SpecificDisease']['f1']
+elif dataset_name == 'verspoor_2013_bigbio_kb':
+    disease_score = scores['eval_disease']['f1']
 else:
     disease_score = 0
 
-model.save_pretrained(f"score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}.pth")
+model.save_pretrained(f"score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}")
 
 # csv_data.append(dataset_scores)
 #

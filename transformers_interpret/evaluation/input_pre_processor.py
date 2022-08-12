@@ -98,7 +98,7 @@ class InputPreProcessor:
         truncated_tokens = 0
         for i, sent in enumerate(sentences):
             input_tokens_sent = self.tokenizer.tokenize(str(sent))
-            if len(tokens) + len(input_tokens_sent) <= self.max_tokens - 2 and truncated_tokens == 0:
+            if len(tokens) + len(input_tokens_sent) < self.max_tokens - 2 and truncated_tokens == 0:
                 tokens.extend(input_tokens_sent)
             else:
                 if truncated_tokens == 0:
