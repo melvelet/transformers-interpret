@@ -125,7 +125,7 @@ elif dataset_name == 'verspoor_2013_bigbio_kb':
 else:
     disease_score = 0
 
-model.save_pretrained(f"score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}")
+model.save_pretrained(f"{output_dir}/score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}")
 
 # csv_data.append(dataset_scores)
 #
