@@ -9,7 +9,8 @@ from bigbio.dataloader import BigBioConfigHelpers
 from datasets import load_dataset
 
 attribution_type = 'lig'
-k_values = [2, 3, 5, 10, 20]
+k_values = [5]
+# k_values = [2, 3, 5, 10, 20]
 # k_values = [2, 3, 4, 5, 6, 7, 8, 9, 10]
 continuous = False
 max_documents = None
@@ -24,7 +25,8 @@ dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length,
 # huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
 # huggingface_model = 'fran-martinez/scibert_scivocab_cased_ner_jnlpba'
 # huggingface_model = 'alvaroalon2/biobert_chemical_ner'
-huggingface_model = 'dslim/bert-base-NER'
+# huggingface_model = 'dslim/bert-base-NER'
+huggingface_model = 'trained_models/Jean-Baptiste_roberta-large-ner-english/bc5cdr_bigbio_kb/test/'
 
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
 model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(huggingface_model)

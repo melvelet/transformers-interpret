@@ -65,6 +65,8 @@ model: AutoModelForTokenClassification = AutoModelForTokenClassification\
     .from_pretrained(huggingface_model,
                      ignore_mismatched_sizes=True,
                      num_labels=len(label2id))
+model.config.label2id = label2id
+model.config.id2label = id2label
 tokenized_datasets = dataset.map(lambda a: pre_processor(a))
 map_to_string_vec = np.vectorize(map_to_string)
 
@@ -125,7 +127,7 @@ elif dataset_name == 'verspoor_2013_bigbio_kb':
 else:
     disease_score = 0
 
-model.save_pretrained(f"{output_dir}/score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}")
+trainer.save_model(f"{output_dir}/score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}")
 
 # csv_data.append(dataset_scores)
 #
