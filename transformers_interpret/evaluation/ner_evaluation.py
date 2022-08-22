@@ -6,19 +6,22 @@ from datasets import Dataset
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
 
 from transformers_interpret.evaluation import InputPreProcessor
+from transformers_interpret.evaluation.input_pre_processor import get_labels_from_dataset
 from transformers_interpret import TokenClassificationExplainer
 
 
-def get_rationale(attributions, k: int, continuous: bool = False, return_mask: bool = False):
+def get_rationale(attributions, k: int, continuous: bool = False, return_mask: bool = False, bottom_k: bool = False):
     if continuous:
-        return get_continuous_rationale(attributions, k, return_mask)
-    return get_topk_rationale(attributions, k, return_mask)
+        return get_continuous_rationale(attributions, k, return_mask, bottom_k)
+    return get_topk_rationale(attributions, k, return_mask, bottom_k)
 
 
-def get_topk_rationale(attributions, k: int, return_mask: bool = False):
+def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k: bool = False):
     if len(attributions) == 0:
         return []
     tensor = torch.FloatTensor([a[1] for a in attributions])
+    if bottom_k:
+        tensor = - tensor
     indices = torch.topk(tensor, k).indices
 
     if return_mask:
@@ -48,13 +51,15 @@ def get_continuous_rationale(attributions, k: int, return_mask: bool = False):
 class NERSentenceEvaluator:
     def __init__(self,
                  pipeline: Pipeline,
-                 attribution_type: str = "lig"):
+                 attribution_type: str = "lig",
+                 class_name: str = None):
         self.pipeline = pipeline
         self.model: PreTrainedModel = pipeline.model
         self.tokenizer: PreTrainedTokenizer = pipeline.tokenizer
         self.attribution_type: str = attribution_type
         self.label2id = self.model.config.label2id
         self.id2label = self.model.config.id2label
+        self.relevant_class_names = [f"B-{class_name}", f"I-{class_name}"] if class_name else None
         self.entities = None
         self.explainer = TokenClassificationExplainer(self.model, self.tokenizer, self.attribution_type)
         self.input_str = None
@@ -63,6 +68,8 @@ class NERSentenceEvaluator:
 
     def execute_base_classification(self):
         self.entities = self.pipeline(self.input_str)
+        if self.relevant_class_names is not None:
+            self.entities = list(filter(lambda x: x['entity'] in self.relevant_class_names, self.entities))
 
     def calculate_attribution_scores(self):
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
@@ -73,6 +80,7 @@ class NERSentenceEvaluator:
         for e in self.entities:
             e['attribution_scores'] = word_attributions[e['entity']][e['index']]
             e['comprehensiveness'] = dict()
+            e['bottom_k'] = dict()
             e['sufficiency'] = dict()
             e['rationales'] = dict()
 
@@ -101,9 +109,13 @@ class NERSentenceEvaluator:
             # print('old_conf', e['score'], 'new_conf', new_conf, 'old_label', e['entity'], 'new_label', new_label, 'diff', e['score'] - new_conf)
             e['sufficiency'][k] = e['score'] - new_conf
 
-    def write_rationales(self, k: int, continuous: bool = False):
+    def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False):
         for e in self.entities:
-            e['rationales'][k] = get_rationale(e['attribution_scores'], k, continuous)
+            e['rationales']['top_k'][k] = get_rationale(e['attribution_scores'], k, continuous=False)
+            if continuous:
+                e['rationales']['continuous'][k] = get_rationale(e['attribution_scores'], k, continuous=True)
+            if bottom_k:
+                e['rationales']['bottom_k'][k] = get_rationale(e['attribution_scores'], k, continuous=False, bottom_k=True)
 
     def get_all_scores_in_sentence(self, k_values):
         document_scores = list()
@@ -117,7 +129,7 @@ class NERSentenceEvaluator:
 
         return document_scores
 
-    def __call__(self, input_: str, k_values: List[int] = [1], continuous: bool = False):
+    def __call__(self, input_: str, k_values: List[int] = [1], continuous: bool = False, gold_labels: List[str] = None):
         self.input_str = input_
         self.execute_base_classification()
         self.calculate_attribution_scores()
@@ -138,12 +150,15 @@ class NERDatasetEvaluator:
                  pipeline: Pipeline,
                  dataset: Union[Dataset, List[Dataset]],
                  attribution_type: str = "lig",
+                 class_name: str = None,
                  ):
         self.pipeline = pipeline
         self.dataset = dataset
-        self.input_pre_processor = InputPreProcessor(self.pipeline.tokenizer, None, max_tokens=512)
+        self.label2id, self.id2label = get_labels_from_dataset(dataset)
+        print('label2id', self.label2id)
+        self.input_pre_processor = InputPreProcessor(self.pipeline.tokenizer, self.label2id, max_tokens=512)
         self.attribution_type = attribution_type
-        self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type)
+        self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type, class_name=class_name)
         self.raw_scores: List[Dict] = []
         self.raw_entities: List[Dict] = []
         self.scores = None
@@ -224,7 +239,7 @@ class NERDatasetEvaluator:
                 truncated_tokens += self.input_pre_processor.stats['truncated_tokens']
                 truncated_documents += 1 if self.input_pre_processor.stats['is_truncated'] > 0 else 0
                 annotated_entities += self.input_pre_processor.stats['annotated_entities']
-                result = self.evaluator(pre_processed_document['text'], k_values, continuous)
+                result = self.evaluator(pre_processed_document['text'], k_values, continuous, pre_processed_document['labels'])
                 self.raw_scores.extend(result['scores'])
                 self.raw_entities.append(result['entities'])
                 found_entities += len(result['entities'])
