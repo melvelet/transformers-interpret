@@ -21,15 +21,15 @@ dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length,
 # dataset_name = 'scai_disease_bigbio_kb'  # 2 classes, long documents, DISEASE
 
 
-# huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
+huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
 # huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
 # huggingface_model = 'fran-martinez/scibert_scivocab_cased_ner_jnlpba'
 # huggingface_model = 'alvaroalon2/biobert_chemical_ner'
 # huggingface_model = 'dslim/bert-base-NER'
-huggingface_model = 'trained_models/Jean-Baptiste_roberta-large-ner-english/bc5cdr_bigbio_kb/test/'
+finetuned_huggingface_model = 'trained_models/Jean-Baptiste_roberta-large-ner-english/bc5cdr_bigbio_kb/test/'
 
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
-model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(huggingface_model)
+model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(finetuned_huggingface_model)
 
 conhelps = BigBioConfigHelpers()
 dataset = conhelps.for_config_name(dataset_name).load_dataset()
