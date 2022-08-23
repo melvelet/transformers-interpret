@@ -102,6 +102,8 @@ class LIGAttributions(Attributions):
                 n_steps=self.n_steps,
             )
 
+        print('len(self._attributions)', len(self._attributions), 'len(self.input_ids)', len(self.input_ids))
+
     @property
     def word_attributions(self) -> list:
         wa = []
