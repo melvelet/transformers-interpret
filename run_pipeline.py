@@ -22,7 +22,14 @@ huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
 # huggingface_model = 'fran-martinez/scibert_scivocab_cased_ner_jnlpba'
 # huggingface_model = 'alvaroalon2/biobert_chemical_ner'
 # huggingface_model = 'dslim/bert-base-NER'
-finetuned_huggingface_model = 'trained_models/Jean-Baptiste_roberta-large-ner-english/bc5cdr_bigbio_kb/test/'
+finetuned_huggingface_model = f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}/test/"
+
+# model_name_short = {
+#     'dbmdz/electra-large-discriminator-finetuned-conll03-english': 'electra',
+#     'alvaroalon2/biobert_chemical_ner': 'biobert',
+#     'dslim/bert-base-NER': 'bert',
+#     'Jean-Baptiste/roberta-large-ner-english': 'roberta',
+# }
 
 print('Loading model:', finetuned_huggingface_model)
 

@@ -84,7 +84,14 @@ print('train_dataset', train_dataset)
 print('eval_dataset', eval_dataset)
 print('test_dataset', test_dataset)
 
-output_dir = f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}"
+model_name_short = {
+    'dbmdz/electra-large-discriminator-finetuned-conll03-english': 'electra',
+    'alvaroalon2/biobert_chemical_ner': 'biobert',
+    'dslim/bert-base-NER': 'bert',
+    'Jean-Baptiste/roberta-large-ner-english': 'roberta',
+}
+
+output_dir = f"trained_models/{model_name_short[huggingface_model]}/{dataset_name.replace('_bigbio_kb', '')}"
 os.makedirs(output_dir, exist_ok=True)
 training_args = TrainingArguments(
     output_dir=output_dir,

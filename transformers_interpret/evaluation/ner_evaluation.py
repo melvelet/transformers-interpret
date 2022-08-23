@@ -67,11 +67,13 @@ class NERSentenceEvaluator:
         self.input_token_ids = None
 
     def execute_base_classification(self):
+        print('Base classification')
         self.entities = self.pipeline(self.input_str)
         if self.relevant_class_names is not None:
             self.entities = list(filter(lambda x: x['entity'] in self.relevant_class_names, self.entities))
 
     def calculate_attribution_scores(self):
+        print('calculate_attribution_scores')
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
         self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples)
         self.input_token_ids = self.explainer.input_token_ids
@@ -85,7 +87,8 @@ class NERSentenceEvaluator:
             e['rationales'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
 
     def calculate_comprehensiveness(self, k: int, continuous: bool = False):
-        for e in self.entities:
+        for i, e in enumerate(self.entities):
+            print('calculate_comprehensiveness, entity:', i, 'k:', k)
             rationale = get_rationale(e['attribution_scores'], k, continuous)
             masked_input = torch.tensor([self.input_token_ids])
             for i in rationale:
@@ -96,7 +99,8 @@ class NERSentenceEvaluator:
             e['comprehensiveness'][k] = e['score'] - new_conf
 
     def calculate_sufficiency(self, k: int, continuous: bool = False):
-        for e in self.entities:
+        for i, e in enumerate(self.entities):
+            print('calculate_sufficiency, entity:', i, 'k:', k)
             rationale = get_rationale(e['attribution_scores'], k, continuous)
             masked_input = torch.tensor([self.input_token_ids])
             for i, _ in enumerate(masked_input[0][1:-1]):
@@ -110,6 +114,7 @@ class NERSentenceEvaluator:
             e['sufficiency'][k] = e['score'] - new_conf
 
     def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False):
+        print('write_rationales')
         for e in self.entities:
             e['rationales']['top_k'][k] = get_rationale(e['attribution_scores'], k, continuous=False)
             if continuous:
@@ -137,6 +142,8 @@ class NERSentenceEvaluator:
             self.write_rationales(k, continuous=continuous)
             self.calculate_comprehensiveness(k, continuous=continuous)
             self.calculate_sufficiency(k, continuous=continuous)
+
+        print('collect scores')
 
         return {
             'scores': self.get_all_scores_in_sentence(k_values),
@@ -216,35 +223,37 @@ class NERDatasetEvaluator:
         }
 
     def __call__(self, k_values: List[int] = [1], continuous: bool = False, max_documents: Optional[Union[int, None]] = None):
-        passages = 0
+        documents = 0
         found_entities = 0
         annotated_entities = 0
         tokens = 0
-        passages_without_entities = 0
+        documents_without_entities = 0
         truncated_tokens = 0
         truncated_documents = 0
-        skipped_passages = 0
+        skipped_documents = 0
         start_time = datetime.now()
         for split in self.dataset:
             for document in self.dataset[split]:
-                if max_documents and passages > max_documents:
+                if max_documents and documents > max_documents:
                     break
-                print('Passage', passages)
+                print('Document', documents)
                 pre_processed_document = self.input_pre_processor(document)
                 if len(pre_processed_document['text']) == 0:
                     print('Text is empty -> skipped')
-                    skipped_passages += 1
+                    skipped_documents += 1
                     continue
-                passages += 1
+                documents += 1
                 truncated_tokens += self.input_pre_processor.stats['truncated_tokens']
                 truncated_documents += 1 if self.input_pre_processor.stats['is_truncated'] > 0 else 0
                 annotated_entities += self.input_pre_processor.stats['annotated_entities']
+                print('Evaluate')
                 result = self.evaluator(pre_processed_document['text'], k_values, continuous, pre_processed_document['labels'])
+                print('Save scores')
                 self.raw_scores.extend(result['scores'])
                 self.raw_entities.append(result['entities'])
                 found_entities += len(result['entities'])
                 if len(result['entities']) == 0:
-                    passages_without_entities += 1
+                    documents_without_entities += 1
                 tokens += result['tokens']
 
         end_time = datetime.now()
@@ -253,18 +262,18 @@ class NERDatasetEvaluator:
             'scores': self.calculate_average_scores_for_dataset(k_values),
             'stats': {
                 'splits': len(self.dataset),
-                'processed_passages': passages,
-                'skipped_passages': skipped_passages,
+                'processed_documents': documents,
+                'skipped_documents': skipped_documents,
                 'annotated_entities': annotated_entities,
-                'avg_annotated_entities': annotated_entities / passages,
+                'avg_annotated_entities': annotated_entities / documents,
                 'found_entities': found_entities,
-                'avg_found_entities': found_entities / passages,
+                'avg_found_entities': found_entities / documents,
                 'found_to_annotated_entities_ratio': found_entities / annotated_entities,
                 'tokens': tokens,
-                'avg_tokens': tokens / passages,
-                'passages_without_entities': passages_without_entities,
+                'avg_tokens': tokens / documents,
+                'documents_without_entities': documents_without_entities,
                 'truncated_documents': truncated_documents,
-                'truncated_documents_ratio': truncated_documents / passages,
+                'truncated_documents_ratio': truncated_documents / documents,
                 'truncated_tokens': truncated_tokens,
                 'avg_truncated_tokens': truncated_tokens / truncated_documents if truncated_documents > 0 else 0,
             },
@@ -282,7 +291,7 @@ class NERDatasetEvaluator:
                 'end_time': str(end_time),
                 'duration': str(duration),
                 'per_k_value': str(duration / len(k_values)),
-                'per_passage': str(duration / passages),
+                'per_passage': str(duration / documents),
                 'per_entity': str(duration / found_entities),
                 'per_token': str(duration / tokens),
             },
