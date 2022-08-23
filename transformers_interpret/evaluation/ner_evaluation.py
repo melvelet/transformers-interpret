@@ -73,7 +73,7 @@ class NERSentenceEvaluator:
             self.entities = list(filter(lambda x: x['entity'] in self.relevant_class_names, self.entities))
 
     def calculate_attribution_scores(self):
-        print('calculate_attribution_scores')
+        print(f'calculate_attribution_scores for {len(self.entities)} entities')
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
         self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples)
         self.input_token_ids = self.explainer.input_token_ids
@@ -88,8 +88,8 @@ class NERSentenceEvaluator:
             e['rationales'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
 
     def calculate_comprehensiveness(self, k: int, continuous: bool = False):
-        for i, e in enumerate(self.entities):
-            print('calculate_comprehensiveness, entity:', i, 'k:', k)
+        print('calculate_comprehensiveness, k:', k)
+        for e in self.entities:
             rationale = get_rationale(e['attribution_scores'], k, continuous)
             masked_input = torch.tensor([self.input_token_ids])
             for i in rationale:
@@ -100,8 +100,8 @@ class NERSentenceEvaluator:
             e['comprehensiveness'][k] = e['score'] - new_conf
 
     def calculate_sufficiency(self, k: int, continuous: bool = False):
-        for i, e in enumerate(self.entities):
-            print('calculate_sufficiency, entity:', i, 'k:', k)
+        print('calculate_sufficiency, k:', k)
+        for e in self.entities:
             rationale = get_rationale(e['attribution_scores'], k, continuous)
             masked_input = torch.tensor([self.input_token_ids])
             for i, _ in enumerate(masked_input[0][1:-1]):
@@ -115,7 +115,6 @@ class NERSentenceEvaluator:
             e['sufficiency'][k] = e['score'] - new_conf
 
     def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False):
-        print('write_rationales')
         for e in self.entities:
             e['rationales']['top_k'][k] = get_rationale(e['attribution_scores'], k, continuous=False)
             if continuous:
