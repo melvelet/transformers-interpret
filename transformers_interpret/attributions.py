@@ -102,7 +102,7 @@ class LIGAttributions(Attributions):
                 n_steps=self.n_steps,
             )
 
-        print('len(self._attributions)', len(self._attributions[0]), 'len(self.input_ids)', len(self.input_ids[0]))
+        print('len(self._attributions)', len(self._attributions[0]), 'len(self.input_ids)', len(self.input_ids[0]), 'self.ref_input_ids', len(self.ref_input_ids[0]))
 
     @property
     def word_attributions(self) -> list:
