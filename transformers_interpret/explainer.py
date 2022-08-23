@@ -29,14 +29,20 @@ class BaseExplainer(ABC):
         )
 
         self.model_prefix = model.base_model_prefix
-        print('model.base_model_prefix', model.base_model_prefix)
 
-        if self._model_forward_signature_accepts_parameter("position_ids"):
+        nonstandard_model_types = ["roberta"]
+        if (
+                self._model_forward_signature_accepts_parameter("position_ids")
+                and self.model.config.model_type not in nonstandard_model_types
+        ):
             self.accepts_position_ids = True
         else:
             self.accepts_position_ids = False
 
-        if self._model_forward_signature_accepts_parameter("token_type_ids"):
+        if (
+                self._model_forward_signature_accepts_parameter("token_type_ids")
+                and self.model.config.model_type not in nonstandard_model_types
+        ):
             self.accepts_token_type_ids = True
         else:
             self.accepts_token_type_ids = False
