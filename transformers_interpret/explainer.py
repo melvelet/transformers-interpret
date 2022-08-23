@@ -29,6 +29,7 @@ class BaseExplainer(ABC):
         )
 
         self.model_prefix = model.base_model_prefix
+        print('model.base_model_prefix', model.base_model_prefix)
 
         if self._model_forward_signature_accepts_parameter("position_ids"):
             self.accepts_position_ids = True
