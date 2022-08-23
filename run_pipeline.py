@@ -1,12 +1,9 @@
 import datetime
 import json
 from pprint import pprint
-import transformers
-from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline, AutoConfig
-from transformers_interpret import TokenClassificationExplainer, MultiLabelClassificationExplainer
+from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 from transformers_interpret.evaluation import NERDatasetEvaluator
 from bigbio.dataloader import BigBioConfigHelpers
-from datasets import load_dataset
 
 attribution_type = 'lig'
 k_values = [5]

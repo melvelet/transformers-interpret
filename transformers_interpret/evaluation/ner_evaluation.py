@@ -82,7 +82,7 @@ class NERSentenceEvaluator:
             e['comprehensiveness'] = dict()
             e['bottom_k'] = dict()
             e['sufficiency'] = dict()
-            e['rationales'] = dict()
+            e['rationales'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
 
     def calculate_comprehensiveness(self, k: int, continuous: bool = False):
         for e in self.entities:
