@@ -79,9 +79,9 @@ class NERSentenceEvaluator:
         self.input_token_ids = self.explainer.input_token_ids
         self.input_tokens = self.explainer.input_tokens
         word_attributions = self.explainer.word_attributions
-        print('attribution_scores length, input:', len(self.input_token_ids), 'attribution_scores:',  len(self.entities[0]['attribution_scores']))
         for e in self.entities:
             e['attribution_scores'] = word_attributions[e['entity']][e['index']]
+            print('attribution_scores length, input:', len(self.input_token_ids), 'attribution_scores:',  len(e['attribution_scores']))
             e['comprehensiveness'] = dict()
             e['bottom_k'] = dict()
             e['sufficiency'] = dict()
