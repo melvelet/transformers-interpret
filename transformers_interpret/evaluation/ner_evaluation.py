@@ -67,7 +67,7 @@ class NERSentenceEvaluator:
         self.input_token_ids = None
 
     def execute_base_classification(self):
-        print('Base classification')
+        # print('Base classification')
         self.entities = self.pipeline(self.input_str)
         if self.relevant_class_names is not None:
             self.entities = list(filter(lambda x: x['entity'] in self.relevant_class_names, self.entities))
@@ -79,9 +79,9 @@ class NERSentenceEvaluator:
         self.input_token_ids = self.explainer.input_token_ids
         self.input_tokens = self.explainer.input_tokens
         word_attributions = self.explainer.word_attributions
+        print('attribution_scores length, input:', len(self.input_token_ids), 'attribution_scores:',  len(self.entities[0]['attribution_scores']))
         for e in self.entities:
             e['attribution_scores'] = word_attributions[e['entity']][e['index']]
-            print('attribution_scores length', len(self.input_token_ids), len(self.input_tokens), len(e['attribution_scores']))
             e['comprehensiveness'] = dict()
             e['bottom_k'] = dict()
             e['sufficiency'] = dict()
@@ -250,7 +250,7 @@ class NERDatasetEvaluator:
                 annotated_entities += self.input_pre_processor.stats['annotated_entities']
                 print('Evaluate')
                 result = self.evaluator(pre_processed_document['text'], k_values, continuous, pre_processed_document['labels'])
-                print('Save scores')
+                # print('Save scores')
                 self.raw_scores.extend(result['scores'])
                 self.raw_entities.append(result['entities'])
                 found_entities += len(result['entities'])
