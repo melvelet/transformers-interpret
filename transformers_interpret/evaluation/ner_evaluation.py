@@ -92,10 +92,8 @@ class NERSentenceEvaluator:
         for e in self.entities:
             rationale = get_rationale(e['attribution_scores'], k, continuous)
             masked_input = torch.tensor([self.input_token_ids])
-            print('before', masked_input.shape, 'rationale:', rationale)
             for i in rationale:
                 masked_input[0][i] = self.tokenizer.mask_token_id
-            print('afterwards', masked_input.shape)
             pred = self.model(masked_input)
             scores = torch.softmax(pred.logits, dim=-1)[0]
             new_conf = scores[e['index']][self.label2id[e['entity']]].item()
