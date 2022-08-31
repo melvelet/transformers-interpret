@@ -37,9 +37,10 @@ for model in huggingface_models:
                 truncated_documents += 1 if pre_processor.stats['is_truncated'] > 0 else 0
                 truncated_entities += pre_processor.stats['truncated_entities']
                 remaining_entities += pre_processor.stats['remaining_entities']
-        lines += [dataset_name, model, total_documents, truncated_documents, truncated_documents / total_documents,
-                  truncated_entities + remaining_entities, remaining_entities, truncated_entities, truncated_entities / (truncated_entities + remaining_entities),
-                  total_tokens, truncated_tokens, truncated_tokens / total_tokens]
+        lines.append([dataset_name, model, total_documents, truncated_documents, truncated_documents / total_documents,
+                      truncated_entities + remaining_entities, remaining_entities, truncated_entities,
+                      truncated_entities / (truncated_entities + remaining_entities),
+                      total_tokens, truncated_tokens, truncated_tokens / total_tokens])
 
 with open('truncation_stats', 'w+') as file:
     csv_writer = csv.writer(file)
