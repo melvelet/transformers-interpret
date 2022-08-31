@@ -29,7 +29,7 @@ class InputPreProcessor:
     def __call__(self, input_document):
         raw_input_text = ' '.join([i[0] for i in [passage['text'] for passage in input_document['passages']]])\
             .replace('(ABSTRACT TRUNCATED AT 250 WORDS)', '')
-        result_text, truncated_tokens = self.truncate_input(raw_input_text)
+        result_text, truncated_tokens, cutoff_index = self.truncate_input(raw_input_text)
         tokens = self.tokenizer(result_text, padding='max_length', return_offsets_mapping=True)
         labels = self.create_labels(input_document, tokens)
         # tokens_str = self.tokenizer.tokenize(result_text)
@@ -42,10 +42,14 @@ class InputPreProcessor:
             'labels': labels,
         }
         result_document.update(tokens)
+        truncated_entities = len([i for i in input_document['entities'] if i['offsets'][0][0] >= cutoff_index])
         self.stats = {
             'truncated_tokens': truncated_tokens,
+            'total_tokens': len(result_document['input_ids']),
             'is_truncated': truncated_tokens > 0,
             'annotated_entities': len(input_document['entities']),
+            'remaining_entities': len(input_document['entities']) - truncated_entities,
+            'truncated_entities': truncated_entities,
         }
         return result_document
 
@@ -105,4 +109,4 @@ class InputPreProcessor:
                     cutoff_index = sent.start_char
                 truncated_tokens += len(input_tokens_sent)
         result_document = raw_input_text[:cutoff_index]
-        return result_document, truncated_tokens
+        return result_document, truncated_tokens, cutoff_index
