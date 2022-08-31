@@ -3,8 +3,8 @@ import csv
 from bigbio.dataloader import BigBioConfigHelpers
 from transformers import AutoTokenizer
 
-from evaluation import InputPreProcessor
-from evaluation.input_pre_processor import get_labels_from_dataset
+from transformers_interpret.evaluation import InputPreProcessor
+from transformers_interpret.evaluation.input_pre_processor import get_labels_from_dataset
 
 conhelps = BigBioConfigHelpers()
 dataset_names = [
