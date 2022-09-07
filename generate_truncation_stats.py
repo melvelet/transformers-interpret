@@ -17,7 +17,7 @@ dataset_names = [
 
 huggingface_models = ('dslim/bert-base-NER', 'Jean-Baptiste/roberta-large-ner-english')
 
-lines = [['dataset', 'model', 'truncated_documents', 'truncated_documents_percentage',
+lines = [['dataset', 'model', 'total_documents', 'truncated_documents', 'truncated_documents_percentage',
           'total_entities', 'remaining_entities', 'truncated_entities', 'truncated_entities_percentage',
           'total_tokens', 'truncated_tokens', 'truncated_tokens_percentage']]
 
@@ -42,6 +42,6 @@ for model in huggingface_models:
                       truncated_entities / (truncated_entities + remaining_entities),
                       total_tokens, truncated_tokens, truncated_tokens / total_tokens])
 
-with open('truncation_stats', 'w+') as file:
+with open('truncation_stats.csv', 'w+') as file:
     csv_writer = csv.writer(file)
     csv_writer.writerows(lines)
