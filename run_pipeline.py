@@ -6,11 +6,12 @@ from transformers_interpret.evaluation import NERDatasetEvaluator
 from bigbio.dataloader import BigBioConfigHelpers
 
 attribution_type = 'lig'
-k_values = [5]
+# k_values = [5]
 # k_values = [2, 3, 5, 10, 20]
-# k_values = [2, 3, 4, 5, 6, 7, 8, 9, 10]
-continuous = False
-max_documents = None
+k_values = [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]
+continuous = True
+bottom_k = True
+max_documents = 3
 
 dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length, Disease
 # dataset_name = 'euadr_bigbio_kb'  # 5 classes, short to medium sentence length, Diseases & Disorders
@@ -19,17 +20,14 @@ dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length,
 
 huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
 # huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
-# huggingface_model = 'fran-martinez/scibert_scivocab_cased_ner_jnlpba'
-# huggingface_model = 'alvaroalon2/biobert_chemical_ner'
 # huggingface_model = 'dslim/bert-base-NER'
 finetuned_huggingface_model = f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}/test/"
 
-# model_name_short = {
-#     'dbmdz/electra-large-discriminator-finetuned-conll03-english': 'electra',
-#     'alvaroalon2/biobert_chemical_ner': 'biobert',
-#     'dslim/bert-base-NER': 'bert',
-#     'Jean-Baptiste/roberta-large-ner-english': 'roberta',
-# }
+model_name_short = {
+    'dbmdz/electra-large-discriminator-finetuned-conll03-english': 'electra',
+    'dslim/bert-base-NER': 'bert',
+    'Jean-Baptiste/roberta-large-ner-english': 'roberta',
+}
 
 print('Loading model:', finetuned_huggingface_model)
 
@@ -55,13 +53,16 @@ elif dataset_name == 'verspoor_2013_bigbio_kb':
 pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
 evaluator = NERDatasetEvaluator(pipeline, dataset, attribution_type, class_name=disease_class)
 
-result = evaluator(k_values=k_values, continuous=continuous)
+result = evaluator(k_values=k_values,
+                   continuous=continuous,
+                   bottom_k=bottom_k,
+                   max_documents=max_documents)
 
 pprint(result)
 
 end_time = datetime.datetime.now()
 
-base_file_name = f"results/{dataset_name}|{huggingface_model.replace('/', '_')}|{attribution_type}|{k_values}|{'cont' if continuous else 'topk'}|{end_time}"
+base_file_name = f"results/{dataset_name}|{model_name_short[huggingface_model]}|{attribution_type}|{end_time}"
 
 with open(f'{base_file_name}_scores.json', 'w+') as f:
     json.dump(result, f)
