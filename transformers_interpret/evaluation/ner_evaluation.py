@@ -12,7 +12,7 @@ from transformers_interpret import TokenClassificationExplainer
 
 def get_rationale(attributions, k: int, continuous: bool = False, return_mask: bool = False, bottom_k: bool = False):
     if continuous:
-        return get_continuous_rationale(attributions, k, return_mask, bottom_k)
+        return get_continuous_rationale(attributions, k, return_mask)
     return get_topk_rationale(attributions, k, return_mask, bottom_k)
 
 
@@ -84,12 +84,11 @@ class NERSentenceEvaluator:
             if len(self.input_token_ids) != len(e['attribution_scores']):
                 raise Exception(f"attribution_scores of length {len(e['attribution_scores'])} while input tokens have length of {len(self.input_token_ids)}")
             # print('attribution_scores length, input:', len(self.input_token_ids), 'attribution_scores:',  len(e['attribution_scores']))
-            e['comprehensiveness'] = dict()
-            e['bottom_k'] = dict()
-            e['sufficiency'] = dict()
+            e['comprehensiveness'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
+            e['sufficiency'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
             e['rationales'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
 
-    def calculate_comprehensiveness(self, k: int, continuous: bool = False):
+    def calculate_comprehensiveness(self, k: int, continuous: bool = False, bottom_k: bool = False):
         print('calculate_comprehensiveness, k:', k)
         for e in self.entities:
             rationale = get_rationale(e['attribution_scores'], k, continuous)
@@ -99,9 +98,14 @@ class NERSentenceEvaluator:
             pred = self.model(masked_input)
             scores = torch.softmax(pred.logits, dim=-1)[0]
             new_conf = scores[e['index']][self.label2id[e['entity']]].item()
-            e['comprehensiveness'][k] = e['score'] - new_conf
+            mode = 'top_k'
+            if continuous:
+                mode = 'continuous'
+            elif bottom_k:
+                mode = 'bottom_k'
+            e['comprehensiveness'][mode][k] = e['score'] - new_conf
 
-    def calculate_sufficiency(self, k: int, continuous: bool = False):
+    def calculate_sufficiency(self, k: int, continuous: bool = False, bottom_k: bool = False):
         print('calculate_sufficiency, k:', k)
         for e in self.entities:
             rationale = get_rationale(e['attribution_scores'], k, continuous)
@@ -114,7 +118,12 @@ class NERSentenceEvaluator:
             new_conf = scores[e['index']][self.label2id[e['entity']]].item()
             # new_label = self.id2label[scores[e['index']].argmax(axis=-1).item()]
             # print('old_conf', e['score'], 'new_conf', new_conf, 'old_label', e['entity'], 'new_label', new_label, 'diff', e['score'] - new_conf)
-            e['sufficiency'][k] = e['score'] - new_conf
+            mode = 'top_k'
+            if continuous:
+                mode = 'continuous'
+            elif bottom_k:
+                mode = 'bottom_k'
+            e['sufficiency'][mode][k] = e['score'] - new_conf
 
     def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False):
         for e in self.entities:
@@ -124,31 +133,49 @@ class NERSentenceEvaluator:
             if bottom_k:
                 e['rationales']['bottom_k'][k] = get_rationale(e['attribution_scores'], k, continuous=False, bottom_k=True)
 
-    def get_all_scores_in_sentence(self, k_values):
+    def get_all_scores_in_sentence(self, k_values, modes):
         document_scores = list()
         for e in self.entities:
             entity_scores = {
-                'comprehensiveness': {k: e['comprehensiveness'][k] for k in k_values},
-                'sufficiency': {k: e['sufficiency'][k] for k in k_values},
-                'compdiff': {k: e['comprehensiveness'][k] - e['sufficiency'][k] for k in k_values},
+                'comprehensiveness': {mode: {k: e['comprehensiveness'][k] for k in k_values}
+                                      for mode in modes},
+                'sufficiency': {mode: {k: e['sufficiency'][k] for k in k_values}
+                                for mode in modes},
+                'compdiff': {mode: {k: e['comprehensiveness'][k] - e['sufficiency'][k] for k in k_values}
+                             for mode in modes},
             }
             document_scores.append(entity_scores)
 
         return document_scores
 
-    def __call__(self, input_: str, k_values: List[int] = [1], continuous: bool = False, gold_labels: List[str] = None):
+    def __call__(self, input_: str, k_values: List[int] = [1], continuous: bool = False, bottom_k: bool = False, gold_labels: List[str] = None):
         self.input_str = input_
         self.execute_base_classification()
         self.calculate_attribution_scores()
+        modes = ['top_k']
         for k in k_values:
-            self.write_rationales(k, continuous=continuous)
-            self.calculate_comprehensiveness(k, continuous=continuous)
-            self.calculate_sufficiency(k, continuous=continuous)
+            self.write_rationales(k, continuous=continuous, bottom_k=bottom_k)
+
+        for k in k_values:
+            self.calculate_comprehensiveness(k)
+            self.calculate_sufficiency(k)
+
+        if continuous:
+            modes.append('continuous')
+            for k in k_values:
+                self.calculate_comprehensiveness(k, continuous=True)
+                self.calculate_sufficiency(k, continuous=True)
+
+        if bottom_k:
+            modes.append('bottom_k')
+            for k in k_values:
+                self.calculate_comprehensiveness(k, bottom_k=True)
+                self.calculate_sufficiency(k, bottom_k=True)
 
         print('collect scores')
 
         return {
-            'scores': self.get_all_scores_in_sentence(k_values),
+            'scores': self.get_all_scores_in_sentence(k_values, modes),
             'entities': self.entities,
             'tokens': len(self.input_tokens),
         }
@@ -172,7 +199,7 @@ class NERDatasetEvaluator:
         self.raw_entities: List[Dict] = []
         self.scores = None
 
-    def calculate_average_scores_for_dataset(self, k_values):
+    def calculate_average_scores_for_dataset(self, k_values, modes):
         def _calculate_statistical_function(attr: str, squared: bool = False, func: str = None):
             if func == 'median':
                 func = median
@@ -185,10 +212,15 @@ class NERDatasetEvaluator:
 
             try:
                 if squared:
-                    return {k: func([e[attr][k]**2 for e in self.raw_scores])
-                            for k in k_values}
-                return {k: func([e[attr][k] for e in self.raw_scores])
-                        for k in k_values}
+                    return {mode:
+                                {k: func([e[attr][mode][k]**2 for e in self.raw_scores])
+                                    for k in k_values}
+                            for mode in modes}
+
+                return {mode:
+                            {k: func([e[attr][mode][k] for e in self.raw_scores])
+                             for k in k_values}
+                        for mode in modes}
             except StatisticsError:
                 print(f"Can't calculate {func.__name__}. Too few data points...")
                 return None
@@ -224,7 +256,7 @@ class NERDatasetEvaluator:
             },
         }
 
-    def __call__(self, k_values: List[int] = [1], continuous: bool = False, max_documents: Optional[Union[int, None]] = None):
+    def __call__(self, k_values: List[int] = [1], continuous: bool = False, bottom_k: bool = False, max_documents: Optional[Union[int, None]] = None):
         documents = 0
         found_entities = 0
         annotated_entities = 0
@@ -243,25 +275,35 @@ class NERDatasetEvaluator:
                 if len(pre_processed_document['text']) == 0:
                     print('Text is empty -> skipped')
                     skipped_documents += 1
+                    documents += 1
                     continue
-                documents += 1
                 truncated_tokens += self.input_pre_processor.stats['truncated_tokens']
                 truncated_documents += 1 if self.input_pre_processor.stats['is_truncated'] > 0 else 0
                 annotated_entities += self.input_pre_processor.stats['annotated_entities']
                 print('Evaluate')
-                result = self.evaluator(pre_processed_document['text'], k_values, continuous, pre_processed_document['labels'])
+                result = self.evaluator(pre_processed_document['text'],
+                                        k_values,
+                                        continuous=continuous,
+                                        bottom_k=bottom_k,
+                                        gold_labels=pre_processed_document['labels'])
                 # print('Save scores')
                 self.raw_scores.extend(result['scores'])
                 self.raw_entities.append(result['entities'])
                 found_entities += len(result['entities'])
                 if len(result['entities']) == 0:
                     documents_without_entities += 1
+                documents += 1
                 tokens += result['tokens']
 
         end_time = datetime.now()
         duration = end_time - start_time
+        modes = ['top_k']
+        if bottom_k:
+            modes.append('bottom_k')
+        if continuous:
+            modes.append('continuous')
         self.scores = {
-            'scores': self.calculate_average_scores_for_dataset(k_values),
+            'scores': self.calculate_average_scores_for_dataset(k_values, modes),
             'stats': {
                 'splits': len(self.dataset),
                 'processed_documents': documents,
@@ -287,6 +329,7 @@ class NERDatasetEvaluator:
                 'attribution_type': self.attribution_type,
                 'k_values': k_values,
                 'continuous': continuous,
+                'bottom_k': bottom_k,
             },
             'timing': {
                 'start_time': str(start_time),
