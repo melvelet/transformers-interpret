@@ -15,7 +15,7 @@ dataset_names = [
     'verspoor_2013_bigbio_kb',
 ]
 
-huggingface_models = ('dbmdz/electra-large-discriminator-finetuned-conll03-english', 'Jean-Baptiste/roberta-large-ner-english')
+huggingface_models = ('dslim/bert-base-NER', 'dbmdz/electra-large-discriminator-finetuned-conll03-english', 'Jean-Baptiste/roberta-large-ner-english')
 
 lines = [['dataset', 'model', 'total_documents', 'truncated_documents', 'truncated_documents_percentage',
           'total_entities', 'remaining_entities', 'truncated_entities', 'truncated_entities_percentage',
@@ -24,10 +24,6 @@ lines = [['dataset', 'model', 'total_documents', 'truncated_documents', 'truncat
 for model in huggingface_models:
     tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model)
     additional_tokenizers = []
-    if model == 'Jean-Baptiste/roberta-large-ner-english':
-        additional_tokenizers.append(AutoTokenizer.from_pretrained('dbmdz/electra-large-discriminator-finetuned-conll03-english'))
-    elif model == 'dbmdz/electra-large-discriminator-finetuned-conll03-english':
-        additional_tokenizers.append(AutoTokenizer.from_pretrained('Jean-Baptiste/roberta-large-ner-english'))
     for dataset_name in dataset_names:
         dataset = conhelps.for_config_name(dataset_name).load_dataset()
         label2id, id2label = get_labels_from_dataset(dataset)
