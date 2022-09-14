@@ -32,6 +32,11 @@ model_name_short = {
 print('Loading model:', finetuned_huggingface_model)
 
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
+additional_tokenizers = []
+if model_name_short[huggingface_model] == 'roberta':
+    additional_tokenizers.append(AutoTokenizer.from_pretrained('dbmdz/electra-large-discriminator-finetuned-conll03-english'))
+elif model_name_short[huggingface_model] == 'electra':
+    additional_tokenizers.append(AutoTokenizer.from_pretrained('Jean-Baptiste/roberta-large-ner-english'))
 model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(finetuned_huggingface_model)
 
 print('Loading dataset:', dataset_name)
@@ -39,6 +44,7 @@ print('Loading dataset:', dataset_name)
 conhelps = BigBioConfigHelpers()
 dataset = conhelps.for_config_name(dataset_name).load_dataset()
 
+disease_class = None
 if dataset_name == 'bc5cdr_bigbio_kb':
     disease_class = 'Disease'
 elif dataset_name == 'euadr_bigbio_kb':
@@ -51,7 +57,7 @@ elif dataset_name == 'verspoor_2013_bigbio_kb':
     disease_class = 'disease'
 
 pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
-evaluator = NERDatasetEvaluator(pipeline, dataset, attribution_type, class_name=disease_class)
+evaluator = NERDatasetEvaluator(pipeline, dataset, attribution_type, class_name=disease_class, additional_tokenizers=additional_tokenizers)
 
 result = evaluator(k_values=k_values,
                    continuous=continuous,

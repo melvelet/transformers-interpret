@@ -7,7 +7,7 @@ label2id = {'O': 0, 'B-Chemical': 1, 'I-Chemical': 2, 'B-Disease': 3, 'I-Disease
 
 
 def test_call():
-    sut = InputPreProcessor(tokenizer, label2id, 512)
+    sut = InputPreProcessor(tokenizer, None, label2id, 512)
     example_document = get_example_document()
     result = sut(example_document)
     assert 'labels' in result

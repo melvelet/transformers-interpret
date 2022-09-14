@@ -19,8 +19,9 @@ def get_labels_from_dataset(dataset):
 
 
 class InputPreProcessor:
-    def __init__(self, tokenizer, label2id, max_tokens: int = 512):
+    def __init__(self, tokenizer, additional_tokenizers, label2id, max_tokens: int = 512):
         self.tokenizer = tokenizer
+        self.additional_tokenizers = additional_tokenizers if additional_tokenizers else []
         self.max_tokens = max_tokens
         self.sentence_segmentation = spacy.load("en_core_web_sm")
         self.label2id = label2id
@@ -97,16 +98,21 @@ class InputPreProcessor:
             return '', 0
         split_sentences = self.sentence_segmentation(raw_input_text)
         sentences = list(split_sentences.sents)
-        tokens = []
-        cutoff_index = len(raw_input_text)
-        truncated_tokens = 0
-        for i, sent in enumerate(sentences):
-            input_tokens_sent = self.tokenizer.tokenize(str(sent))
-            if len(tokens) + len(input_tokens_sent) < self.max_tokens - 2 and truncated_tokens == 0:
-                tokens.extend(input_tokens_sent)
-            else:
-                if truncated_tokens == 0:
-                    cutoff_index = sent.start_char
-                truncated_tokens += len(input_tokens_sent)
+        tokens_temp = [[], []]
+        cutoff_index_temp = [len(raw_input_text), len(raw_input_text)]
+        truncated_tokens_temp = [0, 0]
+        for tokenizer_i, tokenizer in enumerate([self.tokenizer] + self.additional_tokenizers):
+            for i, sent in enumerate(sentences):
+                input_tokens_sent = tokenizer.tokenize(str(sent))
+                if len(tokens_temp[tokenizer_i]) + len(input_tokens_sent) < self.max_tokens - 2 and truncated_tokens_temp[tokenizer_i] == 0:
+                    tokens_temp[tokenizer_i].extend(input_tokens_sent)
+                else:
+                    if truncated_tokens_temp[tokenizer_i] == 0:
+                        cutoff_index_temp[tokenizer_i] = sent.start_char
+                    truncated_tokens_temp[tokenizer_i] += len(input_tokens_sent)
+
+        tokenizer_i_with_most_cutoff = cutoff_index_temp.index(min(cutoff_index_temp))
+        cutoff_index = cutoff_index_temp[tokenizer_i_with_most_cutoff]
+        truncated_tokens = truncated_tokens_temp[tokenizer_i_with_most_cutoff]
         result_document = raw_input_text[:cutoff_index]
         return result_document, truncated_tokens, cutoff_index

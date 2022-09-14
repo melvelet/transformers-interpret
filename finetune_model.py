@@ -21,6 +21,13 @@ def compute_metrics(eval_pred):
     return metric.compute(predictions=predictions, references=labels)
 
 
+model_name_short = {
+    'dbmdz/electra-large-discriminator-finetuned-conll03-english': 'electra',
+    'alvaroalon2/biobert_chemical_ner': 'biobert',
+    'dslim/bert-base-NER': 'bert',
+    'Jean-Baptiste/roberta-large-ner-english': 'roberta',
+}
+
 batch_size = 8
 learning_rate = 5e-05
 
@@ -56,10 +63,15 @@ huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
 dataset = conhelps.for_config_name(dataset_name).load_dataset()
 
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
+additional_tokenizers = []
+if model_name_short[huggingface_model] == 'roberta':
+    additional_tokenizers.append(AutoTokenizer.from_pretrained('dbmdz/electra-large-discriminator-finetuned-conll03-english'))
+elif model_name_short[huggingface_model] == 'electra':
+    additional_tokenizers.append(AutoTokenizer.from_pretrained('Jean-Baptiste/roberta-large-ner-english'))
 
 label2id, id2label = get_labels_from_dataset(dataset)
 print(label2id)
-pre_processor = InputPreProcessor(tokenizer, label2id)
+pre_processor = InputPreProcessor(tokenizer, additional_tokenizers, label2id)
 
 model: AutoModelForTokenClassification = AutoModelForTokenClassification\
     .from_pretrained(huggingface_model,
@@ -84,12 +96,6 @@ print('train_dataset', train_dataset)
 print('eval_dataset', eval_dataset)
 print('test_dataset', test_dataset)
 
-model_name_short = {
-    'dbmdz/electra-large-discriminator-finetuned-conll03-english': 'electra',
-    'alvaroalon2/biobert_chemical_ner': 'biobert',
-    'dslim/bert-base-NER': 'bert',
-    'Jean-Baptiste/roberta-large-ner-english': 'roberta',
-}
 
 output_dir = f"trained_models/{model_name_short[huggingface_model]}/{dataset_name.replace('_bigbio_kb', '')}"
 os.makedirs(output_dir, exist_ok=True)

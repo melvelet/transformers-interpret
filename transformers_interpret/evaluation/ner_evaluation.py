@@ -187,12 +187,13 @@ class NERDatasetEvaluator:
                  dataset: Union[Dataset, List[Dataset]],
                  attribution_type: str = "lig",
                  class_name: str = None,
+                 additional_tokenizers: List[PreTrainedTokenizer] = []
                  ):
         self.pipeline = pipeline
         self.dataset = dataset
         self.label2id, self.id2label = get_labels_from_dataset(dataset)
         print('label2id', self.label2id)
-        self.input_pre_processor = InputPreProcessor(self.pipeline.tokenizer, self.label2id, max_tokens=512)
+        self.input_pre_processor = InputPreProcessor(self.pipeline.tokenizer, additional_tokenizers, self.label2id, max_tokens=512)
         self.attribution_type = attribution_type
         self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type, class_name=class_name)
         self.raw_scores: List[Dict] = []
