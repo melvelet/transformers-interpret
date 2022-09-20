@@ -18,7 +18,7 @@ def compute_metrics(eval_pred):
     predictions = map_to_string_vec(predictions)
     metric_scores = metric.compute(predictions=predictions, references=labels)
     print(metric_scores)
-    return scores
+    return metric_scores
 
 
 model_name_short = {
@@ -29,7 +29,7 @@ model_name_short = {
     'kamalkraj/BioELECTRA-PICO': 'bioelectra',
 }
 
-batch_size = 8
+batch_size = 4
 learning_rate = 5e-05
 
 conhelps = BigBioConfigHelpers()
@@ -46,12 +46,12 @@ dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length,
 #     'scai_disease_bigbio_kb',
 # ]
 
-# huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
+huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
 # huggingface_model = 'fran-martinez/scibert_scivocab_cased_ner_jnlpba'
 # huggingface_model = 'alvaroalon2/biobert_chemical_ner'
 # huggingface_model = 'dslim/bert-base-NER'
 # huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
-huggingface_model = 'kamalkraj/BioELECTRA-PICO'
+# huggingface_model = 'kamalkraj/BioELECTRA-PICO'
 # huggingface_models = [
 #     'dbmdz/electra-large-discriminator-finetuned-conll03-english',
 #     'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
