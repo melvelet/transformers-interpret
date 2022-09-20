@@ -17,7 +17,7 @@ def compute_metrics(eval_pred):
     labels = map_to_string_vec(labels)
     predictions = map_to_string_vec(predictions)
     metric_scores = metric.compute(predictions=predictions, references=labels)
-    print(metric_scores)
+    metric_scores['target_f1'] = metric_scores[disease_class]['f1']
     return metric_scores
 
 
@@ -59,6 +59,19 @@ huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english
 #     'dslim/bert-base-NER',
 #     'Jean-Baptiste/roberta-large-ner-english',
 # ]
+
+if dataset_name == 'bc5cdr_bigbio_kb':
+    disease_class = 'Disease'
+elif dataset_name == 'euadr_bigbio_kb':
+    disease_class = 'Diseases & Disorders'
+elif dataset_name == 'scai_disease_bigbio_kb':
+    disease_class = 'DISEASE'
+elif dataset_name == 'ncbi_disease_bigbio_kb':
+    disease_class = 'SpecificDisease'
+elif dataset_name == 'verspoor_2013_bigbio_kb':
+    disease_class = 'disease'
+else:
+    disease_class = None
 
 # csv_data = [['dataset_name'] + huggingface_models]
 # dataset_scores = [dataset_name]
@@ -111,7 +124,7 @@ training_args = TrainingArguments(
     num_train_epochs=10,
     learning_rate=learning_rate,
     warmup_ratio=0.04,
-    metric_for_best_model="overall_f1",
+    metric_for_best_model="target_f1",
     load_best_model_at_end=True,
     greater_is_better=True,
 )
@@ -129,18 +142,7 @@ scores = trainer.evaluate(eval_dataset=test_dataset)
 score = scores['eval_overall_f1']
 print('dataset_name', dataset_name, 'huggingface_model', huggingface_model, 'f1', scores['eval_overall_f1'])
 
-if dataset_name == 'bc5cdr_bigbio_kb':
-    disease_score = scores['eval_Disease']['f1']
-elif dataset_name == 'euadr_bigbio_kb':
-    disease_score = scores['eval_Diseases & Disorders']['f1']
-elif dataset_name == 'scai_disease_bigbio_kb':
-    disease_score = scores['eval_DISEASE']['f1']
-elif dataset_name == 'ncbi_disease_bigbio_kb':
-    disease_score = scores['eval_SpecificDisease']['f1']
-elif dataset_name == 'verspoor_2013_bigbio_kb':
-    disease_score = scores['eval_disease']['f1']
-else:
-    disease_score = 0
+disease_score = scores[f'eval_{disease_class}']['f1'] if disease_class else 0
 
 trainer.save_model(f"{output_dir}/score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}")
 
