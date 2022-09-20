@@ -1,7 +1,5 @@
-import csv
 import math
 import os
-import traceback
 import numpy as np
 from datasets import load_metric
 from bigbio.dataloader import BigBioConfigHelpers
@@ -18,7 +16,9 @@ def compute_metrics(eval_pred):
     predictions = np.argmax(logits, axis=-1)
     labels = map_to_string_vec(labels)
     predictions = map_to_string_vec(predictions)
-    return metric.compute(predictions=predictions, references=labels)
+    metric_scores = metric.compute(predictions=predictions, references=labels)
+    print(metric_scores)
+    return scores
 
 
 model_name_short = {
@@ -26,6 +26,7 @@ model_name_short = {
     'alvaroalon2/biobert_chemical_ner': 'biobert',
     'dslim/bert-base-NER': 'bert',
     'Jean-Baptiste/roberta-large-ner-english': 'roberta',
+    'kamalkraj/BioELECTRA-PICO': 'bioelectra',
 }
 
 batch_size = 8
@@ -49,7 +50,8 @@ dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length,
 # huggingface_model = 'fran-martinez/scibert_scivocab_cased_ner_jnlpba'
 # huggingface_model = 'alvaroalon2/biobert_chemical_ner'
 # huggingface_model = 'dslim/bert-base-NER'
-huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
+# huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
+huggingface_model = 'kamalkraj/BioELECTRA-PICO'
 # huggingface_models = [
 #     'dbmdz/electra-large-discriminator-finetuned-conll03-english',
 #     'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
@@ -66,7 +68,7 @@ tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
 additional_tokenizers = []
 if model_name_short[huggingface_model] == 'roberta':
     additional_tokenizers.append(AutoTokenizer.from_pretrained('dbmdz/electra-large-discriminator-finetuned-conll03-english'))
-elif model_name_short[huggingface_model] == 'electra':
+elif model_name_short[huggingface_model] in ['electra', 'bioelectra']:
     additional_tokenizers.append(AutoTokenizer.from_pretrained('Jean-Baptiste/roberta-large-ner-english'))
 
 label2id, id2label = get_labels_from_dataset(dataset)
