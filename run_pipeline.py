@@ -53,7 +53,7 @@ dataset_name = dataset_names[args.dataset_no]
 attribution_type = attribution_types[args.attribution_type_no]
 max_documents = args.max_documents
 
-finetuned_huggingface_model = f"trained_models/{huggingface_model}_{dataset_name.replace('_bigbio_kb', '')}"
+finetuned_huggingface_model = f"./trained_models/{huggingface_model}_{dataset_name.replace('_bigbio_kb', '')}"
 
 # model_name_short = {
 #     'dbmdz/electra-large-discriminator-finetuned-conll03-english': 'electra',
@@ -69,7 +69,7 @@ if huggingface_model == 'roberta':
     additional_tokenizers.append(AutoTokenizer.from_pretrained('dbmdz/electra-large-discriminator-finetuned-conll03-english'))
 elif huggingface_model == 'electra':
     additional_tokenizers.append(AutoTokenizer.from_pretrained('Jean-Baptiste/roberta-large-ner-english'))
-model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(finetuned_huggingface_model)
+model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(finetuned_huggingface_model, local_files_only=True)
 
 print('Loading dataset:', dataset_name)
 
