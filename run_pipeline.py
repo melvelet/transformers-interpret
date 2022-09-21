@@ -55,20 +55,20 @@ max_documents = args.max_documents
 
 finetuned_huggingface_model = f"./trained_models/{huggingface_model}_{dataset_name.replace('_bigbio_kb', '')}"
 
-# model_name_short = {
-#     'dbmdz/electra-large-discriminator-finetuned-conll03-english': 'electra',
-#     'dslim/bert-base-NER': 'bert',
-#     'Jean-Baptiste/roberta-large-ner-english': 'roberta',
-# }
+model_name_long = {
+    'electra': 'dbmdz/electra-large-discriminator-finetuned-conll03-english',
+    'bert': 'dslim/bert-base-NER',
+    'roberta': 'Jean-Baptiste/roberta-large-ner-english',
+}
 
 print('Loading model:', finetuned_huggingface_model)
 
-tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
+tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name_long[huggingface_model])
 additional_tokenizers = []
 if huggingface_model == 'roberta':
-    additional_tokenizers.append(AutoTokenizer.from_pretrained('dbmdz/electra-large-discriminator-finetuned-conll03-english'))
+    additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['electra']))
 elif huggingface_model == 'electra':
-    additional_tokenizers.append(AutoTokenizer.from_pretrained('Jean-Baptiste/roberta-large-ner-english'))
+    additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['roberta']))
 model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(finetuned_huggingface_model, local_files_only=True)
 
 print('Loading dataset:', dataset_name)
