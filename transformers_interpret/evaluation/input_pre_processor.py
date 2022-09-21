@@ -4,14 +4,13 @@ import torch
 
 def get_labels_from_dataset(dataset):
     seen_labels = list(set(
-        [entity['type'] for split in dataset for document in dataset[split] for entity in document['entities']]
+        [entity['type'] for split in dataset for document in dataset[split] for entity in document['entities'] if entity['type']]
     ))
     seen_labels.sort()
     labels = ['O']
     for label in seen_labels:
-        if label != '':
-            labels.append(f"B-{label}")
-            labels.append(f"I-{label}")
+        labels.append(f"B-{label}")
+        labels.append(f"I-{label}")
 
     label2id = {label: i for i, label in enumerate(labels)}
     id2label = {y: x for x, y in label2id.items()}

@@ -1,0 +1,11 @@
+dataset,model,total_documents,truncated_documents,truncated_documents_percentage,total_entities,remaining_entities,truncated_entities,truncated_entities_percentage,total_tokens,truncated_tokens,truncated_tokens_percentage
+bc5cdr_bigbio_kb,dslim/bert-base-NER,1500,192,0.128,29271,28163,1108,0.0378531652,768000,20699,0.0269518229
+euadr_bigbio_kb,dslim/bert-base-NER,300,53,0.1766666667,13577,12858,719,0.052957207,153600,5226,0.0340234375
+scai_disease_bigbio_kb,dslim/bert-base-NER,400,71,0.1775,2241,2106,135,0.0602409639,204800,10606,0.0517871094
+ncbi_disease_bigbio_kb,dslim/bert-base-NER,792,30,0.0378787879,6881,6818,63,0.009155646,405504,2879,0.0070998067
+verspoor_2013_bigbio_kb,dslim/bert-base-NER,120,80,0.6666666667,6991,5004,1987,0.2842225719,61440,20191,0.3286295573
+bc5cdr_bigbio_kb,Jean-Baptiste/roberta-large-ner-english,1500,95,0.0633333333,29271,28706,565,0.0193023812,768000,9297,0.0121054688
+euadr_bigbio_kb,Jean-Baptiste/roberta-large-ner-english,300,20,0.0666666667,13577,13342,235,0.0173086838,153600,1469,0.0095638021
+scai_disease_bigbio_kb,Jean-Baptiste/roberta-large-ner-english,400,35,0.0875,2241,2168,73,0.0325747434,204802,5828,0.0284567534
+ncbi_disease_bigbio_kb,Jean-Baptiste/roberta-large-ner-english,792,14,0.0176767677,6881,6848,33,0.0047958146,405504,1135,0.002798986
+verspoor_2013_bigbio_kb,Jean-Baptiste/roberta-large-ner-english,120,76,0.6333333333,6991,5356,1635,0.2338721213,61440,15571,0.2534342448

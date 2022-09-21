@@ -1,41 +1,74 @@
 import datetime
 import json
+import math
+from argparse import ArgumentParser
 from pprint import pprint
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
+
+from evaluation import InputPreProcessor
+from evaluation.input_pre_processor import get_labels_from_dataset
 from transformers_interpret.evaluation import NERDatasetEvaluator
 from bigbio.dataloader import BigBioConfigHelpers
 
-attribution_type = 'lig'
+
 # k_values = [5]
 # k_values = [2, 3, 5, 10, 20]
 k_values = [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]
 continuous = True
 bottom_k = True
-max_documents = 3
+evaluate_other = True
 
-dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length, Disease
+attribution_types = [
+    'lig',
+]
+
+# dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length, Disease
 # dataset_name = 'euadr_bigbio_kb'  # 5 classes, short to medium sentence length, Diseases & Disorders
 # dataset_name = 'cadec_bigbio_kb'  # 5 classes, shortest documents, forum posts, Disease
 # dataset_name = 'scai_disease_bigbio_kb'  # 2 classes, long documents, DISEASE
+dataset_names = [
+    'bc5cdr_bigbio_kb',
+    'euadr_bigbio_kb',
+    'ncbi_disease_bigbio_kb',
+    'scai_disease_bigbio_kb',
+]
 
-huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
+# huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
 # huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
 # huggingface_model = 'dslim/bert-base-NER'
-finetuned_huggingface_model = f"trained_models/{huggingface_model.replace('/', '_')}/{dataset_name}/test/"
+huggingface_models = [
+    'electra',
+    'roberta',
+    'bert',
+]
 
-model_name_short = {
-    'dbmdz/electra-large-discriminator-finetuned-conll03-english': 'electra',
-    'dslim/bert-base-NER': 'bert',
-    'Jean-Baptiste/roberta-large-ner-english': 'roberta',
-}
+parser = ArgumentParser()
+parser.add_argument("-m", "--model", dest="model_no", type=int)
+parser.add_argument("-d", "--dataset", dest="dataset_no", type=int)
+parser.add_argument("-a", "--attribution-type", dest="attribution_type_no", type=int, default=0)
+parser.add_argument("-max", "--max-documents", dest="max_documents", type=int, default=0)
+args = parser.parse_args()
+
+huggingface_model = huggingface_models[args.model_no]
+dataset_name = dataset_names[args.dataset_no]
+attribution_type = attribution_types[args.attribution_type_no]
+max_documents = args.max_documents
+
+finetuned_huggingface_model = f"trained_models/{huggingface_model}_{dataset_name}/"
+
+# model_name_short = {
+#     'dbmdz/electra-large-discriminator-finetuned-conll03-english': 'electra',
+#     'dslim/bert-base-NER': 'bert',
+#     'Jean-Baptiste/roberta-large-ner-english': 'roberta',
+# }
 
 print('Loading model:', finetuned_huggingface_model)
 
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
 additional_tokenizers = []
-if model_name_short[huggingface_model] == 'roberta':
+if huggingface_model == 'roberta':
     additional_tokenizers.append(AutoTokenizer.from_pretrained('dbmdz/electra-large-discriminator-finetuned-conll03-english'))
-elif model_name_short[huggingface_model] == 'electra':
+elif huggingface_model == 'electra':
     additional_tokenizers.append(AutoTokenizer.from_pretrained('Jean-Baptiste/roberta-large-ner-english'))
 model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(finetuned_huggingface_model)
 
@@ -56,19 +89,31 @@ elif dataset_name == 'ncbi_disease_bigbio_kb':
 elif dataset_name == 'verspoor_2013_bigbio_kb':
     disease_class = 'disease'
 
-pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
-evaluator = NERDatasetEvaluator(pipeline, dataset, attribution_type, class_name=disease_class, additional_tokenizers=additional_tokenizers)
+label2id, id2label = get_labels_from_dataset(dataset)
+model.config.label2id = label2id
+model.config.id2label = id2label
+pre_processor = InputPreProcessor(tokenizer, additional_tokenizers, label2id, max_tokens=512)
+tokenized_datasets = dataset.map(lambda a: pre_processor(a))
+dataset_length = len(dataset["train"])
+if len(dataset) > 1:
+    test_dataset = tokenized_datasets["test"] if 'test' in tokenized_datasets else tokenized_datasets["validation"]
+else:
+    shuffled_dataset = tokenized_datasets["train"].shuffle(seed=42)
+    test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
 
+pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
+evaluator = NERDatasetEvaluator(pipeline, test_dataset, attribution_type, class_name=disease_class)
 result = evaluator(k_values=k_values,
                    continuous=continuous,
                    bottom_k=bottom_k,
-                   max_documents=max_documents)
+                   max_documents=max_documents,
+                   evaluate_other=evaluate_other)
 
 pprint(result)
 
 end_time = datetime.datetime.now()
 
-base_file_name = f"results/{dataset_name}|{model_name_short[huggingface_model]}|{attribution_type}|{end_time}"
+base_file_name = f"results/{dataset_name}|{huggingface_model}|{attribution_type}|{end_time}"
 
 with open(f'{base_file_name}_scores.json', 'w+') as f:
     json.dump(result, f)
