@@ -373,7 +373,7 @@ class NERDatasetEvaluator:
                 break
             print('Document', documents)
             print('Evaluate')
-            result = self.evaluator(document['text'],
+            result = self.evaluator(document,
                                     k_values=k_values,
                                     continuous=continuous,
                                     bottom_k=bottom_k,
