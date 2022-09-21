@@ -53,6 +53,24 @@ dataset_name = dataset_names[args.dataset_no]
 attribution_type = attribution_types[args.attribution_type_no]
 max_documents = args.max_documents
 
+print('Loading dataset:', dataset_name)
+
+conhelps = BigBioConfigHelpers()
+dataset = conhelps.for_config_name(dataset_name).load_dataset()
+print(dataset)
+
+disease_class = None
+if dataset_name == 'bc5cdr_bigbio_kb':
+    disease_class = 'Disease'
+elif dataset_name == 'euadr_bigbio_kb':
+    disease_class = 'Diseases & Disorders'
+elif dataset_name == 'scai_disease_bigbio_kb':
+    disease_class = 'DISEASE'
+elif dataset_name == 'ncbi_disease_bigbio_kb':
+    disease_class = 'SpecificDisease'
+elif dataset_name == 'verspoor_2013_bigbio_kb':
+    disease_class = 'disease'
+
 finetuned_huggingface_model = f"./trained_models/{huggingface_model}_{dataset_name.replace('_bigbio_kb', '')}"
 
 model_name_long = {
@@ -70,23 +88,6 @@ if huggingface_model == 'roberta':
 elif huggingface_model == 'electra':
     additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['roberta']))
 model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(finetuned_huggingface_model, local_files_only=True)
-
-print('Loading dataset:', dataset_name)
-
-conhelps = BigBioConfigHelpers()
-dataset = conhelps.for_config_name(dataset_name).load_dataset()
-
-disease_class = None
-if dataset_name == 'bc5cdr_bigbio_kb':
-    disease_class = 'Disease'
-elif dataset_name == 'euadr_bigbio_kb':
-    disease_class = 'Diseases & Disorders'
-elif dataset_name == 'scai_disease_bigbio_kb':
-    disease_class = 'DISEASE'
-elif dataset_name == 'ncbi_disease_bigbio_kb':
-    disease_class = 'SpecificDisease'
-elif dataset_name == 'verspoor_2013_bigbio_kb':
-    disease_class = 'disease'
 
 label2id, id2label = get_labels_from_dataset(dataset)
 model.config.label2id = label2id
