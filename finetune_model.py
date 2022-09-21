@@ -1,5 +1,7 @@
 import math
 import os
+from argparse import ArgumentParser
+
 import numpy as np
 from datasets import load_metric
 from bigbio.dataloader import BigBioConfigHelpers
@@ -29,36 +31,58 @@ model_name_short = {
     'kamalkraj/BioELECTRA-PICO': 'bioelectra',
 }
 
-batch_size = 4
-learning_rate = 5e-05
+# batch_size = 4
+# learning_rate = 5e-05
 
 conhelps = BigBioConfigHelpers()
-dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length, Disease
+# dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length, Disease
 # dataset_name = 'euadr_bigbio_kb'  # 5 classes, short to medium sentence length, Diseases & Disorders
 # dataset_name = 'cadec_bigbio_kb'  # 5 classes, shortest documents, forum posts, Disease
 # dataset_name = 'scai_disease_bigbio_kb'  # 2 classes, long documents, DISEASE
 # dataset_name = 'ncbi_disease_bigbio_kb'
 # dataset_name = 'verspoor_2013_bigbio_kb'
-# dataset_names = [
-#     'bc5cdr_bigbio_kb',
-#     'euadr_bigbio_kb',
-#     'cadec_bigbio_kb',
-#     'scai_disease_bigbio_kb',
-# ]
+dataset_names = [
+    'bc5cdr_bigbio_kb',
+    'euadr_bigbio_kb',
+    'ncbi_disease_bigbio_kb',
+    'scai_disease_bigbio_kb',
+]
 
-huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
+# huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
 # huggingface_model = 'fran-martinez/scibert_scivocab_cased_ner_jnlpba'
 # huggingface_model = 'alvaroalon2/biobert_chemical_ner'
 # huggingface_model = 'dslim/bert-base-NER'
 # huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
 # huggingface_model = 'kamalkraj/BioELECTRA-PICO'
-# huggingface_models = [
-#     'dbmdz/electra-large-discriminator-finetuned-conll03-english',
-#     'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
-#     'alvaroalon2/biobert_chemical_ner',
-#     'dslim/bert-base-NER',
-#     'Jean-Baptiste/roberta-large-ner-english',
-# ]
+huggingface_models = [
+    'dbmdz/electra-large-discriminator-finetuned-conll03-english',
+    'Jean-Baptiste/roberta-large-ner-english',
+    'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
+    'alvaroalon2/biobert_chemical_ner',
+    'dslim/bert-base-NER',
+]
+
+parser = ArgumentParser()
+parser.add_argument("-m", "--model", dest="model_no", type=int)
+parser.add_argument("-d", "--dataset", dest="dataset_no", type=int)
+parser.add_argument("-b", "--batch-size", dest="batch_size", type=int, default=4)
+parser.add_argument("-l", "--learning-rate", dest="learning_rate", type=int, default=1)
+args = parser.parse_args()
+
+huggingface_model = huggingface_models[args['model_no']]
+dataset_name = dataset_names[args['dataset_no']]
+batch_size = args['batch_size']
+if args['learning_rate'] == 0:
+    learning_rate = 1e-05
+elif args['learning_rate'] == 2:
+    learning_rate = 1e-06
+else:
+    learning_rate = 5e-05
+
+print('huggingface_model', huggingface_model)
+print('dataset_name', dataset_name)
+print('batch_size', batch_size)
+print('learning_rate', learning_rate)
 
 if dataset_name == 'bc5cdr_bigbio_kb':
     disease_class = 'Disease'
