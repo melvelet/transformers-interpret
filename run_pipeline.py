@@ -5,9 +5,8 @@ from argparse import ArgumentParser
 from pprint import pprint
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 
-from evaluation import InputPreProcessor
-from evaluation.input_pre_processor import get_labels_from_dataset
-from transformers_interpret.evaluation import NERDatasetEvaluator
+from transformers_interpret.evaluation import InputPreProcessor, NERDatasetEvaluator
+from transformers_interpret.evaluation.input_pre_processor import get_labels_from_dataset
 from bigbio.dataloader import BigBioConfigHelpers
 
 
