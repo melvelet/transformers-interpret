@@ -69,12 +69,12 @@ parser.add_argument("-b", "--batch-size", dest="batch_size", type=int, default=4
 parser.add_argument("-l", "--learning-rate", dest="learning_rate", type=int, default=1)
 args = parser.parse_args()
 
-huggingface_model = huggingface_models[args['model_no']]
-dataset_name = dataset_names[args['dataset_no']]
-batch_size = args['batch_size']
-if args['learning_rate'] == 0:
+huggingface_model = huggingface_models[args.model_no]
+dataset_name = dataset_names[args.dataset_no]
+batch_size = args.batch_size
+if args.learning_rate == 0:
     learning_rate = 1e-05
-elif args['learning_rate'] == 2:
+elif args.learning_rate == 2:
     learning_rate = 1e-06
 else:
     learning_rate = 5e-05
