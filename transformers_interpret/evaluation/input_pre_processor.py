@@ -9,8 +9,9 @@ def get_labels_from_dataset(dataset):
     seen_labels.sort()
     labels = ['O']
     for label in seen_labels:
-        labels.append(f"B-{label}")
-        labels.append(f"I-{label}")
+        if label != '':
+            labels.append(f"B-{label}")
+            labels.append(f"I-{label}")
 
     label2id = {label: i for i, label in enumerate(labels)}
     id2label = {y: x for x, y in label2id.items()}
@@ -62,16 +63,20 @@ class InputPreProcessor:
         labels = []
         label_previous = ''
         highest_offset = max([i[1] for i in tokens['offset_mapping']])
+        previous_entity_id = -1
         for token_idx, token in enumerate(zip(tokens['offset_mapping'], tokens['input_ids'])):
             token_offset, token_id = token
             label = 'O'
             token_text = self.tokenizer.decode(token_id).replace('##', '').replace('Ġ', '')
+            current_entity_id = -1
             for entity in document['entities']:
                 entity_class = entity['type']
                 entity_offset = entity['offsets'][0]
                 entity_text = entity['text'][0]
+                entity_id = entity['id']
                 if entity['type'] and _check_for_offset_overlap(token_offset, entity_offset):
                     label = entity_class
+                    current_entity_id = entity_id
                     # if token_text not in entity_text:
                     #     raw_input_text = ' '.join([i[0] for i in [passage['text'] for passage in document['passages']]])
                     #     input_text, _ = self.truncate_input(raw_input_text)
@@ -85,11 +90,12 @@ class InputPreProcessor:
 
             if label == 'O' or label == '':
                 labels.append(self.label2id['O'])
-            elif label_previous == label:
+            elif label_previous == label and current_entity_id == previous_entity_id:
                 labels.append(self.label2id[f"I-{label}"])
             else:
                 labels.append(self.label2id[f"B-{label}"])
             label_previous = label
+            previous_entity_id = current_entity_id
 
         return torch.IntTensor(labels)
 
