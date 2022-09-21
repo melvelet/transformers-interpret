@@ -2,11 +2,15 @@ import spacy
 import torch
 
 
-def get_labels_from_dataset(dataset):
-    print(len(dataset))
-    seen_labels = list(set(
-        [entity['type'] for split in dataset for document in dataset[split] for entity in document['entities']]
-    ))
+def get_labels_from_dataset(dataset, has_splits=True):
+    if has_splits:
+        seen_labels = list(set(
+            [entity['type'] for split in dataset for document in dataset[split] for entity in document['entities']]
+        ))
+    else:
+        seen_labels = list(set(
+            [entity['type'] for document in dataset for entity in document['entities']]
+        ))
     seen_labels.sort()
     labels = ['O']
     for label in seen_labels:

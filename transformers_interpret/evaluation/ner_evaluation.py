@@ -257,7 +257,7 @@ class NERDatasetEvaluator:
                  ):
         self.pipeline = pipeline
         self.dataset = dataset
-        self.label2id, self.id2label = get_labels_from_dataset(dataset)
+        self.label2id, self.id2label = get_labels_from_dataset(dataset, has_splits=False)
         print('label2id', self.label2id)
         self.attribution_type = attribution_type
         self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type, class_name=class_name)
