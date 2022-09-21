@@ -53,7 +53,7 @@ dataset_name = dataset_names[args.dataset_no]
 attribution_type = attribution_types[args.attribution_type_no]
 max_documents = args.max_documents
 
-finetuned_huggingface_model = f"trained_models/{huggingface_model}_{dataset_name}/"
+finetuned_huggingface_model = f"trained_models/{huggingface_model}_{dataset_name.replace('_bigbio_kb', '')}"
 
 # model_name_short = {
 #     'dbmdz/electra-large-discriminator-finetuned-conll03-english': 'electra',
@@ -112,7 +112,7 @@ pprint(result)
 
 end_time = datetime.datetime.now()
 
-base_file_name = f"results/{dataset_name}|{huggingface_model}|{attribution_type}|{end_time}"
+base_file_name = f"results/{dataset_name.replace('_bigbio_kb', '')}|{huggingface_model}|{attribution_type}|{end_time}"
 
 with open(f'{base_file_name}_scores.json', 'w+') as f:
     json.dump(result, f)
