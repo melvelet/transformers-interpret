@@ -57,7 +57,6 @@ print('Loading dataset:', dataset_name)
 
 conhelps = BigBioConfigHelpers()
 dataset = conhelps.for_config_name(dataset_name).load_dataset()
-print(dataset)
 
 disease_class = None
 if dataset_name == 'bc5cdr_bigbio_kb':

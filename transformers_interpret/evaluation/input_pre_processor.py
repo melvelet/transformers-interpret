@@ -3,6 +3,7 @@ import torch
 
 
 def get_labels_from_dataset(dataset):
+    print(len(dataset))
     seen_labels = list(set(
         [entity['type'] for split in dataset for document in dataset[split] for entity in document['entities']]
     ))
