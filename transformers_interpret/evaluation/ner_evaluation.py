@@ -216,6 +216,7 @@ class NERSentenceEvaluator:
         if evaluate_other:
             self.prefixes.append('other_')
         self.input_str = input_document['text']
+        self.input_token_ids = input_document['input_ids']
         self.gold_labels = input_document['labels']
         self.execute_base_classification()
         self.calculate_attribution_scores()
