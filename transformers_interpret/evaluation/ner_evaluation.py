@@ -196,9 +196,9 @@ class NERSentenceEvaluator:
             entity_scores = {
                 'comprehensiveness': {mode: {k: e['comprehensiveness'][mode][k] for k in k_values}
                                       for mode in modes},
-                'sufficiency': {mode: {k: e['sufficiency'][k] for k in k_values}
+                'sufficiency': {mode: {k: e['sufficiency'][mode][k] for k in k_values}
                                 for mode in modes},
-                'compdiff': {mode: {k: e['comprehensiveness'][k] - e['sufficiency'][mode][k] for k in k_values}
+                'compdiff': {mode: {k: e['comprehensiveness'][mode][k] - e['sufficiency'][mode][k] for k in k_values}
                              for mode in modes},
                 'other_comprehensiveness': {mode: {k: e['other_comprehensiveness'][mode][k] for k in k_values}
                                       for mode in modes},
