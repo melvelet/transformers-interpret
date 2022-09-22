@@ -298,6 +298,10 @@ class NERDatasetEvaluator:
                                     for k in k_values}
                             for mode in modes}
 
+                test = [e[attr][modes[0]][k_values[0]] for e in self.raw_scores if attr in e and e['eval'] in eval_]
+                print(test)
+                test_types = [type(v) for v in test]
+                print(test_types)
                 return {mode:
                             {k: func([e[attr][mode][k] for e in self.raw_scores if attr in e and e['eval'] in eval_])
                              for k in k_values}
@@ -382,6 +386,7 @@ class NERDatasetEvaluator:
         start_time = datetime.now()
 
         for document in self.dataset:
+            documents += 1
             if max_documents and 0 < max_documents < documents:
                 break
             print('Document', documents)
@@ -398,7 +403,6 @@ class NERDatasetEvaluator:
             found_entities += len(result['entities'])
             if len(result['entities']) == 0:
                 documents_without_entities += 1
-            documents += 1
             tokens += result['tokens']
 
         end_time = datetime.now()
