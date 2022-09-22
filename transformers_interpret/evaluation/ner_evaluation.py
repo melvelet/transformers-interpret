@@ -114,6 +114,8 @@ class NERSentenceEvaluator:
                     self.entities.append(entity)
 
             self.entities = list(filter(lambda x: x['eval'] != 'TN', self.entities))
+        test = [e for e in self.entities if 'eval' not in e]
+        print(test)
 
     def calculate_attribution_scores(self):
         print(f'calculate_attribution_scores for {len(self.entities)} entities')
