@@ -200,13 +200,19 @@ class NERSentenceEvaluator:
                                 for mode in modes},
                 'compdiff': {mode: {k: e['comprehensiveness'][mode][k] - e['sufficiency'][mode][k] for k in k_values}
                              for mode in modes},
-                'other_comprehensiveness': {mode: {k: e['other_comprehensiveness'][mode][k] for k in k_values}
-                                      for mode in modes},
-                'other_sufficiency': {mode: {k: e['other_sufficiency'][mode][k] for k in k_values}
-                                for mode in modes},
-                'other_compdiff': {mode: {k: e['other_comprehensiveness'][mode][k] - e['other_sufficiency'][mode][k] for k in k_values}
-                             for mode in modes},
             }
+            if e['other_entity'] is not None:
+                entity_scores.update(
+                    {
+                        'other_comprehensiveness': {mode: {k: e['other_comprehensiveness'][mode][k] for k in k_values}
+                                                    for mode in modes},
+                        'other_sufficiency': {mode: {k: e['other_sufficiency'][mode][k] for k in k_values}
+                                              for mode in modes},
+                        'other_compdiff': {mode: {k: e['other_comprehensiveness'][mode][k] - e['other_sufficiency'][mode][k] for k in k_values}
+                                           for mode in modes},
+                    }
+                )
+
             document_scores.append(entity_scores)
 
         return document_scores
