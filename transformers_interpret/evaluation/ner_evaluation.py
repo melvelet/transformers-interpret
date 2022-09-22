@@ -133,8 +133,10 @@ class NERSentenceEvaluator:
                     raise Exception(f"attribution_scores of length {len(e['attribution_scores'])} while input tokens have length of {len(self.input_token_ids)}")
                 # print('attribution_scores length, input:', len(self.input_token_ids), 'attribution_scores:',  len(e['attribution_scores']))
                 e[f'{prefix}comprehensiveness'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
-                e[f'{prefix}sufficiency'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
-                e[f'{prefix}rationales'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
+                e[f'{prefix}sufficiency'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict(),
+                                             'other_top_k': dict(), 'other_continuous': dict(), 'other_bottom_k': dict()}
+                e[f'{prefix}rationales'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict(),
+                                            'other_top_k': dict(), 'other_continuous': dict(), 'other_bottom_k': dict()}
 
     def calculate_comprehensiveness(self, k: int, continuous: bool = False, bottom_k: bool = False):
         print('calculate_comprehensiveness, k:', k, 'continuous:', continuous, 'bottom_k:', bottom_k)
