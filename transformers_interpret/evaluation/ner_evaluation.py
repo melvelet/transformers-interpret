@@ -1,6 +1,8 @@
 from datetime import datetime
 from statistics import mean, median, stdev, variance, StatisticsError
 from typing import List, Dict, Union, Optional
+
+import numpy as np
 import torch
 from datasets import Dataset
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
@@ -109,9 +111,8 @@ class NERSentenceEvaluator:
                         'other_entity': None,
                         'eval': 'FN',
                         'doc_id': self.input_document['id'],
-                        'score': scores[i][gold_label].item(),
+                        'score': np.float64(scores[i][gold_label].item()),
                     }
-                    print(type(scores[i][gold_label]), type(scores[i][gold_label].item()))
                     self.entities.append(entity)
 
             self.entities = list(filter(lambda x: x['eval'] != 'TN', self.entities))
