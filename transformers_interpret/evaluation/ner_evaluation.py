@@ -137,7 +137,7 @@ class NERSentenceEvaluator:
                 e[f'{prefix}rationales'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
 
     def calculate_comprehensiveness(self, k: int, continuous: bool = False, bottom_k: bool = False):
-        print('calculate_comprehensiveness, k:', k)
+        print('calculate_comprehensiveness, k:', k, 'continuous:', continuous, 'bottom_k:', bottom_k)
         for e in self.entities:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] is None:
@@ -157,7 +157,7 @@ class NERSentenceEvaluator:
                 e[f'{prefix}comprehensiveness'][mode][k] = e[f'{prefix}score'] - new_conf
 
     def calculate_sufficiency(self, k: int, continuous: bool = False, bottom_k: bool = False):
-        print('calculate_sufficiency, k:', k)
+        print('calculate_sufficiency, k:', k, 'continuous:', continuous, 'bottom_k:', bottom_k)
         for e in self.entities:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] is None:
@@ -194,17 +194,17 @@ class NERSentenceEvaluator:
         document_scores = list()
         for e in self.entities:
             entity_scores = {
-                'comprehensiveness': {mode: {k: e['comprehensiveness'][k] for k in k_values}
+                'comprehensiveness': {mode: {k: e['comprehensiveness'][mode][k] for k in k_values}
                                       for mode in modes},
                 'sufficiency': {mode: {k: e['sufficiency'][k] for k in k_values}
                                 for mode in modes},
-                'compdiff': {mode: {k: e['comprehensiveness'][k] - e['sufficiency'][k] for k in k_values}
+                'compdiff': {mode: {k: e['comprehensiveness'][k] - e['sufficiency'][mode][k] for k in k_values}
                              for mode in modes},
-                'other_comprehensiveness': {mode: {k: e['other_comprehensiveness'][k] for k in k_values}
+                'other_comprehensiveness': {mode: {k: e['other_comprehensiveness'][mode][k] for k in k_values}
                                       for mode in modes},
-                'other_sufficiency': {mode: {k: e['other_sufficiency'][k] for k in k_values}
+                'other_sufficiency': {mode: {k: e['other_sufficiency'][mode][k] for k in k_values}
                                 for mode in modes},
-                'other_compdiff': {mode: {k: e['other_comprehensiveness'][k] - e['other_sufficiency'][k] for k in k_values}
+                'other_compdiff': {mode: {k: e['other_comprehensiveness'][mode][k] - e['other_sufficiency'][mode][k] for k in k_values}
                              for mode in modes},
             }
             document_scores.append(entity_scores)
