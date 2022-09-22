@@ -109,8 +109,9 @@ class NERSentenceEvaluator:
                         'other_entity': None,
                         'eval': 'FN',
                         'doc_id': self.input_document['id'],
-                        'score': scores[i][gold_label],
+                        'score': scores[i][gold_label].item(),
                     }
+                    print(type(scores[i][gold_label]), type(scores[i][gold_label].item()))
                     self.entities.append(entity)
 
             self.entities = list(filter(lambda x: x['eval'] != 'TN', self.entities))
