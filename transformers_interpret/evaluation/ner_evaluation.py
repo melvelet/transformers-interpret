@@ -198,6 +198,7 @@ class NERSentenceEvaluator:
         document_scores = list()
         for e in self.entities:
             entity_scores = {
+                'eval': e['eval'],
                 'comprehensiveness': {mode: {k: e['comprehensiveness'][mode][k] for k in k_values}
                                       for mode in modes},
                 'sufficiency': {mode: {k: e['sufficiency'][mode][k] for k in k_values}
