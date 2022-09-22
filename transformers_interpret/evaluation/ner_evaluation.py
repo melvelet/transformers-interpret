@@ -299,9 +299,11 @@ class NERDatasetEvaluator:
                             for mode in modes}
 
                 test = [e[attr][modes[0]][k_values[0]] for e in self.raw_scores if attr in e and e['eval'] in eval_]
-                print(test)
                 test_types = [type(v) for v in test]
-                print(test_types)
+                if len(set(test_types)) > 1:
+                    print('attr', attr, 'func', func, 'eval_', eval_)
+                    print(test)
+                    print(test_types)
                 return {mode:
                             {k: func([e[attr][mode][k] for e in self.raw_scores if attr in e and e['eval'] in eval_])
                              for k in k_values}
@@ -429,8 +431,7 @@ class NERDatasetEvaluator:
             'settings': {
                 'model': self.pipeline.model.config._name_or_path,
                 'tokenizer': self.pipeline.tokenizer.name_or_path,
-                'dataset': list(set([dataset.info.config_name for dataset in self.dataset])),
-                'splits': [split for split in self.dataset[0].info.splits],
+                'dataset': self.dataset.info.config_name,
                 'attribution_type': self.attribution_type,
                 'k_values': k_values,
                 'continuous': continuous,
