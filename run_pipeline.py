@@ -11,8 +11,12 @@ from bigbio.dataloader import BigBioConfigHelpers
 
 
 # k_values = [5]
-# k_values = [2, 3, 5, 10, 20]
-k_values = [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]
+# k_values =
+k_value_levels = [
+    [5],
+    [2, 3, 5, 10, 20],
+    [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]
+    ]
 continuous = True
 bottom_k = True
 evaluate_other = True
@@ -47,6 +51,7 @@ parser.add_argument("-d", "--dataset", dest="dataset_no", type=int)
 parser.add_argument("-a", "--attribution-type", dest="attribution_type_no", type=int, default=0)
 parser.add_argument("-max", "--max-documents", dest="max_documents", type=int, default=0)
 parser.add_argument("-s", "--start-document", dest="start_document", type=int, default=0)
+parser.add_argument("-s", "--k-value-level", dest="k_value_level", type=int, default=2)
 args = parser.parse_args()
 
 huggingface_model = huggingface_models[args.model_no]
@@ -54,6 +59,7 @@ dataset_name = dataset_names[args.dataset_no]
 attribution_type = attribution_types[args.attribution_type_no]
 max_documents = args.max_documents
 start_document = args.start_document
+k_values = k_value_levels[args.k_value_level]
 
 print('Loading dataset:', dataset_name)
 
