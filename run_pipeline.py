@@ -51,7 +51,7 @@ parser.add_argument("-d", "--dataset", dest="dataset_no", type=int)
 parser.add_argument("-a", "--attribution-type", dest="attribution_type_no", type=int, default=0)
 parser.add_argument("-max", "--max-documents", dest="max_documents", type=int, default=0)
 parser.add_argument("-s", "--start-document", dest="start_document", type=int, default=0)
-parser.add_argument("-s", "--k-value-level", dest="k_value_level", type=int, default=2)
+parser.add_argument("-k", "--k-value-level", dest="k_value_level", type=int, default=2)
 args = parser.parse_args()
 
 huggingface_model = huggingface_models[args.model_no]
