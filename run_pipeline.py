@@ -46,12 +46,14 @@ parser.add_argument("-m", "--model", dest="model_no", type=int)
 parser.add_argument("-d", "--dataset", dest="dataset_no", type=int)
 parser.add_argument("-a", "--attribution-type", dest="attribution_type_no", type=int, default=0)
 parser.add_argument("-max", "--max-documents", dest="max_documents", type=int, default=0)
+parser.add_argument("-s", "--start-document", dest="start_document", type=int, default=0)
 args = parser.parse_args()
 
 huggingface_model = huggingface_models[args.model_no]
 dataset_name = dataset_names[args.dataset_no]
 attribution_type = attribution_types[args.attribution_type_no]
 max_documents = args.max_documents
+start_document = args.start_document
 
 print('Loading dataset:', dataset_name)
 
@@ -106,6 +108,7 @@ result = evaluator(k_values=k_values,
                    continuous=continuous,
                    bottom_k=bottom_k,
                    max_documents=max_documents,
+                   start_document=start_document,
                    evaluate_other=evaluate_other)
 
 pprint(result)

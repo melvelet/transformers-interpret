@@ -117,7 +117,7 @@ class NERSentenceEvaluator:
 
             self.entities = list(filter(lambda x: x['eval'] != 'TN', self.entities))
         test = [e for e in self.entities if 'eval' not in e]
-        print(test)
+        print('self.entities if eval not in e', test)
 
     def calculate_attribution_scores(self):
         print(f'calculate_attribution_scores for {len(self.entities)} entities')
@@ -143,7 +143,7 @@ class NERSentenceEvaluator:
                                             'other_top_k': dict(), 'other_continuous': dict(), 'other_bottom_k': dict()}
 
     def calculate_comprehensiveness(self, k: int, continuous: bool = False, bottom_k: bool = False):
-        print('calculate_comprehensiveness, k:', k, 'continuous:', continuous, 'bottom_k:', bottom_k)
+        print('calculate_comprehensiveness, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
         for e in self.entities:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] is None:
@@ -163,7 +163,7 @@ class NERSentenceEvaluator:
                 e[f'{prefix}comprehensiveness'][mode][k] = e[f'{prefix}score'] - new_conf
 
     def calculate_sufficiency(self, k: int, continuous: bool = False, bottom_k: bool = False):
-        print('calculate_sufficiency, k:', k, 'continuous:', continuous, 'bottom_k:', bottom_k)
+        print('calculate_sufficiency, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
         for e in self.entities:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] is None:
@@ -381,7 +381,14 @@ class NERDatasetEvaluator:
             },
         }
 
-    def __call__(self, k_values: List[int] = [1], continuous: bool = False, bottom_k: bool = False, max_documents: Optional[Union[int, None]] = None, evaluate_other: bool = False):
+    def __call__(self,
+                 k_values: List[int] = [1],
+                 continuous: bool = False,
+                 bottom_k: bool = False,
+                 max_documents: Optional[Union[int, None]] = None,
+                 start_document: Optional[Union[int, None]] = None,
+                 evaluate_other: bool = False,
+                 ):
         documents = 0
         found_entities = 0
         annotated_entities = 0
@@ -391,6 +398,8 @@ class NERDatasetEvaluator:
 
         for document in self.dataset:
             documents += 1
+            if start_document and documents < start_document:
+                continue
             if max_documents and 0 < max_documents < documents:
                 break
             print('Document', documents)
