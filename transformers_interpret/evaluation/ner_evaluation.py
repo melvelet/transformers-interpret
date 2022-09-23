@@ -97,7 +97,7 @@ class NERSentenceEvaluator:
                     if entity['eval'] in ['FN', 'FP', 'Switched']:
                         entity['entity'] = self.id2label[gold_label]
                         entity['other_score'] = entity['score']
-                        entity['score'] = scores[i][gold_label]
+                        entity['score'] = np.float64(scores[i][gold_label].item())
                         entity['other_entity'] = self.id2label[gold_label]
                     else:
                         entity['other_entity'] = None
