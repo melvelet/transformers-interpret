@@ -65,6 +65,9 @@ print('Loading dataset:', dataset_name)
 
 conhelps = BigBioConfigHelpers()
 dataset = conhelps.for_config_name(dataset_name).load_dataset()
+for i, doc in enumerate(dataset['train']):
+    if 'We genotyped the four single-nucleotide' in doc['passages'][1]['text'][0]:
+        print(i, doc)
 
 disease_class = None
 if dataset_name == 'bc5cdr_bigbio_kb':
