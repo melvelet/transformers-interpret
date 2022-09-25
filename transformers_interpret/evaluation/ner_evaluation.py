@@ -391,6 +391,7 @@ class NERDatasetEvaluator:
                  ):
         documents = 0
         found_entities = 0
+        attributed_entities = 0
         annotated_entities = 0
         tokens = 0
         documents_without_entities = 0
@@ -412,8 +413,11 @@ class NERDatasetEvaluator:
             # print('Save scores')
             self.raw_scores.extend(result['scores'])
             self.raw_entities.append(result['entities'])
+            annotated_entities_raw = [label for label in document['labels'] if label != 0]
+            print(len(annotated_entities_raw), annotated_entities_raw)
             annotated_entities += len([label for label in document['labels'] if label != 0])
             found_entities += len(result['entities'])
+            attributed_entities += len([e for e in result['entities'] if e['other_entity'] is not None])
             if len(result['entities']) == 0:
                 documents_without_entities += 1
             tokens += result['tokens']
@@ -428,15 +432,16 @@ class NERDatasetEvaluator:
         self.scores = {
             'scores': self.calculate_average_scores_for_dataset(k_values, modes),
             'stats': {
-                'splits': len(self.dataset),
+                'total_documents': len(self.dataset),
                 'processed_documents': documents,
                 'annotated_entities': annotated_entities,
                 'avg_annotated_entities': annotated_entities / documents,
                 'found_entities': found_entities,
-                'avg_found_entities': found_entities / documents,
+                'attributed_entities': attributed_entities,
+                'avg_found_entities_per_document': found_entities / documents,
                 'found_to_annotated_entities_ratio': found_entities / annotated_entities,
                 'tokens': tokens,
-                'avg_tokens': tokens / documents,
+                'avg_tokens_per_document': tokens / documents,
                 'documents_without_entities': documents_without_entities,
             },
             'settings': {
@@ -447,14 +452,18 @@ class NERDatasetEvaluator:
                 'k_values': k_values,
                 'continuous': continuous,
                 'bottom_k': bottom_k,
+                'start_document': start_document,
+                'max_documents': max_documents,
+                'evaluate_other': evaluate_other,
             },
             'timing': {
                 'start_time': str(start_time),
                 'end_time': str(end_time),
                 'duration': str(duration),
                 'per_k_value': str(duration / len(k_values)),
-                'per_passage': str(duration / documents),
+                'per_document': str(duration / documents),
                 'per_entity': str(duration / found_entities),
+                'per_attributed_entity': str(duration / attributed_entities),
                 'per_token': str(duration / tokens),
             },
         }
