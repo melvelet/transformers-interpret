@@ -94,6 +94,7 @@ class NERSentenceEvaluator:
                             entity['eval'] = 'FP'
                         else:
                             entity['eval'] = 'TN'
+                    print(gold_label, pred_label, entity['eval'])
 
                     if entity['eval'] in ['FN', 'FP', 'Switched']:
                         entity['entity'] = self.id2label[gold_label]
