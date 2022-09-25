@@ -35,7 +35,7 @@ model_name_short = {
 # learning_rate = 5e-05
 
 cuda_devices = os.environ['CUDA_VISIBLE_DEVICES']
-print('cuda_devices', cuda_devices)
+print('cuda_devices', cuda_devices, type(cuda_devices))
 
 conhelps = BigBioConfigHelpers()
 # dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length, Disease
