@@ -115,6 +115,7 @@ class NERSentenceEvaluator:
                         'doc_id': self.input_document['id'],
                         'score': np.float64(scores[i][gold_label].item()),
                     }
+                    print('created', gold_label, self.label2id['O'], entity['eval'])
                     self.entities.append(entity)
 
             entities_before = len(self.entities)
