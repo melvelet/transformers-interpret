@@ -100,16 +100,18 @@ label2id, id2label = get_labels_from_dataset(dataset)
 model.config.label2id = label2id
 model.config.id2label = id2label
 pre_processor = InputPreProcessor(tokenizer, additional_tokenizers, label2id, max_tokens=512)
-tokenized_datasets = dataset.map(lambda a: pre_processor(a))
 dataset_length = len(dataset["train"])
 if len(dataset) > 1:
-    test_dataset = tokenized_datasets["test"] if 'test' in tokenized_datasets else tokenized_datasets["validation"]
+    test_dataset = dataset["test"] if 'test' in dataset else dataset["validation"]
 else:
-    shuffled_dataset = tokenized_datasets["train"].shuffle(seed=42)
+    shuffled_dataset = dataset["train"].shuffle(seed=42)
     test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
+tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
+document_ids = [doc['document_id'] for doc in tokenized_datasets]
+print('document_ids', document_ids)
 
 pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
-evaluator = NERDatasetEvaluator(pipeline, test_dataset, attribution_type, class_name=disease_class)
+evaluator = NERDatasetEvaluator(pipeline, tokenized_datasets, attribution_type, class_name=disease_class)
 result = evaluator(k_values=k_values,
                    continuous=continuous,
                    bottom_k=bottom_k,
