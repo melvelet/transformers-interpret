@@ -65,9 +65,12 @@ print('Loading dataset:', dataset_name)
 
 conhelps = BigBioConfigHelpers()
 dataset = conhelps.for_config_name(dataset_name).load_dataset()
-for i, doc in enumerate(dataset['train']):
-    if 'We genotyped the four single-nucleotide' in doc['passages'][1]['text'][0]:
-        print(i, doc)
+# for i, doc in enumerate(dataset['train']):
+#     if 'We genotyped the four single-nucleotide' in doc['passages'][1]['text'][0]:
+#         print(i, doc)
+doc_ids = [[doc['document_id'] for doc in dataset['train']]]
+print(doc_ids)
+print(dataset['train'][0]['passages'][1]['text'][0])
 
 disease_class = None
 if dataset_name == 'bc5cdr_bigbio_kb':
@@ -105,7 +108,7 @@ model.config.id2label = id2label
 pre_processor = InputPreProcessor(tokenizer, additional_tokenizers, label2id, max_tokens=512)
 dataset_length = len(dataset["train"])
 document_ids = [doc['document_id'] for doc in dataset['train'].shuffle(seed=42)]
-print(document_ids)
+# print(document_ids)
 if len(dataset) > 1:
     test_dataset = dataset["test"] if 'test' in dataset else dataset["validation"]
 else:
@@ -116,7 +119,7 @@ else:
 tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 print(tokenized_datasets[0]['text'])
 document_ids = [doc['document_id'] for doc in tokenized_datasets]
-print('document_ids', document_ids)
+# print('document_ids', document_ids)
 
 pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
 evaluator = NERDatasetEvaluator(pipeline, tokenized_datasets, attribution_type, class_name=disease_class)
