@@ -34,8 +34,8 @@ model_name_short = {
 # batch_size = 4
 # learning_rate = 5e-05
 
-cuda_devices = os.environ['CUDA_VISIBLE_DEVICES']
-print('cuda_devices', cuda_devices, len(cuda_devices.split(',')))
+cuda_devices = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))
+cuda_devices = 2 if cuda_devices == 0 else cuda_devices
 
 conhelps = BigBioConfigHelpers()
 # dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length, Disease
@@ -171,7 +171,7 @@ print('dataset_name', dataset_name, 'huggingface_model', huggingface_model, 'f1'
 
 disease_score = scores[f'eval_{disease_class}']['f1'] if disease_class else 0
 
-trainer.save_model(f"{output_dir}/score{score}_disease{disease_score}_batch{batch_size}_learn{learning_rate}")
+trainer.save_model(f"{output_dir}/score{score}_disease{disease_score}_batch{batch_size * cuda_devices}_learn{learning_rate}")
 
 # csv_data.append(dataset_scores)
 #
