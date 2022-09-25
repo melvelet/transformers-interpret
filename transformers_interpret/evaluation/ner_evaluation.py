@@ -317,7 +317,7 @@ class NERDatasetEvaluator:
                              for k in k_values}
                         for mode in modes}
             except StatisticsError:
-                print(f"Can't calculate {func.__name__} for attribute {attr}. Too few data points...")
+                print(f"Can't calculate {func.__name__} for attribute {attr} ({eval_}). Too few data points...")
                 return None
 
         if len(self.raw_scores) == 0:
