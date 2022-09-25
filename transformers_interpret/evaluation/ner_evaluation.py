@@ -414,10 +414,14 @@ class NERDatasetEvaluator:
             self.raw_scores.extend(result['scores'])
             self.raw_entities.append(result['entities'])
             annotated_entities_raw = [label for label in document['labels'] if label != 0]
-            print(len(annotated_entities_raw), annotated_entities_raw)
+            entities_raw = [label for label in document['labels']]
+            print('annotated_entities_raw', len(annotated_entities_raw), annotated_entities_raw)
+            print('entities_raw', len(entities_raw), entities_raw)
             annotated_entities += len([label for label in document['labels'] if label != 0])
             found_entities += len(result['entities'])
-            attributed_entities += len([e for e in result['entities'] if e['other_entity'] is not None])
+            attributed_entities_raw = [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None]
+            print('attributed_entities_raw', len(attributed_entities_raw), attributed_entities_raw)
+            attributed_entities += len([e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
             if len(result['entities']) == 0:
                 documents_without_entities += 1
             tokens += result['tokens']
