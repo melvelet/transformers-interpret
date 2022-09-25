@@ -69,8 +69,8 @@ dataset = conhelps.for_config_name(dataset_name).load_dataset()
 #     if 'We genotyped the four single-nucleotide' in doc['passages'][1]['text'][0]:
 #         print(i, doc)
 doc_ids = [[doc['document_id'] for doc in dataset['train']]]
-print(doc_ids)
-print(dataset['train'][0]['passages'][1]['text'][0])
+# print(doc_ids)
+# print(dataset['train'][0]['passages'][1]['text'][0])
 
 disease_class = None
 if dataset_name == 'bc5cdr_bigbio_kb':
@@ -115,9 +115,9 @@ else:
     shuffled_dataset = dataset["train"].shuffle(seed=42)
     test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
     document_ids = [doc['document_id'] for doc in test_dataset]
-    print(document_ids)
+    # print(document_ids)
 tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
-print(tokenized_datasets[0]['text'])
+# print(tokenized_datasets[0]['text'])
 document_ids = [doc['document_id'] for doc in tokenized_datasets]
 # print('document_ids', document_ids)
 
