@@ -66,6 +66,7 @@ class NERSentenceEvaluator:
         self.input_str = None
         self.input_tokens = None
         self.input_token_ids = None
+        self.discarded_entities = 0
 
     def execute_base_classification(self):
         # print('Base classification')
@@ -115,7 +116,9 @@ class NERSentenceEvaluator:
                     }
                     self.entities.append(entity)
 
+            entities_before = len(self.entities)
             self.entities = list(filter(lambda x: x['eval'] != 'TN', self.entities))
+            self.discarded_entities = entities_before - len(self.entities)
         test = [e for e in self.entities if 'eval' not in e]
         print('self.entities if eval not in e', test)
 
@@ -259,6 +262,7 @@ class NERSentenceEvaluator:
         return {
             'scores': self.get_all_scores_in_sentence(k_values, modes),
             'entities': self.entities,
+            'discarded_entities': self.discarded_entities,
             'tokens': len(self.input_tokens),
         }
 
@@ -279,6 +283,8 @@ class NERDatasetEvaluator:
         self.raw_scores: List[Dict] = []
         self.raw_entities: List[Dict] = []
         self.scores = None
+        self.relevant_class_names = [f"B-{class_name}", f"I-{class_name}"] if class_name else None
+        self.relevant_class_indices = [self.label2id[c] for c in self.relevant_class_names] if class_name else None
 
     def calculate_average_scores_for_dataset(self, k_values, modes):
         def _calculate_statistical_function(attr: str, squared: bool = False, func: str = None, eval_=None):
@@ -300,12 +306,12 @@ class NERDatasetEvaluator:
                                     for k in k_values}
                             for mode in modes}
 
-                test = [e[attr][modes[0]][k_values[0]] for e in self.raw_scores if attr in e and e['eval'] in eval_]
-                test_types = [type(v) for v in test]
-                if len(set(test_types)) > 1:
-                    print('attr', attr, 'func', func, 'eval_', eval_)
-                    print(test)
-                    print(test_types)
+                # test = [e[attr][modes[0]][k_values[0]] for e in self.raw_scores if attr in e and e['eval'] in eval_]
+                # test_types = [type(v) for v in test]
+                # if len(set(test_types)) > 1:
+                #     print('attr', attr, 'func', func, 'eval_', eval_)
+                #     print(test)
+                #     print(test_types)
                 return {mode:
                             {k: func([e[attr][mode][k] for e in self.raw_scores if attr in e and e['eval'] in eval_])
                              for k in k_values}
@@ -393,6 +399,8 @@ class NERDatasetEvaluator:
         found_entities = 0
         attributed_entities = 0
         annotated_entities = 0
+        annotated_entities_positive = 0
+        discarded_entities = 0
         tokens = 0
         documents_without_entities = 0
         start_time = datetime.now()
@@ -413,14 +421,16 @@ class NERDatasetEvaluator:
             # print('Save scores')
             self.raw_scores.extend(result['scores'])
             self.raw_entities.append(result['entities'])
-            annotated_entities_raw = [label for label in document['labels'] if label != 0]
-            entities_raw = [label for label in document['labels']]
-            print('annotated_entities_raw', len(annotated_entities_raw), annotated_entities_raw)
-            print('entities_raw', len(entities_raw), entities_raw)
+            discarded_entities += result['discarded_entities']
             annotated_entities += len([label for label in document['labels'] if label != 0])
-            found_entities += len(result['entities'])
+            annotated_entities_positive += len([label for label in document['labels'] if label in self.relevant_class_indices])
+            # found_entities += len(result['entities'])
             attributed_entities_raw = [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None]
             print('attributed_entities_raw', len(attributed_entities_raw), attributed_entities_raw)
+            test_other = [e['other_entity'] for e in result['entities']]
+            test_eval = [e['eval'] for e in result['entities']]
+            print('test_other', test_other)
+            print('test_eval', test_eval)
             attributed_entities += len([e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
             if len(result['entities']) == 0:
                 documents_without_entities += 1
@@ -429,6 +439,7 @@ class NERDatasetEvaluator:
         end_time = datetime.now()
         duration = end_time - start_time
         modes = ['top_k']
+        found_entities = len([e for e in self.raw_entities if e['eval'] in ['TP', 'Switched', 'FP']])
         if bottom_k:
             modes.append('bottom_k')
         if continuous:
@@ -438,12 +449,22 @@ class NERDatasetEvaluator:
             'stats': {
                 'total_documents': len(self.dataset),
                 'processed_documents': documents,
-                'annotated_entities': annotated_entities,
-                'avg_annotated_entities': annotated_entities / documents,
+                'annotated_entities_all_classes': annotated_entities,
+                'annotated_entities': annotated_entities_positive,
+                'avg_annotated_entities_all_classes': annotated_entities / documents,
+                'avg_annotated_entities': annotated_entities_positive / documents,
                 'found_entities': found_entities,
+                'found_entities_tp': len([e for e in self.raw_entities if e['eval'] == 'TP']),
+                'found_entities_fp': len([e for e in self.raw_entities if e['eval'] == 'FP']),
+                'found_entities_fn': len([e for e in self.raw_entities if e['eval'] == 'FN']),
+                'found_entities_switched': len([e for e in self.raw_entities if e['eval'] == 'Switched']),
+                'found_entities_all_classes': found_entities + discarded_entities,
                 'attributed_entities': attributed_entities,
+                'discarded_entities': discarded_entities,
                 'avg_found_entities_per_document': found_entities / documents,
-                'found_to_annotated_entities_ratio': found_entities / annotated_entities,
+                'avg_found_entities_per_document_all_classes': (found_entities + discarded_entities) / documents,
+                'found_to_annotated_entities_ratio': found_entities / annotated_entities_positive,
+                'found_to_annotated_entities_ratio_all_classes': (found_entities + discarded_entities) / annotated_entities,
                 'tokens': tokens,
                 'avg_tokens_per_document': tokens / documents,
                 'documents_without_entities': documents_without_entities,
@@ -467,7 +488,7 @@ class NERDatasetEvaluator:
                 'per_k_value': str(duration / len(k_values)),
                 'per_document': str(duration / documents),
                 'per_entity': str(duration / found_entities),
-                'per_attributed_entity': str(duration / attributed_entities),
+                'per_attributed_entity': str(duration / max(1, attributed_entities)),
                 'per_token': str(duration / tokens),
             },
         }
