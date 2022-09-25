@@ -101,11 +101,15 @@ model.config.label2id = label2id
 model.config.id2label = id2label
 pre_processor = InputPreProcessor(tokenizer, additional_tokenizers, label2id, max_tokens=512)
 dataset_length = len(dataset["train"])
+document_ids = [doc['document_id'] for doc in dataset['train'].shuffle(seed=42)]
+print(document_ids)
 if len(dataset) > 1:
     test_dataset = dataset["test"] if 'test' in dataset else dataset["validation"]
 else:
     shuffled_dataset = dataset["train"].shuffle(seed=42)
     test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
+    document_ids = [doc['document_id'] for doc in test_dataset]
+    print(document_ids)
 tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 document_ids = [doc['document_id'] for doc in tokenized_datasets]
 print('document_ids', document_ids)
