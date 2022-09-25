@@ -135,7 +135,7 @@ class NERSentenceEvaluator:
         word_attributions = self.explainer.word_attributions
         for e in self.entities:
             for prefix in self.prefixes:
-                if prefix == 'other_' and e['other_entity'] is None:
+                if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
                 e[f'{prefix}attribution_scores'] = word_attributions[e[f'{prefix}entity']][e['index']]
                 if len(self.input_token_ids) != len(e[f'{prefix}attribution_scores']):
@@ -151,7 +151,7 @@ class NERSentenceEvaluator:
         print('calculate_comprehensiveness, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
         for e in self.entities:
             for prefix in self.prefixes:
-                if prefix == 'other_' and e['other_entity'] is None:
+                if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
                 rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous, bottom_k=bottom_k if not continuous else False)
                 masked_input = torch.tensor([self.input_token_ids])
@@ -171,7 +171,7 @@ class NERSentenceEvaluator:
         print('calculate_sufficiency, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
         for e in self.entities:
             for prefix in self.prefixes:
-                if prefix == 'other_' and e['other_entity'] is None:
+                if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
                 rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous, bottom_k=bottom_k if not continuous else False)
                 masked_input = torch.tensor([self.input_token_ids])
@@ -193,7 +193,7 @@ class NERSentenceEvaluator:
     def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False):
         for e in self.entities:
             for prefix in self.prefixes:
-                if prefix == 'other_' and e['other_entity'] is None:
+                if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
                 e['rationales'][f'{prefix}top_k'][k] = get_rationale(e[f'{prefix}attribution_scores'], k, continuous=False)
                 if continuous:
@@ -213,7 +213,7 @@ class NERSentenceEvaluator:
                 'compdiff': {mode: {k: e['comprehensiveness'][mode][k] - e['sufficiency'][mode][k] for k in k_values}
                              for mode in modes},
             }
-            if e['other_entity'] is not None:
+            if e['other_entity'] not in [None, 'O']:
                 entity_scores.update(
                     {
                         'other_comprehensiveness': {mode: {k: e['other_comprehensiveness'][mode][k] for k in k_values}
@@ -231,6 +231,7 @@ class NERSentenceEvaluator:
 
     def __call__(self, input_document, k_values: List[int] = [1], continuous: bool = False, bottom_k: bool = False, evaluate_other: bool = False):
         self.input_document = input_document
+        print('document_id', self.input_document['document_id'])
         self.prefixes = ['']
         if evaluate_other:
             self.prefixes.append('other_')
@@ -422,7 +423,7 @@ class NERDatasetEvaluator:
                                     evaluate_other=evaluate_other)
             # print('Save scores')
             self.raw_scores.extend(result['scores'])
-            self.raw_entities.append(result['entities'])
+            self.raw_entities.extend(result['entities'])
             discarded_entities += result['discarded_entities']
             annotated_entities += len([label for label in document['labels'] if label != 0])
             annotated_entities_positive += len([label for label in document['labels'] if label in self.relevant_class_indices])
