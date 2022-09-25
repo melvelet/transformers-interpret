@@ -52,7 +52,8 @@ class NERSentenceEvaluator:
     def __init__(self,
                  pipeline: Pipeline,
                  attribution_type: str = "lig",
-                 class_name: str = None):
+                 class_name: str = None,
+                 dataset_name: str = ''):
         self.pipeline = pipeline
         self.model: PreTrainedModel = pipeline.model
         self.tokenizer: PreTrainedTokenizer = pipeline.tokenizer
@@ -67,6 +68,7 @@ class NERSentenceEvaluator:
         self.input_tokens = None
         self.input_token_ids = None
         self.discarded_entities = 0
+        self.dataset_name = dataset_name
 
     def execute_base_classification(self):
         # print('Base classification')
@@ -82,6 +84,8 @@ class NERSentenceEvaluator:
                     entity['gold_label'] = gold_label
                     entity['pred_label'] = pred_label
                     entity['doc_id'] = self.input_document['id']
+                    if self.dataset_name.startswith('euadr'):
+                        entity['doc_title'] = self.input_document['passages'][1]['text'][0]
                     if gold_label in self.relevant_class_indices:
                         if gold_label == pred_label:
                             entity['eval'] = 'TP'
@@ -115,6 +119,8 @@ class NERSentenceEvaluator:
                         'doc_id': self.input_document['id'],
                         'score': np.float64(scores[i][gold_label].item()),
                     }
+                    if self.dataset_name.startswith('euadr'):
+                        entity['doc_title'] = self.input_document['passages'][1]['text'][0]
                     print('created', gold_label, self.label2id['O'], entity['eval'])
                     self.entities.append(entity)
 
@@ -282,7 +288,7 @@ class NERDatasetEvaluator:
         self.label2id, self.id2label = get_labels_from_dataset(dataset, has_splits=False)
         print('label2id', self.label2id)
         self.attribution_type = attribution_type
-        self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type, class_name=class_name)
+        self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type, class_name=class_name, dataset_name=self.dataset.info.config_name)
         self.raw_scores: List[Dict] = []
         self.raw_entities: List[Dict] = []
         self.scores = None
