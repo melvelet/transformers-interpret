@@ -110,8 +110,8 @@ else:
     test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
     document_ids = [doc['document_id'] for doc in test_dataset]
     print(document_ids)
-    print(test_dataset[0]['text'])
 tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
+print(tokenized_datasets[0]['text'])
 document_ids = [doc['document_id'] for doc in tokenized_datasets]
 print('document_ids', document_ids)
 
