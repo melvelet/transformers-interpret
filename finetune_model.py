@@ -32,6 +32,7 @@ model_name_short = {
     'kamalkraj/BioELECTRA-PICO': 'bioelectra',
     'kamalkraj/bioelectra-base-discriminator-pubmed-pmc': 'bioelectra-discriminator',
     'michiyasunaga/BioLinkBERT-base': 'biolinkbert',
+    'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext': 'pubmedbert',
 }
 
 # batch_size = 4
@@ -64,6 +65,7 @@ huggingface_models = [
     'michiyasunaga/BioLinkBERT-base',
     'kamalkraj/BioELECTRA-PICO',
     'kamalkraj/bioelectra-base-discriminator-pubmed-pmc',
+    'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext'
     'dbmdz/electra-large-discriminator-finetuned-conll03-english',
     'Jean-Baptiste/roberta-large-ner-english',
     'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
