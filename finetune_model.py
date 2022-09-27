@@ -3,6 +3,7 @@ import os
 from argparse import ArgumentParser
 
 import numpy as np
+import transformers
 from datasets import load_metric
 from bigbio.dataloader import BigBioConfigHelpers
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TrainingArguments, Trainer
@@ -166,6 +167,7 @@ trainer = Trainer(
     train_dataset=train_dataset,
     eval_dataset=eval_dataset,
     compute_metrics=compute_metrics,
+    data_collator=transformers.DataCollatorForTokenClassification(tokenizer),
 )
 trainer.train()
 scores = trainer.evaluate(eval_dataset=test_dataset)
