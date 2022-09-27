@@ -131,6 +131,7 @@ model: AutoModelForTokenClassification = AutoModelForTokenClassification\
 id2label[-100] = 'O'  # label_pad_token_id from data_collator
 model.config.label2id = label2id
 model.config.id2label = id2label
+model.config.num_labels = len(id2label)
 tokenized_datasets = dataset.map(lambda a: pre_processor(a))
 map_to_string_vec = np.vectorize(map_to_string)
 
