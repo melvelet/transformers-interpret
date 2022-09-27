@@ -30,6 +30,7 @@ model_name_short = {
     'dslim/bert-base-NER': 'bert',
     'Jean-Baptiste/roberta-large-ner-english': 'roberta',
     'kamalkraj/BioELECTRA-PICO': 'bioelectra',
+    'kamalkraj/bioelectra-base-discriminator-pubmed-pmc': 'bioelectra-discriminator',
     'michiyasunaga/BioLinkBERT-base': 'biolinkbert',
 }
 
@@ -61,6 +62,8 @@ dataset_names = [
 # huggingface_model = 'kamalkraj/BioELECTRA-PICO'
 huggingface_models = [
     'michiyasunaga/BioLinkBERT-base',
+    'kamalkraj/BioELECTRA-PICO',
+    'kamalkraj/bioelectra-base-discriminator-pubmed-pmc',
     'dbmdz/electra-large-discriminator-finetuned-conll03-english',
     'Jean-Baptiste/roberta-large-ner-english',
     'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
@@ -91,6 +94,7 @@ print('huggingface_model', huggingface_model)
 print('dataset_name', dataset_name)
 print('batch_size', batch_size)
 print('learning_rate', learning_rate)
+print('epochs', epochs)
 
 if dataset_name == 'bc5cdr_bigbio_kb':
     disease_class = 'Disease'
