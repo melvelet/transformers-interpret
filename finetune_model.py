@@ -73,7 +73,7 @@ parser.add_argument("-m", "--model", dest="model_no", type=int)
 parser.add_argument("-d", "--dataset", dest="dataset_no", type=int)
 parser.add_argument("-b", "--batch-size", dest="batch_size", type=int, default=4)
 parser.add_argument("-l", "--learning-rate", dest="learning_rate", type=int, default=1)
-parser.add_argument("-l", "--epochs", dest="epochs", type=int, default=10)
+parser.add_argument("-e", "--epochs", dest="epochs", type=int, default=10)
 args = parser.parse_args()
 
 huggingface_model = huggingface_models[args.model_no]
