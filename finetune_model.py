@@ -159,6 +159,7 @@ training_args = TrainingArguments(
     metric_for_best_model="target_f1",
     load_best_model_at_end=True,
     greater_is_better=True,
+    save_total_limit=1,
 )
 metric = load_metric("seqeval")
 
