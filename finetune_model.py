@@ -122,6 +122,7 @@ model: AutoModelForTokenClassification = AutoModelForTokenClassification\
     .from_pretrained(huggingface_model,
                      ignore_mismatched_sizes=True,
                      num_labels=len(label2id))
+id2label[-100] = 'O'  # label_pad_token_id from data_collator
 model.config.label2id = label2id
 model.config.id2label = id2label
 tokenized_datasets = dataset.map(lambda a: pre_processor(a))
