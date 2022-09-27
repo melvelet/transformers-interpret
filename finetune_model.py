@@ -65,7 +65,7 @@ huggingface_models = [
     'michiyasunaga/BioLinkBERT-base',
     'kamalkraj/BioELECTRA-PICO',
     'kamalkraj/bioelectra-base-discriminator-pubmed-pmc',
-    'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext'
+    'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext',
     'dbmdz/electra-large-discriminator-finetuned-conll03-english',
     'Jean-Baptiste/roberta-large-ner-english',
     'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
