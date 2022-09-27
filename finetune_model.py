@@ -83,12 +83,12 @@ huggingface_model = huggingface_models[args.model_no]
 dataset_name = dataset_names[args.dataset_no]
 batch_size = args.batch_size
 epochs = args.epochs
+
 if args.learning_rate == 0:
-    learning_rate = 1e-05
-elif args.learning_rate == 2:
-    learning_rate = 1e-06
+    learning_rate = 2e-04
 else:
     learning_rate = 5e-05
+
 
 print('huggingface_model', huggingface_model)
 print('dataset_name', dataset_name)
