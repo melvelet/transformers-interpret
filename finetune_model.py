@@ -29,6 +29,7 @@ model_name_short = {
     'dslim/bert-base-NER': 'bert',
     'Jean-Baptiste/roberta-large-ner-english': 'roberta',
     'kamalkraj/BioELECTRA-PICO': 'bioelectra',
+    'michiyasunaga/BioLinkBERT-base': 'biobert',
 }
 
 # batch_size = 4
@@ -63,6 +64,7 @@ huggingface_models = [
     'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
     'alvaroalon2/biobert_chemical_ner',
     'dslim/bert-base-NER',
+    'michiyasunaga/BioLinkBERT-base',
 ]
 
 parser = ArgumentParser()
@@ -148,9 +150,10 @@ training_args = TrainingArguments(
     save_strategy="epoch",
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
-    num_train_epochs=10,
+    num_train_epochs=20,
+    fp16=True,
     learning_rate=learning_rate,
-    warmup_ratio=0.04,
+    warmup_ratio=0.1,
     metric_for_best_model="target_f1",
     load_best_model_at_end=True,
     greater_is_better=True,
