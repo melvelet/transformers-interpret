@@ -66,11 +66,11 @@ huggingface_models = [
     'kamalkraj/BioELECTRA-PICO',
     'kamalkraj/bioelectra-base-discriminator-pubmed-pmc',
     'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext',
-    'dbmdz/electra-large-discriminator-finetuned-conll03-english',
+    # 'dbmdz/electra-large-discriminator-finetuned-conll03-english',
     'Jean-Baptiste/roberta-large-ner-english',
-    'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
-    'alvaroalon2/biobert_chemical_ner',
-    'dslim/bert-base-NER',
+    # 'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
+    # 'alvaroalon2/biobert_chemical_ner',
+    # 'dslim/bert-base-NER',
 ]
 
 parser = ArgumentParser()
@@ -188,7 +188,7 @@ print('dataset_name', dataset_name, 'huggingface_model', huggingface_model, 'f1'
 
 disease_score = scores[f'eval_{disease_class}']['f1'] if disease_class else 0
 
-trainer.save_model(f"{output_dir}/score{score}_disease{disease_score}_batch{batch_size * cuda_devices}_learn{learning_rate}")
+trainer.save_model(f"{output_dir}/score{round(score, 3)}_disease{round(disease_score, 3)}_batch{batch_size * cuda_devices}_learn{learning_rate}_epochs{epochs}")
 
 # csv_data.append(dataset_scores)
 #
