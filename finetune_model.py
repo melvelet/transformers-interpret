@@ -94,7 +94,7 @@ else:
 
 print('huggingface_model', huggingface_model)
 print('dataset_name', dataset_name)
-print('batch_size', batch_size)
+print('batch_size * cuda_devices', batch_size)
 print('learning_rate', learning_rate)
 print('epochs', epochs)
 
