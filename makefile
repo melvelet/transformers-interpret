@@ -1,6 +1,4 @@
-train-all:
-	train-disease
-	cleanup
+train-all: train-disease cleanup
 
 train-disease:
 	# BC5
