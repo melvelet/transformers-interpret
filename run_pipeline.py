@@ -15,7 +15,7 @@ from bigbio.dataloader import BigBioConfigHelpers
 k_value_levels = [
     [5],
     [2, 3, 5, 10, 20],
-    [2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20]
+    [2, 3, 4, 5, 6, 8, 10, 15, 20]
     ]
 continuous = True
 bottom_k = True
@@ -40,6 +40,8 @@ dataset_names = [
 # huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
 # huggingface_model = 'dslim/bert-base-NER'
 huggingface_models = [
+    'biolinkbert',
+    'bioelectra',
     'electra',
     'roberta',
     'bert',
@@ -84,22 +86,24 @@ elif dataset_name == 'ncbi_disease_bigbio_kb':
 elif dataset_name == 'verspoor_2013_bigbio_kb':
     disease_class = 'disease'
 
-finetuned_huggingface_model = f"./trained_models/{huggingface_model}_{dataset_name.replace('_bigbio_kb', '')}"
+finetuned_huggingface_model = f"./trained_models/{huggingface_model}/{dataset_name.replace('_bigbio_kb', '')}/final"
 
 model_name_long = {
     'electra': 'dbmdz/electra-large-discriminator-finetuned-conll03-english',
     'bert': 'dslim/bert-base-NER',
     'roberta': 'Jean-Baptiste/roberta-large-ner-english',
+    'biolinkbert': 'michiyasunaga/BioLinkBERT-base',
+    'bioelectra': 'kamalkraj/BioELECTRA-PICO',
 }
 
 print('Loading model:', finetuned_huggingface_model)
 
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name_long[huggingface_model])
 additional_tokenizers = []
-if huggingface_model == 'roberta':
-    additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['electra']))
-elif huggingface_model == 'electra':
-    additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['roberta']))
+if huggingface_model == 'biolinkbert':
+    additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['bioelectra']))
+elif huggingface_model == 'bioelectra':
+    additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['biolinkbert']))
 model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(finetuned_huggingface_model, local_files_only=True)
 
 label2id, id2label = get_labels_from_dataset(dataset)
