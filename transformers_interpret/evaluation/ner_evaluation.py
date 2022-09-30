@@ -435,11 +435,11 @@ class NERDatasetEvaluator:
             annotated_entities_positive += len([label for label in document['labels'] if label in self.relevant_class_indices])
             # found_entities += len(result['entities'])
             attributed_entities_raw = [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None]
-            print('attributed_entities_raw', len(attributed_entities_raw), attributed_entities_raw)
+            # print('attributed_entities_raw', len(attributed_entities_raw), attributed_entities_raw)
             test_other = [e['other_entity'] for e in result['entities']]
             test_eval = [e['eval'] for e in result['entities']]
-            print('test_other', test_other)
-            print('test_eval', test_eval)
+            # print('test_other', test_other)
+            # print('test_eval', test_eval)
             attributed_entities += len([e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
             if len(result['entities']) == 0:
                 documents_without_entities += 1
