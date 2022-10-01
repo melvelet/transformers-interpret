@@ -144,7 +144,7 @@ with open(f'{base_file_name}_scores.json', 'w+') as f:
     json.dump(result, f)
 
 with open(f'{base_file_name}_raw_scores.json', 'w+') as f:
-    json.dump(str(evaluator.raw_scores), f)
+    json.dump(evaluator.raw_scores, f)
 
 with open(f'{base_file_name}_raw_entities.json', 'w+') as f:
-    json.dump(str(evaluator.raw_entities), f)
+    json.dump(evaluator.raw_entities, f)
