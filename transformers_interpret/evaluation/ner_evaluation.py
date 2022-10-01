@@ -98,7 +98,7 @@ class NERSentenceEvaluator:
                             entity['eval'] = 'FP'
                         else:
                             entity['eval'] = 'TN'
-                    print(gold_label, pred_label, entity['eval'])
+                    # print(gold_label, pred_label, entity['eval'])
 
                     if entity['eval'] in ['FN', 'FP', 'Switched']:
                         entity['entity'] = self.id2label[gold_label]
@@ -121,21 +121,22 @@ class NERSentenceEvaluator:
                     }
                     if self.dataset_name.startswith('euadr'):
                         entity['doc_title'] = self.input_document['passages'][1]['text'][0]
-                    print('created', gold_label, self.label2id['O'], entity['eval'])
+                    # print('created', gold_label, self.label2id['O'], entity['eval'])
                     self.entities.append(entity)
 
             entities_before = len(self.entities)
             self.entities = list(filter(lambda x: x['eval'] != 'TN', self.entities))
             self.discarded_entities = entities_before - len(self.entities)
         test = [e for e in self.entities if 'eval' not in e]
-        print('self.entities if eval not in e', test)
+        assert len(test) == 0
+        # print('self.entities if eval not in e', test)
 
     def calculate_attribution_scores(self):
         print(f'calculate_attribution_scores for {len(self.entities)} entities')
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
         token_class_index_tuples += [(e['index'], e['other_entity']) for e in self.entities if e['other_entity'] is not None]
         self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples)
-        print('assert', [t for t in self.input_token_ids if t != 1], self.explainer.input_token_ids)
+        # print('assert', [t for t in self.input_token_ids if t != 1], self.explainer.input_token_ids)
         self.input_token_ids = self.explainer.input_token_ids
         self.input_tokens = self.explainer.input_tokens
         word_attributions = self.explainer.word_attributions
