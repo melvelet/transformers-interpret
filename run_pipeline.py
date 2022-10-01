@@ -138,7 +138,7 @@ pprint(result)
 
 end_time = datetime.datetime.now()
 
-base_file_name = f"results/{dataset_name.replace('_bigbio_kb', '')}|{huggingface_model}|{attribution_type}|{end_time}"
+base_file_name = f"results/{dataset_name.replace('_bigbio_kb', '')}|{huggingface_model}|{attribution_type}|{str(end_time).replace(' ', '_')}"
 
 with open(f'{base_file_name}_scores.json', 'w+') as f:
     json.dump(result, f)
