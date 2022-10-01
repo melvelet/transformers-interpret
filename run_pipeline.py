@@ -3,6 +3,8 @@ import json
 import math
 from argparse import ArgumentParser
 from pprint import pprint
+
+import numpy as np
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 
 from transformers_interpret.evaluation import InputPreProcessor, NERDatasetEvaluator
@@ -140,11 +142,24 @@ end_time = datetime.datetime.now()
 
 base_file_name = f"results/{dataset_name.replace('_bigbio_kb', '')}_{huggingface_model}_{attribution_type}_{str(end_time).replace(' ', '_')}"
 
+
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            # 👇️ alternatively use str()
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+
 with open(f'{base_file_name}_scores.json', 'w+') as f:
-    json.dump(result, f)
+    json.dump(result, f, cls=NpEncoder)
 
 with open(f'{base_file_name}_raw_scores.json', 'w+') as f:
-    json.dump(evaluator.raw_scores, f)
+    json.dump(evaluator.raw_scores, f, cls=NpEncoder)
 
 with open(f'{base_file_name}_raw_entities.json', 'w+') as f:
-    json.dump(evaluator.raw_entities, f)
+    json.dump(evaluator.raw_entities, f, cls=NpEncoder)
