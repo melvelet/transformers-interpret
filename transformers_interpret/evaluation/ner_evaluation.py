@@ -101,10 +101,10 @@ class NERSentenceEvaluator:
                     # print(gold_label, pred_label, entity['eval'])
 
                     if entity['eval'] in ['FN', 'FP', 'Switched']:
-                        entity['entity'] = self.id2label[gold_label]
+                        entity['other_entity'] = entity['entity']
                         entity['other_score'] = entity['score']
                         entity['score'] = np.float64(scores[i][gold_label].item())
-                        entity['other_entity'] = self.id2label[gold_label]
+                        entity['entity'] = self.id2label[gold_label]
                     else:
                         entity['other_entity'] = None
                 elif gold_label in self.relevant_class_indices:
