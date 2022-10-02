@@ -145,7 +145,7 @@ class NERSentenceEvaluator:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
                 e[f'{prefix}attribution_scores'] = word_attributions[e[f'{prefix}entity']][e['index']]
-                print(self.input_token_ids, e[f'{prefix}attribution_scores'])
+                print('prefix', prefix, 'class', e[f'{prefix}entity'], 'index', e['index'], e[f'{prefix}attribution_scores'])
                 if len(self.input_token_ids) != len(e[f'{prefix}attribution_scores']):
                     raise Exception(f"attribution_scores of length {len(e['attribution_scores'])} while input tokens have length of {len(self.input_token_ids)}")
                 # print('attribution_scores length, input:', len(self.input_token_ids), 'attribution_scores:',  len(e['attribution_scores']))
