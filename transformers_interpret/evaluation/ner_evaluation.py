@@ -134,7 +134,7 @@ class NERSentenceEvaluator:
     def calculate_attribution_scores(self):
         print(f'calculate_attribution_scores for {len(self.entities)} entities')
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
-        token_class_index_tuples += [(e['index'], e['other_entity']) for e in self.entities if e['other_entity'] is not None]
+        token_class_index_tuples += [(e['index'], self.label2id[e['other_entity']]) for e in self.entities if e['other_entity'] is not None]
         self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples)
         # print('assert', [t for t in self.input_token_ids if t != 1], self.explainer.input_token_ids)
         self.input_token_ids = self.explainer.input_token_ids
