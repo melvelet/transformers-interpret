@@ -89,7 +89,7 @@ huggingface_model = huggingface_models[args.model_no]
 dataset_name = dataset_names[args.dataset_no]
 batch_size = args.batch_size
 epochs = args.epochs
-entity = 'disease' if args.entity == 1 else 'drug'
+entity = 'drug' if args.entity == 1 else 'disease'
 
 if args.learning_rate == 0:
     learning_rate = 2e-04
