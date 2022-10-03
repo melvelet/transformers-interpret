@@ -101,11 +101,10 @@ class NERSentenceEvaluator:
                     # print(gold_label, pred_label, entity['eval'])
 
                     if entity['eval'] in ['FN', 'FP', 'Switched']:
-                        entity['other_entity'] = entity['entity']
-                        entity['other_score'] = entity['score']
-                        entity['score'] = np.float64(scores[i][gold_label].item())
-                        entity['entity'] = self.id2label[gold_label]
+                        entity['other_score'] = np.float64(scores[i][gold_label].item())
+                        entity['other_entity'] = self.id2label[gold_label]
                     else:
+                        entity['other_score'] = 0.0
                         entity['other_entity'] = None
                 elif gold_label in self.relevant_class_indices:
                     entity = {
@@ -351,6 +350,9 @@ class NERDatasetEvaluator:
                 'comprehensiveness_Switched': _calculate_statistical_function('comprehensiveness', eval_=['Switched']),
                 'sufficiency_Switched': _calculate_statistical_function('sufficiency', eval_=['Switched']),
                 'compdiff_Switched': _calculate_statistical_function('compdiff', eval_=['Switched']),
+                'comprehensiveness_Error': _calculate_statistical_function('comprehensiveness', eval_=['FN', 'FP', 'Switched']),
+                'sufficiency_Error': _calculate_statistical_function('sufficiency', eval_=['FN', 'FP', 'Switched']),
+                'compdiff_Error': _calculate_statistical_function('compdiff', eval_=['FN', 'FP', 'Switched']),
                 'other_comprehensiveness': _calculate_statistical_function('other_comprehensiveness'),
                 'other_sufficiency': _calculate_statistical_function('other_sufficiency'),
                 'other_compdiff': _calculate_statistical_function('other_compdiff'),
