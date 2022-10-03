@@ -99,7 +99,7 @@ else:
 
 print('huggingface_model', huggingface_model)
 print('dataset_name', dataset_name)
-print('batch_size * cuda_devices', batch_size)
+print('batch_size * cuda_devices', batch_size * cuda_devices)
 print('learning_rate', learning_rate)
 print('epochs', epochs)
 
@@ -201,7 +201,7 @@ print('dataset_name', dataset_name, 'huggingface_model', huggingface_model, 'f1'
 
 disease_score = scores[f'eval_{disease_class}']['f1'] if disease_class else 0
 
-trainer.save_model(f"{output_dir}/score{round(score, 3)}_entityscore{round(disease_score, 3)}_entity{entity}_batch{batch_size * cuda_devices}_learn{learning_rate}_epochs{epochs}")
+trainer.save_model(f"{output_dir}/score{round(score, 3)}_{entity}{round(disease_score, 3)}_batch{batch_size * cuda_devices}_learn{learning_rate}_epochs{epochs}")
 
 # csv_data.append(dataset_scores)
 #
