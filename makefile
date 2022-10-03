@@ -20,6 +20,23 @@ train-disease:
 	python finetune_model.py -m 1 -d 3 -b 16 -e 5 -l 0
 	python finetune_model.py -m 2 -d 3 -b 16 -e 5 -l 0
 
+train-drug:
+	# euadr
+	python finetune_model.py -m 0 -d 1 -b 16 -e 20 -ent 1
+	python finetune_model.py -m 0 -d 1 -b 8 -e 10 -ent 1
+	python finetune_model.py -m 1 -d 1 -b 16 -e 5 -l 0 -ent 1
+	python finetune_model.py -m 2 -d 1 -b 2 -e 10 -ent 1
+	# MLEE
+	python finetune_model.py -m 0 -d 5 -b 16 -e 20 -ent 1
+	python finetune_model.py -m 0 -d 5 -b 8 -e 10 -ent 1
+	python finetune_model.py -m 1 -d 5 -b 16 -e 5 -l 0 -ent 1
+	python finetune_model.py -m 2 -d 5 -b 2 -e 10 -ent 1
+	# DDI
+	python finetune_model.py -m 0 -d 4 -b 16 -e 20 -ent 1
+	python finetune_model.py -m 0 -d 4 -b 8 -e 10 -ent 1
+	python finetune_model.py -m 1 -d 4 -b 16 -e 5 -l 0 -ent 1
+	python finetune_model.py -m 2 -d 4 -b 2 -e 10 -ent 1
+
 cleanup:
 	cd trained_models
 	find . -type d -name 'checkp*' -prune -exec rm -rf {} \;

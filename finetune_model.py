@@ -53,6 +53,8 @@ dataset_names = [
     'euadr_bigbio_kb',
     'ncbi_disease_bigbio_kb',
     'scai_disease_bigbio_kb',
+    'ddi_corpus_bigbio_kb',
+    'mlee_bigbio_kb',
 ]
 
 # huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
@@ -63,11 +65,12 @@ dataset_names = [
 # huggingface_model = 'kamalkraj/BioELECTRA-PICO'
 huggingface_models = [
     'michiyasunaga/BioLinkBERT-base',
-    'kamalkraj/BioELECTRA-PICO',
+    # 'kamalkraj/BioELECTRA-PICO',
     'kamalkraj/bioelectra-base-discriminator-pubmed-pmc',
+    'Jean-Baptiste/roberta-large-ner-english',
     'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext',
     # 'dbmdz/electra-large-discriminator-finetuned-conll03-english',
-    'Jean-Baptiste/roberta-large-ner-english',
+
     # 'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
     # 'alvaroalon2/biobert_chemical_ner',
     # 'dslim/bert-base-NER',
@@ -79,12 +82,14 @@ parser.add_argument("-d", "--dataset", dest="dataset_no", type=int)
 parser.add_argument("-b", "--batch-size", dest="batch_size", type=int, default=4)
 parser.add_argument("-l", "--learning-rate", dest="learning_rate", type=int, default=1)
 parser.add_argument("-e", "--epochs", dest="epochs", type=int, default=10)
+parser.add_argument("-ent", "--entity", dest="entity", type=int, default=0)
 args = parser.parse_args()
 
 huggingface_model = huggingface_models[args.model_no]
 dataset_name = dataset_names[args.dataset_no]
 batch_size = args.batch_size
 epochs = args.epochs
+entity = 'disease' if args.entity == 1 else 'drug'
 
 if args.learning_rate == 0:
     learning_rate = 2e-04
@@ -98,16 +103,24 @@ print('batch_size * cuda_devices', batch_size)
 print('learning_rate', learning_rate)
 print('epochs', epochs)
 
-if dataset_name == 'bc5cdr_bigbio_kb':
-    disease_class = 'Disease'
-elif dataset_name == 'euadr_bigbio_kb':
-    disease_class = 'Diseases & Disorders'
-elif dataset_name == 'scai_disease_bigbio_kb':
-    disease_class = 'DISEASE'
-elif dataset_name == 'ncbi_disease_bigbio_kb':
-    disease_class = 'SpecificDisease'
-elif dataset_name == 'verspoor_2013_bigbio_kb':
-    disease_class = 'disease'
+if entity == 'disease':
+    if dataset_name == 'bc5cdr_bigbio_kb':
+        disease_class = 'Disease'
+    elif dataset_name == 'euadr_bigbio_kb':
+        disease_class = 'Diseases & Disorders'
+    elif dataset_name == 'scai_disease_bigbio_kb':
+        disease_class = 'DISEASE'
+    elif dataset_name == 'ncbi_disease_bigbio_kb':
+        disease_class = 'SpecificDisease'
+    elif dataset_name == 'verspoor_2013_bigbio_kb':
+        disease_class = 'disease'
+elif entity == 'drug':
+    if dataset_name == 'ddi_corpus_bigbio_kb':
+        disease_class = 'DRUG'
+    elif dataset_name == 'euadr_bigbio_kb':
+        disease_class = 'Chemicals & Drugs'
+    elif dataset_name == 'mlee_bigbio_kb':
+        disease_class = 'Drug_or_compound'
 else:
     disease_class = None
 
@@ -188,7 +201,7 @@ print('dataset_name', dataset_name, 'huggingface_model', huggingface_model, 'f1'
 
 disease_score = scores[f'eval_{disease_class}']['f1'] if disease_class else 0
 
-trainer.save_model(f"{output_dir}/score{round(score, 3)}_disease{round(disease_score, 3)}_batch{batch_size * cuda_devices}_learn{learning_rate}_epochs{epochs}")
+trainer.save_model(f"{output_dir}/score{round(score, 3)}_entityscore{round(disease_score, 3)}_entity{entity}_batch{batch_size * cuda_devices}_learn{learning_rate}_epochs{epochs}")
 
 # csv_data.append(dataset_scores)
 #
