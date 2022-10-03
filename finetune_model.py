@@ -130,10 +130,10 @@ dataset = conhelps.for_config_name(dataset_name).load_dataset()
 
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(huggingface_model)
 additional_tokenizers = []
-if model_name_short[huggingface_model] == 'roberta':
-    additional_tokenizers.append(AutoTokenizer.from_pretrained('dbmdz/electra-large-discriminator-finetuned-conll03-english'))
+if model_name_short[huggingface_model] == 'biolinkbert':
+    additional_tokenizers.append(AutoTokenizer.from_pretrained('kamalkraj/bioelectra-base-discriminator-pubmed-pmc'))
 elif model_name_short[huggingface_model] in ['electra', 'bioelectra']:
-    additional_tokenizers.append(AutoTokenizer.from_pretrained('Jean-Baptiste/roberta-large-ner-english'))
+    additional_tokenizers.append(AutoTokenizer.from_pretrained('michiyasunaga/BioLinkBERT-base'))
 
 label2id, id2label = get_labels_from_dataset(dataset)
 print(label2id)
