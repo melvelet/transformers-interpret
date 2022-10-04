@@ -293,6 +293,7 @@ class NERDatasetEvaluator:
         self.raw_scores: List[Dict] = []
         self.raw_entities: List[Dict] = []
         self.scores = None
+        self.class_name = class_name
         self.relevant_class_names = [f"B-{class_name}", f"I-{class_name}"] if class_name else None
         self.relevant_class_indices = [self.label2id[c] for c in self.relevant_class_names] if class_name else None
 
@@ -313,14 +314,18 @@ class NERDatasetEvaluator:
                 if take_best_rationale:
                     best_rationale_scores = []
                     for e in self.raw_scores:
-                        best_rationale_compdiff = -1
+                        best_rationale_per_mode = []
                         for mode in modes:
+                            best_rationale_compdiff = -1
                             if mode == 'bottom_k':
                                 continue
                             for k in k_values:
-                                if e['compdiff'][mode][k] > best_rationale_compdiff:
+                                if e['compdiff'][mode][k] - best_rationale_compdiff > 0.01:
                                     best_rationale_compdiff = e[attr][mode][k]
-                        best_rationale_scores.append(best_rationale_compdiff)
+                                else:
+                                    break
+                            best_rationale_per_mode.append(best_rationale_compdiff)
+                        best_rationale_scores.append(max(best_rationale_per_mode))
                     return func(best_rationale_scores)
 
                 return {mode:
@@ -506,6 +511,7 @@ class NERDatasetEvaluator:
                 'start_document': start_document,
                 'max_documents': max_documents,
                 'evaluate_other': evaluate_other,
+                'class_name': self.class_name,
             },
             'timing': {
                 'start_time': str(start_time),
