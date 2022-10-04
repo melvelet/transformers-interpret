@@ -297,7 +297,7 @@ class NERDatasetEvaluator:
         self.relevant_class_indices = [self.label2id[c] for c in self.relevant_class_names] if class_name else None
 
     def calculate_average_scores_for_dataset(self, k_values, modes):
-        def _calculate_statistical_function(attr: str, squared: bool = False, func: str = None, eval_=None):
+        def _calculate_statistical_function(attr: str, func: str = None, eval_=None, take_best_rationale: bool = False):
             if eval_ is None:
                 eval_ = ['TP', 'FN', 'FP', 'Switched']
             if func == 'median':
@@ -310,18 +310,19 @@ class NERDatasetEvaluator:
                 func = mean
 
             try:
-                if squared:
-                    return {mode:
-                                {k: func([e[attr][mode][k]**2 for e in self.raw_scores if attr in e and e['eval'] in eval_])
-                                    for k in k_values}
-                            for mode in modes}
+                if take_best_rationale:
+                    best_rationale_scores = []
+                    for e in self.raw_scores:
+                        best_rationale_compdiff = -1
+                        for mode in modes:
+                            if mode == 'bottom_k':
+                                continue
+                            for k in k_values:
+                                if e['compdiff'][mode][k] > best_rationale_compdiff:
+                                    best_rationale_compdiff = e[attr][mode][k]
+                        best_rationale_scores.append(best_rationale_compdiff)
+                    return func(best_rationale_scores)
 
-                # test = [e[attr][modes[0]][k_values[0]] for e in self.raw_scores if attr in e and e['eval'] in eval_]
-                # test_types = [type(v) for v in test]
-                # if len(set(test_types)) > 1:
-                #     print('attr', attr, 'func', func, 'eval_', eval_)
-                #     print(test)
-                #     print(test_types)
                 return {mode:
                             {k: func([e[attr][mode][k] for e in self.raw_scores if attr in e and e['eval'] in eval_])
                              for k in k_values}
@@ -335,6 +336,9 @@ class NERDatasetEvaluator:
 
         return {
             'mean': {
+                'comprehensiveness_Best': _calculate_statistical_function('comprehensiveness', take_best_rationale=True),
+                'sufficiency_Best': _calculate_statistical_function('sufficiency', take_best_rationale=True),
+                'compdiff_Best': _calculate_statistical_function('compdiff', take_best_rationale=True),
                 'comprehensiveness': _calculate_statistical_function('comprehensiveness'),
                 'sufficiency': _calculate_statistical_function('sufficiency'),
                 'compdiff': _calculate_statistical_function('compdiff'),
@@ -350,7 +354,8 @@ class NERDatasetEvaluator:
                 'comprehensiveness_Switched': _calculate_statistical_function('comprehensiveness', eval_=['Switched']),
                 'sufficiency_Switched': _calculate_statistical_function('sufficiency', eval_=['Switched']),
                 'compdiff_Switched': _calculate_statistical_function('compdiff', eval_=['Switched']),
-                'comprehensiveness_Error': _calculate_statistical_function('comprehensiveness', eval_=['FN', 'FP', 'Switched']),
+                'comprehensiveness_Error': _calculate_statistical_function('comprehensiveness',
+                                                                           eval_=['FN', 'FP', 'Switched']),
                 'sufficiency_Error': _calculate_statistical_function('sufficiency', eval_=['FN', 'FP', 'Switched']),
                 'compdiff_Error': _calculate_statistical_function('compdiff', eval_=['FN', 'FP', 'Switched']),
                 'other_comprehensiveness': _calculate_statistical_function('other_comprehensiveness'),
@@ -365,16 +370,16 @@ class NERDatasetEvaluator:
                 'other_comprehensiveness_FN': _calculate_statistical_function('other_comprehensiveness', eval_=['FN']),
                 'other_sufficiency_FN': _calculate_statistical_function('other_sufficiency', eval_=['FN']),
                 'other_compdiff_FN': _calculate_statistical_function('other_compdiff', eval_=['FN']),
-                'other_comprehensiveness_Switched': _calculate_statistical_function('other_comprehensiveness', eval_=['Switched']),
+                'other_comprehensiveness_Switched': _calculate_statistical_function('other_comprehensiveness',
+                                                                                    eval_=['Switched']),
                 'other_sufficiency_Switched': _calculate_statistical_function('other_sufficiency', eval_=['Switched']),
                 'other_compdiff_Switched': _calculate_statistical_function('other_compdiff', eval_=['Switched']),
             },
-            'squared_mean': {
-                'comprehensiveness': _calculate_statistical_function('comprehensiveness', squared=True),
-                'sufficiency': _calculate_statistical_function('sufficiency', squared=True),
-                'compdiff': _calculate_statistical_function('compdiff', squared=True),
-            },
             'median': {
+                'comprehensiveness_Best': _calculate_statistical_function('comprehensiveness', func='median',
+                                                                          take_best_rationale=True),
+                'sufficiency_Best': _calculate_statistical_function('sufficiency', func='median', take_best_rationale=True),
+                'compdiff_Best': _calculate_statistical_function('compdiff',  func='median', take_best_rationale=True),
                 'comprehensiveness': _calculate_statistical_function('comprehensiveness', func='median'),
                 'sufficiency': _calculate_statistical_function('sufficiency', func='median'),
                 'compdiff': _calculate_statistical_function('compdiff', func='median'),
@@ -383,6 +388,10 @@ class NERDatasetEvaluator:
                 'other_compdiff': _calculate_statistical_function('other_compdiff', func='median'),
             },
             'stdev': {
+                'comprehensiveness_Best': _calculate_statistical_function('comprehensiveness', func='stdev',
+                                                                          take_best_rationale=True),
+                'sufficiency_Best': _calculate_statistical_function('sufficiency', func='stdev', take_best_rationale=True),
+                'compdiff_Best': _calculate_statistical_function('compdiff',  func='stdev', take_best_rationale=True),
                 'comprehensiveness': _calculate_statistical_function('comprehensiveness', func='stdev'),
                 'sufficiency': _calculate_statistical_function('sufficiency', func='stdev'),
                 'compdiff': _calculate_statistical_function('compdiff', func='stdev'),
@@ -391,6 +400,10 @@ class NERDatasetEvaluator:
                 'other_compdiff': _calculate_statistical_function('other_compdiff', func='stdev'),
             },
             'variance': {
+                'comprehensiveness_Best': _calculate_statistical_function('comprehensiveness', func='variance',
+                                                                          take_best_rationale=True),
+                'sufficiency_Best': _calculate_statistical_function('sufficiency', func='variance', take_best_rationale=True),
+                'compdiff_Best': _calculate_statistical_function('compdiff',  func='variance', take_best_rationale=True),
                 'comprehensiveness': _calculate_statistical_function('comprehensiveness', func='variance'),
                 'sufficiency': _calculate_statistical_function('sufficiency', func='variance'),
                 'compdiff': _calculate_statistical_function('compdiff', func='variance'),
