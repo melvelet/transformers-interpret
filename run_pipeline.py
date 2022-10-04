@@ -107,7 +107,7 @@ model_name_long = {
     'bert': 'dslim/bert-base-NER',
     'roberta': 'Jean-Baptiste/roberta-large-ner-english',
     'biolinkbert': 'michiyasunaga/BioLinkBERT-base',
-    'bioelectra': 'kamalkraj/bioelectra-base-discriminator-pubmed-pmc',
+    'bioelectra-discriminator': 'kamalkraj/bioelectra-base-discriminator-pubmed-pmc',
 }
 
 print('Loading model:', finetuned_huggingface_model)
