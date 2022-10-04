@@ -172,6 +172,7 @@ class NERSentenceAttributor:
         return {
             'entities': self.entities,
             'discarded_entities': self.discarded_entities,
+            'tokens': len(self.input_token_ids),
         }
 
 
