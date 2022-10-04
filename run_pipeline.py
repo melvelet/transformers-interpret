@@ -36,6 +36,8 @@ dataset_names = [
     'euadr_bigbio_kb',
     'ncbi_disease_bigbio_kb',
     'scai_disease_bigbio_kb',
+    'ddi_corpus_bigbio_kb',
+    'mlee_bigbio_kb',
 ]
 
 # huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
@@ -43,7 +45,7 @@ dataset_names = [
 # huggingface_model = 'dslim/bert-base-NER'
 huggingface_models = [
     'biolinkbert',
-    'bioelectra',
+    'bioelectra-discriminator',
     'electra',
     'roberta',
     'bert',
@@ -56,6 +58,7 @@ parser.add_argument("-a", "--attribution-type", dest="attribution_type_no", type
 parser.add_argument("-max", "--max-documents", dest="max_documents", type=int, default=0)
 parser.add_argument("-s", "--start-document", dest="start_document", type=int, default=0)
 parser.add_argument("-k", "--k-value-level", dest="k_value_level", type=int, default=2)
+parser.add_argument("-ent", "--entity", dest="entity", type=int, default=0)
 args = parser.parse_args()
 
 huggingface_model = huggingface_models[args.model_no]
@@ -63,6 +66,7 @@ dataset_name = dataset_names[args.dataset_no]
 attribution_type = attribution_types[args.attribution_type_no]
 max_documents = args.max_documents
 start_document = args.start_document
+entity = 'drug' if args.entity == 1 else 'disease'
 k_values = k_value_levels[args.k_value_level]
 
 print('Loading dataset:', dataset_name)
@@ -77,16 +81,24 @@ doc_ids = [[doc['document_id'] for doc in dataset['train']]]
 # print(dataset['train'][0]['passages'][1]['text'][0])
 
 disease_class = None
-if dataset_name == 'bc5cdr_bigbio_kb':
-    disease_class = 'Disease'
-elif dataset_name == 'euadr_bigbio_kb':
-    disease_class = 'Diseases & Disorders'
-elif dataset_name == 'scai_disease_bigbio_kb':
-    disease_class = 'DISEASE'
-elif dataset_name == 'ncbi_disease_bigbio_kb':
-    disease_class = 'SpecificDisease'
-elif dataset_name == 'verspoor_2013_bigbio_kb':
-    disease_class = 'disease'
+if entity == 'disease':
+    if dataset_name == 'bc5cdr_bigbio_kb':
+        disease_class = 'Disease'
+    elif dataset_name == 'euadr_bigbio_kb':
+        disease_class = 'Diseases & Disorders'
+    elif dataset_name == 'scai_disease_bigbio_kb':
+        disease_class = 'DISEASE'
+    elif dataset_name == 'ncbi_disease_bigbio_kb':
+        disease_class = 'SpecificDisease'
+    elif dataset_name == 'verspoor_2013_bigbio_kb':
+        disease_class = 'disease'
+elif entity == 'drug':
+    if dataset_name == 'ddi_corpus_bigbio_kb':
+        disease_class = 'DRUG'
+    elif dataset_name == 'euadr_bigbio_kb':
+        disease_class = 'Chemicals & Drugs'
+    elif dataset_name == 'mlee_bigbio_kb':
+        disease_class = 'Drug_or_compound'
 
 finetuned_huggingface_model = f"./trained_models/{huggingface_model}/{dataset_name.replace('_bigbio_kb', '')}/final"
 
@@ -95,7 +107,7 @@ model_name_long = {
     'bert': 'dslim/bert-base-NER',
     'roberta': 'Jean-Baptiste/roberta-large-ner-english',
     'biolinkbert': 'michiyasunaga/BioLinkBERT-base',
-    'bioelectra': 'kamalkraj/BioELECTRA-PICO',
+    'bioelectra': 'kamalkraj/bioelectra-base-discriminator-pubmed-pmc',
 }
 
 print('Loading model:', finetuned_huggingface_model)
@@ -103,8 +115,8 @@ print('Loading model:', finetuned_huggingface_model)
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name_long[huggingface_model])
 additional_tokenizers = []
 if huggingface_model == 'biolinkbert':
-    additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['bioelectra']))
-elif huggingface_model == 'bioelectra':
+    additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['bioelectra-discriminator']))
+elif huggingface_model == 'bioelectra-discriminator':
     additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['biolinkbert']))
 model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(finetuned_huggingface_model, local_files_only=True)
 
@@ -140,7 +152,7 @@ pprint(result)
 
 end_time = datetime.datetime.now()
 
-base_file_name = f"results/{dataset_name.replace('_bigbio_kb', '')}_{huggingface_model}_{attribution_type}_{str(end_time).replace(' ', '_')}"
+base_file_name = f"results/{dataset_name.replace('_bigbio_kb', '')}_{entity}_{huggingface_model}_{attribution_type}_{str(end_time).replace(' ', '_')}"
 
 
 class NpEncoder(json.JSONEncoder):
@@ -148,7 +160,6 @@ class NpEncoder(json.JSONEncoder):
         if isinstance(obj, np.integer):
             return int(obj)
         if isinstance(obj, np.floating):
-            # 👇️ alternatively use str()
             return float(obj)
         if isinstance(obj, np.ndarray):
             return obj.tolist()
