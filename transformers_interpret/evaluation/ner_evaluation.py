@@ -155,7 +155,7 @@ class NERSentenceEvaluator:
                                             'other_top_k': dict(), 'other_continuous': dict(), 'other_bottom_k': dict()}
 
     def calculate_comprehensiveness(self, k: int, continuous: bool = False, bottom_k: bool = False):
-        print('calculate_comprehensiveness, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
+        # print('calculate_comprehensiveness, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
         for e in self.entities:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
@@ -175,7 +175,7 @@ class NERSentenceEvaluator:
                 e[f'{prefix}comprehensiveness'][mode][k] = e[f'{prefix}score'] - new_conf
 
     def calculate_sufficiency(self, k: int, continuous: bool = False, bottom_k: bool = False):
-        print('calculate_sufficiency, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
+        # print('calculate_sufficiency, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
         for e in self.entities:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
@@ -251,23 +251,26 @@ class NERSentenceEvaluator:
         for k in k_values:
             self.write_rationales(k, continuous=continuous, bottom_k=bottom_k)
 
+        print('calculate top_k scores')
         for k in k_values:
             self.calculate_comprehensiveness(k)
             self.calculate_sufficiency(k)
 
         if continuous:
+            print('calculate continuous scores')
             modes.append('continuous')
             for k in k_values:
                 self.calculate_comprehensiveness(k, continuous=True)
                 self.calculate_sufficiency(k, continuous=True)
 
         if bottom_k:
+            print('calculate bottom_k scores')
             modes.append('bottom_k')
             for k in k_values:
                 self.calculate_comprehensiveness(k, bottom_k=True)
                 self.calculate_sufficiency(k, bottom_k=True)
 
-        print('collect scores')
+        # print('collect scores')
 
         return {
             'scores': self.get_all_scores_in_sentence(k_values, modes),
