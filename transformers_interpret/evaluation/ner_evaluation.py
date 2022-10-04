@@ -319,11 +319,11 @@ class NERDatasetEvaluator:
                             best_rationale_compdiff = -1
                             if mode == 'bottom_k':
                                 continue
+                            best_rationale_compdiff_prev = 0
                             for k in k_values:
-                                if e['compdiff'][mode][k] - best_rationale_compdiff > 0.01:
+                                if e['compdiff'][mode][k] - best_rationale_compdiff_prev > 0.05:
                                     best_rationale_compdiff = e[attr][mode][k]
-                                else:
-                                    break
+                                best_rationale_compdiff_prev = e['compdiff'][mode][k]
                             best_rationale_per_mode.append(best_rationale_compdiff)
                         best_rationale_scores.append(max(best_rationale_per_mode))
                     return func(best_rationale_scores)

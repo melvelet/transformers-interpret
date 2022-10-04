@@ -17,7 +17,7 @@ from bigbio.dataloader import BigBioConfigHelpers
 k_value_levels = [
     [5],
     [2, 3, 5, 10, 20],
-    [2, 3, 4, 5, 6, 8, 10, 15, 20]
+    [2, 3, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20]
     ]
 continuous = True
 bottom_k = True
