@@ -283,7 +283,7 @@ class SequenceClassificationExplainer(BaseExplainer):
             else:
                 embeddings = self.word_embeddings
 
-        self.text = self._clean_text(text)
+        self.text = text  # self._clean_text(text)
 
         self._calculate_attributions(embeddings=embeddings, class_index=class_index, class_name=class_name)
         return self.word_attributions  # type: ignore

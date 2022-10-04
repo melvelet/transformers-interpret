@@ -183,6 +183,7 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
         self.labels = list(self.id2label.values())  # assumes that it is sorted
         self.label_probs_dict = {}
         explainer = None
+        attributed_entities = 0
 
         for label_j in range(self.model.config.num_labels):
             self.attributions.append([])
@@ -198,7 +199,8 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
                     self.pred_probs[token_i].append(None)
                     self.label_probs_dict[self.id2label[label_j]].append(None)
                 else:
-                    print(f'Attribution for class={label_j} token={token_i}', end='\r', flush=True)
+                    attributed_entities += 1
+                    print(f'Attribution {attributed_entities} for class={label_j} token={token_i}', end='\r', flush=True)
                     explainer = SequenceClassificationExplainer(
                         model=self.model,
                         tokenizer=self.tokenizer,
