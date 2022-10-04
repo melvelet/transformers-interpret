@@ -100,7 +100,7 @@ elif entity == 'drug':
     elif dataset_name == 'mlee_bigbio_kb':
         disease_class = 'Drug_or_compound'
 
-finetuned_huggingface_model = f"./trained_models/{huggingface_model}/{dataset_name.replace('_bigbio_kb', '')}/final"
+finetuned_huggingface_model = f"./trained_models/{huggingface_model}/{dataset_name.replace('_bigbio_kb', '')}/final_{entity}"
 
 model_name_long = {
     'electra': 'dbmdz/electra-large-discriminator-finetuned-conll03-english',
