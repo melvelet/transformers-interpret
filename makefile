@@ -1,3 +1,31 @@
+attr-pipe-all: attr-pipe-lig
+
+attr-pipe-lig: attr-pipe-lig-disease attr-pipe-lig-drug
+
+attr-pipe-lig-disease: attr-pipe-lig-disease-bc5cdr attr-pipe-lig-disease-ncbi attr-pipe-lig-disease-euadr
+
+attr-pipe-lig-drug: attr-pipe-lig-drug-euadr attr-pipe-lig-drug-ddi
+
+attr-pipe-lig-disease-bc5cdr:
+	python run_attribution_pipeline.py -m 0 -d 0
+	python run_attribution_pipeline.py -m 1 -d 0
+
+attr-pipe-lig-disease-ncbi:
+	python run_attribution_pipeline.py -m 0 -d 2
+	python run_attribution_pipeline.py -m 1 -d 2
+
+attr-pipe-lig-disease-euadr:
+	python run_attribution_pipeline.py -m 0 -d 1
+	python run_attribution_pipeline.py -m 1 -d 1
+
+attr-pipe-lig-drug-euadr:
+	python run_attribution_pipeline.py -m 0 -d 1 -ent 1
+	python run_attribution_pipeline.py -m 1 -d 1 -ent 1
+
+attr-pipe-lig-drug-ddi:
+	python run_attribution_pipeline.py -m 0 -d 4 -ent 1
+	python run_attribution_pipeline.py -m 1 -d 4 -ent 1
+
 pipe-all: pipe-lig
 
 pipe-lig: pipe-lig-disease pipe-lig-drug
