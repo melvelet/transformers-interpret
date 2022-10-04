@@ -153,7 +153,7 @@ map_to_string_vec = np.vectorize(map_to_string)
 dataset_length = len(dataset["train"])
 if len(dataset) > 1:
     train_dataset = tokenized_datasets["train"]
-    eval_dataset = tokenized_datasets["validation"]
+    eval_dataset = tokenized_datasets["validation"] if 'validation' in tokenized_datasets else tokenized_datasets["test"]
     test_dataset = tokenized_datasets["test"] if 'test' in tokenized_datasets else tokenized_datasets["validation"]
 else:
     shuffled_dataset = tokenized_datasets["train"].shuffle(seed=42)
