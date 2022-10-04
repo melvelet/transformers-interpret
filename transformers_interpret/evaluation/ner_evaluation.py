@@ -131,7 +131,7 @@ class NERSentenceAttributor:
         # print('self.entities if eval not in e', test)
 
     def calculate_attribution_scores(self):
-        print(f'calculate_attribution_scores for {len(self.entities)} entities')
+        print(f"calculate_attribution_scores for {len(self.entities) + len([e['other_entity'] for e in self.entities if e['other_entity'] is not None])} entities")
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
         token_class_index_tuples += [(e['index'], self.label2id[e['other_entity']]) for e in self.entities if
                                      e['other_entity'] is not None]
