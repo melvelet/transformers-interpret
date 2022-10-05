@@ -130,7 +130,7 @@ tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 document_ids = [doc['document_id'] for doc in tokenized_datasets]
 # print('document_ids', document_ids)
 
-base_file_name = f"results/{dataset_name.replace('_bigbio_kb', '')}_{entity}_{huggingface_model}_{attribution_type}_{str(end_time).replace(' ', '_')}"
+base_file_name = f"results/{dataset_name.replace('_bigbio_kb', '')}_{entity}_{huggingface_model}_{attribution_type}"
 pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
 
 with open(f'{base_file_name}_attributed_entities.json', 'r') as f:
