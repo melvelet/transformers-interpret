@@ -26,31 +26,31 @@ attr-pipe-lig-drug-ddi:
 	python run_attribution_pipeline.py -m 0 -d 4 -ent 1
 	python run_attribution_pipeline.py -m 1 -d 4 -ent 1
 
-pipe-all: pipe-lig
+eval-pipe-all: eval-pipe-lig
 
-pipe-lig: pipe-lig-disease pipe-lig-drug
+eval-pipe-lig: eval-pipe-lig-disease eval-pipe-lig-drug
 
-pipe-lig-disease: pipe-lig-disease-bc5cdr pipe-lig-disease-ncbi pipe-lig-disease-euadr
+eval-pipe-lig-disease: eval-pipe-lig-disease-bc5cdr eval-pipe-lig-disease-ncbi eval-pipe-lig-disease-euadr
 
-pipe-lig-drug: pipe-lig-drug-euadr pipe-lig-drug-ddi
+eval-pipe-lig-drug: eval-pipe-lig-drug-euadr eval-pipe-lig-drug-ddi
 
-pipe-lig-disease-bc5cdr:
+eval-pipe-lig-disease-bc5cdr:
 	python run_pipeline.py -m 0 -d 0
 	python run_pipeline.py -m 1 -d 0
 
-pipe-lig-disease-ncbi:
+eval-pipe-lig-disease-ncbi:
 	python run_pipeline.py -m 0 -d 2
 	python run_pipeline.py -m 1 -d 2
 
-pipe-lig-disease-euadr:
+eval-pipe-lig-disease-euadr:
 	python run_pipeline.py -m 0 -d 1
 	python run_pipeline.py -m 1 -d 1
 
-pipe-lig-drug-euadr:
+eval-pipe-lig-drug-euadr:
 	python run_pipeline.py -m 0 -d 1 -ent 1
 	python run_pipeline.py -m 1 -d 1 -ent 1
 
-pipe-lig-drug-ddi:
+eval-pipe-lig-drug-ddi:
 	python run_pipeline.py -m 0 -d 4 -ent 1
 	python run_pipeline.py -m 1 -d 4 -ent 1
 

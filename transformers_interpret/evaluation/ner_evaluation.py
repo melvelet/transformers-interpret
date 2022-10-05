@@ -369,7 +369,7 @@ class NERSentenceEvaluator:
 
         return document_scores
 
-    def __call__(self, input_document, k_values: List[int] = [1], continuous: bool = False, bottom_k: bool = False,
+    def __call__(self, input_document, attributions, k_values: List[int] = [1], continuous: bool = False, bottom_k: bool = False,
                  evaluate_other: bool = False):
         self.input_document = input_document
         print('document_id', self.input_document['document_id'])
@@ -379,6 +379,8 @@ class NERSentenceEvaluator:
         self.input_str = input_document['text']
         self.input_token_ids = input_document['input_ids']
         self.gold_labels = input_document['labels']
+        self.entities = attributions['entities']
+        self.discarded_entities = attributions['discarded_entities']
         modes = ['top_k']
         for k in k_values:
             self.write_rationales(k, continuous=continuous, bottom_k=bottom_k)
@@ -413,17 +415,14 @@ class NERSentenceEvaluator:
 
 
 class NERDatasetEvaluator:
-    def __init__(self,
-                 pipeline: Pipeline,
-                 dataset: Dataset,
-                 attribution_type: str = "lig",
-                 class_name: str = None,
-                 ):
+    def __init__(self, pipeline: Pipeline, dataset: Dataset, attributions, attribution_type: str = "lig",
+                 class_name: str = None):
         self.pipeline = pipeline
         self.dataset = dataset
         self.label2id, self.id2label = get_labels_from_dataset(dataset, has_splits=False)
         print('label2id', self.label2id)
         self.attribution_type = attribution_type
+        self.attributions = attributions
         self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type, class_name=class_name,
                                               dataset_name=self.dataset.info.config_name)
         self.raw_scores: List[Dict] = []
@@ -576,15 +575,16 @@ class NERDatasetEvaluator:
         documents_without_entities = 0
         start_time = datetime.now()
 
-        for document in self.dataset:
+        for document, doc_attributions in zip(self.dataset, self.attributions):
+            assert document['document_id'] == doc_attributions['document_id']
             documents += 1
             if start_document and documents < start_document:
                 continue
             if max_documents and 0 < max_documents < documents:
                 break
             print('Document', documents)
-            print('Evaluate')
             result = self.evaluator(document,
+                                    attributions=doc_attributions,
                                     k_values=k_values,
                                     continuous=continuous,
                                     bottom_k=bottom_k,

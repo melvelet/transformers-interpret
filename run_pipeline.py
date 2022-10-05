@@ -27,10 +27,6 @@ attribution_types = [
     'lig',
 ]
 
-# dataset_name = 'bc5cdr_bigbio_kb'  # 2 classes, short to medium sentence length, Disease
-# dataset_name = 'euadr_bigbio_kb'  # 5 classes, short to medium sentence length, Diseases & Disorders
-# dataset_name = 'cadec_bigbio_kb'  # 5 classes, shortest documents, forum posts, Disease
-# dataset_name = 'scai_disease_bigbio_kb'  # 2 classes, long documents, DISEASE
 dataset_names = [
     'bc5cdr_bigbio_kb',
     'euadr_bigbio_kb',
@@ -40,9 +36,6 @@ dataset_names = [
     'mlee_bigbio_kb',
 ]
 
-# huggingface_model = 'Jean-Baptiste/roberta-large-ner-english'
-# huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
-# huggingface_model = 'dslim/bert-base-NER'
 huggingface_models = [
     'biolinkbert',
     'bioelectra-discriminator',
@@ -73,9 +66,6 @@ print('Loading dataset:', dataset_name)
 
 conhelps = BigBioConfigHelpers()
 dataset = conhelps.for_config_name(dataset_name).load_dataset()
-# for i, doc in enumerate(dataset['train']):
-#     if 'We genotyped the four single-nucleotide' in doc['passages'][1]['text'][0]:
-#         print(i, doc)
 doc_ids = [[doc['document_id'] for doc in dataset['train']]]
 # print(doc_ids)
 # print(dataset['train'][0]['passages'][1]['text'][0])
@@ -123,6 +113,7 @@ model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pr
 label2id, id2label = get_labels_from_dataset(dataset)
 model.config.label2id = label2id
 model.config.id2label = id2label
+model.config.num_labels = len(id2label)
 pre_processor = InputPreProcessor(tokenizer, additional_tokenizers, label2id, max_tokens=512)
 dataset_length = len(dataset["train"])
 document_ids = [doc['document_id'] for doc in dataset['train'].shuffle(seed=42)]
@@ -139,8 +130,14 @@ tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 document_ids = [doc['document_id'] for doc in tokenized_datasets]
 # print('document_ids', document_ids)
 
+base_file_name = f"results/{dataset_name.replace('_bigbio_kb', '')}_{entity}_{huggingface_model}_{attribution_type}_{str(end_time).replace(' ', '_')}"
 pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
-evaluator = NERDatasetEvaluator(pipeline, tokenized_datasets, attribution_type, class_name=disease_class)
+
+with open(f'{base_file_name}_attributed_entities.json', 'r') as f:
+    attributions = json.load(f)
+
+evaluator = NERDatasetEvaluator(pipeline, tokenized_datasets, attributions=attributions,
+                                attribution_type=attribution_type, class_name=disease_class)
 result = evaluator(k_values=k_values,
                    continuous=continuous,
                    bottom_k=bottom_k,
@@ -152,7 +149,6 @@ pprint(result)
 
 end_time = datetime.datetime.now()
 
-base_file_name = f"results/{dataset_name.replace('_bigbio_kb', '')}_{entity}_{huggingface_model}_{attribution_type}_{str(end_time).replace(' ', '_')}"
 
 
 class NpEncoder(json.JSONEncoder):
