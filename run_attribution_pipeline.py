@@ -97,6 +97,7 @@ model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pr
 label2id, id2label = get_labels_from_dataset(dataset)
 model.config.label2id = label2id
 model.config.id2label = id2label
+model.config.num_labels = len(id2label)
 pre_processor = InputPreProcessor(tokenizer, additional_tokenizers, label2id, max_tokens=512)
 dataset_length = len(dataset["train"])
 document_ids = [doc['document_id'] for doc in dataset['train'].shuffle(seed=42)]
