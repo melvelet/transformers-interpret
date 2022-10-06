@@ -410,7 +410,7 @@ class NERSentenceEvaluator:
             'scores': self.get_all_scores_in_sentence(k_values, modes),
             'entities': self.entities,
             'discarded_entities': self.discarded_entities,
-            'tokens': len(self.input_tokens),
+            'tokens': len(self.input_token_ids),
         }
 
 
