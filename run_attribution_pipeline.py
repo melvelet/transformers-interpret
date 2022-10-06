@@ -11,6 +11,7 @@ from transformers_interpret.evaluation.input_pre_processor import get_labels_fro
 from bigbio.dataloader import BigBioConfigHelpers
 
 evaluate_other = True
+USE_CUDA = True
 
 attribution_types = [
     'lig',
