@@ -387,6 +387,7 @@ class NERSentenceEvaluator:
 
         print('calculate top_k scores')
         for k in k_values:
+            print(k, end='\r', flush=True)
             self.calculate_comprehensiveness(k)
             self.calculate_sufficiency(k)
 
@@ -394,6 +395,7 @@ class NERSentenceEvaluator:
             print('calculate continuous scores')
             modes.append('continuous')
             for k in k_values:
+                print(k, end='\r', flush=True)
                 self.calculate_comprehensiveness(k, continuous=True)
                 self.calculate_sufficiency(k, continuous=True)
 
@@ -401,6 +403,7 @@ class NERSentenceEvaluator:
             print('calculate bottom_k scores')
             modes.append('bottom_k')
             for k in k_values:
+                print(k, end='\r', flush=True)
                 self.calculate_comprehensiveness(k, bottom_k=True)
                 self.calculate_sufficiency(k, bottom_k=True)
 
