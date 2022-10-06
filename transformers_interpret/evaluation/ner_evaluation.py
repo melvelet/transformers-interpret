@@ -116,10 +116,9 @@ class NERSentenceAttributor:
                         'other_entity': None,
                         'eval': 'FN',
                         'doc_id': self.input_document['id'],
+                        'doc_title': self.input_document['passages'][1]['text'][0],
                         'score': np.float64(scores[i][gold_label].item()),
                     }
-                    if self.dataset_name.startswith('euadr'):
-                        entity['doc_title'] = self.input_document['passages'][1]['text'][0]
                     # print('created', gold_label, self.label2id['O'], entity['eval'])
                     self.entities.append(entity)
 
@@ -291,7 +290,9 @@ class NERSentenceEvaluator:
                 masked_input = torch.tensor([self.input_token_ids])
                 for i in rationale:
                     masked_input[0][i] = self.tokenizer.mask_token_id
+                print('predict')
                 pred = self.model(masked_input)
+                print('score')
                 scores = torch.softmax(pred.logits, dim=-1)[0]
                 new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
                 mode = 'top_k'
