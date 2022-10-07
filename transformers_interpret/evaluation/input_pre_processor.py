@@ -124,6 +124,9 @@ class InputPreProcessor:
 
         tokenizer_i_with_most_cutoff = cutoff_index_temp.index(min(cutoff_index_temp))
         cutoff_index = cutoff_index_temp[tokenizer_i_with_most_cutoff]
+        print('cutoff_index', cutoff_index)
         truncated_tokens = truncated_tokens_temp[tokenizer_i_with_most_cutoff]
+        print('truncated_tokens', truncated_tokens)
         result_document = raw_input_text[:cutoff_index]
+        print('result_document', len(result_document))
         return result_document, truncated_tokens, cutoff_index
