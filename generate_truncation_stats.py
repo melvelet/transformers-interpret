@@ -27,6 +27,7 @@ lines = [['dataset', 'model', 'total_documents', 'truncated_documents', 'truncat
 for model in huggingface_models:
     tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model)
     additional_tokenizers = ['michiyasunaga/BioLinkBERT-base'] if model == 'kamalkraj/bioelectra-base-discriminator-pubmed-pmc' else ['kamalkraj/bioelectra-base-discriminator-pubmed-pmc']
+    additional_tokenizers = [AutoTokenizer.from_pretrained(mod) for mod in additional_tokenizers]
     for dataset_name in dataset_names:
         dataset = conhelps.for_config_name(dataset_name).load_dataset()
         label2id, id2label = get_labels_from_dataset(dataset)
