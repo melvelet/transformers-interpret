@@ -36,9 +36,9 @@ class InputPreProcessor:
     def __call__(self, input_document):
         raw_input_text = ' '.join([i[0] for i in [passage['text'] for passage in input_document['passages']]])\
             .replace('(ABSTRACT TRUNCATED AT 250 WORDS)', '')
-        result = self.truncate_input(raw_input_text)
-        print(result)
-        result_text, truncated_tokens, cutoff_index = result
+        result_text, truncated_tokens, cutoff_index = self.truncate_input(raw_input_text)
+        if len(result_text) == 0:
+            print(input_document)
         tokens = self.tokenizer(result_text, padding='max_length', return_offsets_mapping=True)
         labels = self.create_labels(input_document, tokens)
         # tokens_str = self.tokenizer.tokenize(result_text)
@@ -108,7 +108,7 @@ class InputPreProcessor:
 
     def truncate_input(self, raw_input_text):
         if not raw_input_text:
-            return '', 0
+            return '', 0, 0
         split_sentences = self.sentence_segmentation(raw_input_text)
         sentences = list(split_sentences.sents)
         tokens_temp = [[], []]
