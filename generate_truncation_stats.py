@@ -16,6 +16,7 @@ dataset_names = [
     'ddi_corpus_bigbio_kb',
     'mlee_bigbio_kb',
     'cadec_bigbio_kb',
+    'biorelex_bigbio_kb',
 ]
 
 huggingface_models = ('michiyasunaga/BioLinkBERT-base', 'kamalkraj/bioelectra-base-discriminator-pubmed-pmc')
@@ -24,28 +25,28 @@ lines = [['dataset', 'model', 'total_documents', 'truncated_documents', 'truncat
           'total_entities', 'remaining_entities', 'truncated_entities', 'truncated_entities_percentage',
           'total_tokens', 'truncated_tokens', 'truncated_tokens_percentage']]
 
-for model in huggingface_models:
-    tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model)
-    additional_tokenizers = ['michiyasunaga/BioLinkBERT-base'] if model == 'kamalkraj/bioelectra-base-discriminator-pubmed-pmc' else ['kamalkraj/bioelectra-base-discriminator-pubmed-pmc']
-    additional_tokenizers = [AutoTokenizer.from_pretrained(mod) for mod in additional_tokenizers]
-    for dataset_name in dataset_names:
-        dataset = conhelps.for_config_name(dataset_name).load_dataset()
-        label2id, id2label = get_labels_from_dataset(dataset)
-        pre_processor = InputPreProcessor(tokenizer, additional_tokenizers, label2id)
-        truncated_tokens, truncated_documents, truncated_entities, remaining_entities, total_tokens, total_documents = 0, 0, 0, 0, 0, 0
-        for split in dataset:
-            total_documents += len(dataset[split])
-            for document in dataset[split]:
-                pre_processed_document = pre_processor(document)
-                truncated_tokens += pre_processor.stats['truncated_tokens']
-                total_tokens += pre_processor.stats['total_tokens']
-                truncated_documents += 1 if pre_processor.stats['is_truncated'] > 0 else 0
-                truncated_entities += pre_processor.stats['truncated_entities']
-                remaining_entities += pre_processor.stats['remaining_entities']
-        lines.append([dataset_name, model, total_documents, truncated_documents, truncated_documents / total_documents,
-                      truncated_entities + remaining_entities, remaining_entities, truncated_entities,
-                      truncated_entities / (truncated_entities + remaining_entities),
-                      total_tokens, truncated_tokens, truncated_tokens / total_tokens])
+model = 'michiyasunaga/BioLinkBERT-base'
+tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model)
+additional_tokenizers = ['kamalkraj/bioelectra-base-discriminator-pubmed-pmc']
+additional_tokenizers = [AutoTokenizer.from_pretrained(mod) for mod in additional_tokenizers]
+for dataset_name in dataset_names:
+    dataset = conhelps.for_config_name(dataset_name).load_dataset()
+    label2id, id2label = get_labels_from_dataset(dataset)
+    pre_processor = InputPreProcessor(tokenizer, additional_tokenizers, label2id)
+    truncated_tokens, truncated_documents, truncated_entities, remaining_entities, total_tokens, total_documents = 0, 0, 0, 0, 0, 0
+    for split in dataset:
+        total_documents += len(dataset[split])
+        for document in dataset[split]:
+            pre_processed_document = pre_processor(document)
+            truncated_tokens += pre_processor.stats['truncated_tokens']
+            total_tokens += pre_processor.stats['total_tokens']
+            truncated_documents += 1 if pre_processor.stats['is_truncated'] > 0 else 0
+            truncated_entities += pre_processor.stats['truncated_entities']
+            remaining_entities += pre_processor.stats['remaining_entities']
+    lines.append([dataset_name, model, total_documents, truncated_documents, truncated_documents / total_documents,
+                  truncated_entities + remaining_entities, remaining_entities, truncated_entities,
+                  truncated_entities / (truncated_entities + remaining_entities),
+                  total_tokens, truncated_tokens, truncated_tokens / total_tokens])
 
 with open('results/truncation_stats.csv', 'w+') as file:
     csv_writer = csv.writer(file)
