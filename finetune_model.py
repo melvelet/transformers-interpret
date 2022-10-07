@@ -55,6 +55,7 @@ dataset_names = [
     'scai_disease_bigbio_kb',
     'ddi_corpus_bigbio_kb',
     'mlee_bigbio_kb',
+    'cadec_bigbio_kb',
 ]
 
 # huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
@@ -121,6 +122,8 @@ elif entity == 'drug':
         disease_class = 'Chemicals & Drugs'
     elif dataset_name == 'mlee_bigbio_kb':
         disease_class = 'Drug_or_compound'
+    elif dataset_name == 'cadec_bigbio_kb':
+        disease_class = 'Disease'
 else:
     disease_class = None
 
