@@ -123,7 +123,7 @@ elif entity == 'drug':
     elif dataset_name == 'mlee_bigbio_kb':
         disease_class = 'Drug_or_compound'
     elif dataset_name == 'cadec_bigbio_kb':
-        disease_class = 'Disease'
+        disease_class = 'Drug'
 else:
     disease_class = None
 
