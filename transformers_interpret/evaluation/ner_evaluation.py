@@ -290,9 +290,9 @@ class NERSentenceEvaluator:
                 masked_input = torch.tensor([self.input_token_ids])
                 for i in rationale:
                     masked_input[0][i] = self.tokenizer.mask_token_id
-                print('predict')
+                # print('predict')
                 pred = self.model(masked_input)
-                print('score')
+                # print('score')
                 scores = torch.softmax(pred.logits, dim=-1)[0]
                 new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
                 mode = 'top_k'
