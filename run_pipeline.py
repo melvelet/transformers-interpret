@@ -162,11 +162,11 @@ class NpEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-with open(f'{base_file_name}_scores.json', 'w+') as f:
+with open(f'{base_file_name}_{str(end_time).replace(" ", "_")}_scores.json', 'w+') as f:
     json.dump(result, f, cls=NpEncoder)
 
-with open(f'{base_file_name}_raw_scores.json', 'w+') as f:
+with open(f'{base_file_name}_{str(end_time).replace(" ", "_")}_raw_scores.json', 'w+') as f:
     json.dump(evaluator.raw_scores, f, cls=NpEncoder)
 
-with open(f'{base_file_name}_raw_entities.json', 'w+') as f:
+with open(f'{base_file_name}_{str(end_time).replace(" ", "_")}_raw_entities.json', 'w+') as f:
     json.dump(evaluator.raw_entities, f, cls=NpEncoder)
