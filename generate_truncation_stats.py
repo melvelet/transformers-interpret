@@ -13,9 +13,12 @@ dataset_names = [
     'scai_disease_bigbio_kb',
     'ncbi_disease_bigbio_kb',
     'verspoor_2013_bigbio_kb',
+    'ddi_corpus_bigbio_kb',
+    'mlee_bigbio_kb',
+    'cadec_bigbio_kb',
 ]
 
-huggingface_models = ('dslim/bert-base-NER', 'dbmdz/electra-large-discriminator-finetuned-conll03-english', 'Jean-Baptiste/roberta-large-ner-english')
+huggingface_models = ('michiyasunaga/BioLinkBERT-base', 'kamalkraj/bioelectra-base-discriminator-pubmed-pmc')
 
 lines = [['dataset', 'model', 'total_documents', 'truncated_documents', 'truncated_documents_percentage',
           'total_entities', 'remaining_entities', 'truncated_entities', 'truncated_entities_percentage',
@@ -23,7 +26,7 @@ lines = [['dataset', 'model', 'total_documents', 'truncated_documents', 'truncat
 
 for model in huggingface_models:
     tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model)
-    additional_tokenizers = []
+    additional_tokenizers = ['michiyasunaga/BioLinkBERT-base'] if model == 'kamalkraj/bioelectra-base-discriminator-pubmed-pmc' else ['kamalkraj/bioelectra-base-discriminator-pubmed-pmc']
     for dataset_name in dataset_names:
         dataset = conhelps.for_config_name(dataset_name).load_dataset()
         label2id, id2label = get_labels_from_dataset(dataset)
@@ -43,6 +46,6 @@ for model in huggingface_models:
                       truncated_entities / (truncated_entities + remaining_entities),
                       total_tokens, truncated_tokens, truncated_tokens / total_tokens])
 
-with open('truncation_stats.csv', 'w+') as file:
+with open('results/truncation_stats.csv', 'w+') as file:
     csv_writer = csv.writer(file)
     csv_writer.writerows(lines)
