@@ -93,6 +93,18 @@ train-drug:
 	python finetune_model.py -m 1 -d 4 -b 16 -e 5 -l 0 -ent 1
 	python finetune_model.py -m 2 -d 4 -b 2 -e 10 -ent 1
 
+train-roberta-disease:
+	python finetune_model.py -m 2 -d 0 -b 6 -e 10
+	python finetune_model.py -m 2 -d 1 -b 4 -e 6
+	python finetune_model.py -m 2 -d 1 -b 4 -e 10
+	python finetune_model.py -m 2 -d 1 -b 6 -e 10
+	python finetune_model.py -m 2 -d 2 -b 4 -e 6
+	python finetune_model.py -m 2 -d 2 -b 4 -e 10
+	python finetune_model.py -m 2 -d 2 -b 6 -e 10
+	python finetune_model.py -m 2 -d 3 -b 4 -e 6
+	python finetune_model.py -m 2 -d 3 -b 4 -e 10
+	python finetune_model.py -m 2 -d 3 -b 6 -e 10
+
 cleanup:
 	cd trained_models
 	find . -type d -name 'checkp*' -prune -exec rm -rf {} \;
