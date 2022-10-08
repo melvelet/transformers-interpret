@@ -150,7 +150,6 @@ pprint(result)
 end_time = datetime.datetime.now()
 
 
-
 class NpEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.integer):

@@ -84,8 +84,8 @@ class NERSentenceAttributor:
                     entity['gold_label'] = gold_label
                     entity['pred_label'] = pred_label
                     entity['doc_id'] = self.input_document['id']
-                    if self.dataset_name.startswith('euadr'):
-                        entity['doc_title'] = self.input_document['passages'][1]['text'][0]
+                    entity['doc_doc_id'] = self.input_document['document_id']
+                    entity['doc_title'] = self.input_document['passages'][1]['text'][0]
                     if gold_label in self.relevant_class_indices:
                         if gold_label == pred_label:
                             entity['eval'] = 'TP'

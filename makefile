@@ -104,6 +104,7 @@ train-roberta-disease:
 	python finetune_model.py -m 2 -d 3 -b 4 -e 6
 	python finetune_model.py -m 2 -d 3 -b 4 -e 10
 	python finetune_model.py -m 2 -d 3 -b 6 -e 10
+	cleanup
 
 cleanup:
 	cd trained_models
