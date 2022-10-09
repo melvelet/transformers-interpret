@@ -54,6 +54,12 @@ eval-pipe-lig-drug-ddi:
 	python run_pipeline.py -m 0 -d 4 -ent 1
 	python run_pipeline.py -m 1 -d 4 -ent 1
 
+eval-pipe-lig-cadec:
+	python run_pipeline.py -m 0 -d 6
+	python run_pipeline.py -m 1 -d 6
+	python run_pipeline.py -m 0 -d 6 -ent 1
+	python run_pipeline.py -m 1 -d 6 -ent 1
+
 train-all: train-disease train-drug cleanup
 
 train-disease:
@@ -81,7 +87,7 @@ train-drug:
 	python finetune_model.py -m 0 -d 1 -b 16 -e 20 -ent 1
 	python finetune_model.py -m 0 -d 1 -b 8 -e 10 -ent 1
 	python finetune_model.py -m 1 -d 1 -b 16 -e 5 -l 0 -ent 1
-	python finetune_model.py -m 2 -d 1 -b 2 -e 10 -ent 1
+	python finetune_model.py -m 2 -d 1 -b 8 -e 10 -ent 1
 	# MLEE
 	python finetune_model.py -m 0 -d 5 -b 16 -e 20 -ent 1
 	python finetune_model.py -m 0 -d 5 -b 8 -e 10 -ent 1
@@ -104,6 +110,16 @@ train-roberta-disease:
 	python finetune_model.py -m 2 -d 3 -b 4 -e 6
 	python finetune_model.py -m 2 -d 3 -b 4 -e 10
 	python finetune_model.py -m 2 -d 3 -b 6 -e 10
+	cleanup
+
+train-all-cadec: # single gpu
+	python finetune_model.py -m 0 -d 4 -b 32 -e 20 -ent 1
+	python finetune_model.py -m 0 -d 4 -b 16 -e 10 -ent 1
+	python finetune_model.py -m 1 -d 4 -b 32 -e 5 -l 0 -ent 1
+	python finetune_model.py -m 1 -d 4 -b 16 -e 5 -l 0 -ent 1
+	python finetune_model.py -m 2 -d 4 -b 6 -e 10 -ent 1
+	python finetune_model.py -m 2 -d 4 -b 8 -e 10 -ent 1
+	python finetune_model.py -m 2 -d 4 -b 10 -e 10 -ent 1
 	cleanup
 
 cleanup:
