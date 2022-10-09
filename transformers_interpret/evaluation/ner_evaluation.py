@@ -130,7 +130,8 @@ class NERSentenceAttributor:
         # print('self.entities if eval not in e', test)
 
     def calculate_attribution_scores(self):
-        print(f"calculate_attribution_scores for {len(self.entities) + len([e['other_entity'] for e in self.entities if e['other_entity'] is not None])} entities")
+        print(
+            f"calculate_attribution_scores for {len(self.entities) + len([e['other_entity'] for e in self.entities if e['other_entity'] is not None])} entities")
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
         token_class_index_tuples += [(e['index'], self.label2id[e['other_entity']]) for e in self.entities if
                                      e['other_entity'] is not None]
@@ -373,7 +374,8 @@ class NERSentenceEvaluator:
 
         return document_scores
 
-    def __call__(self, input_document, attributions, k_values: List[int] = [1], continuous: bool = False, bottom_k: bool = False,
+    def __call__(self, input_document, attributions, k_values: List[int] = [1], continuous: bool = False,
+                 bottom_k: bool = False,
                  evaluate_other: bool = False):
         self.input_document = input_document
         print('document_id', self.input_document['document_id'])
@@ -440,7 +442,8 @@ class NERDatasetEvaluator:
         self.relevant_class_indices = [self.label2id[c] for c in self.relevant_class_names] if class_name else None
 
     def calculate_average_scores_for_dataset(self, k_values, modes):
-        def _calculate_statistical_function(attr: str, func: str = None, eval_=None, take_best_rationale: bool = False):
+        def _calculate_statistical_function(attr: str, func: str = None, eval_=None, take_best_rationale: bool = False,
+                                            take_best_rationale_threshold: float = 0.05):
             if eval_ is None:
                 eval_ = ['TP', 'FN', 'FP', 'Switched']
             if func == 'median':
@@ -454,21 +457,25 @@ class NERDatasetEvaluator:
 
             try:
                 if take_best_rationale:
+                    mode = 'top_k'
                     best_rationale_scores = []
+                    best_rationale_k_values = []
                     for e in self.raw_scores:
-                        best_rationale_per_mode = []
-                        for mode in modes:
-                            best_rationale_compdiff = -1
-                            if mode == 'bottom_k':
-                                continue
-                            best_rationale_compdiff_prev = 0
-                            for k in k_values:
-                                if e['compdiff'][mode][k] - best_rationale_compdiff_prev > 0.05:
-                                    best_rationale_compdiff = e[attr][mode][k]
-                                best_rationale_compdiff_prev = e['compdiff'][mode][k]
-                            best_rationale_per_mode.append(best_rationale_compdiff)
-                        best_rationale_scores.append(max(best_rationale_per_mode))
-                    return func(best_rationale_scores)
+                        best_rationale_compdiff = -1
+                        best_rationale_per_mode_k_value = 0
+                        best_rationale_compdiff_prev = 0
+                        for k in reversed(k_values):
+                            if best_rationale_compdiff_prev - e['compdiff'][mode][k] > take_best_rationale_threshold:
+                                best_rationale_compdiff = e[attr][mode][k]
+                                best_rationale_per_mode_k_value = k
+                                break
+                            best_rationale_compdiff_prev = e['compdiff'][mode][k]
+                        if best_rationale_compdiff == -1:
+                            best_rationale_compdiff = e[attr][mode][2]
+                            best_rationale_per_mode_k_value = 2
+                        best_rationale_scores.append(best_rationale_compdiff)
+                        best_rationale_k_values.append(best_rationale_per_mode_k_value)
+                    return func(best_rationale_scores), func(best_rationale_k_values)
 
                 return {mode:
                             {k: func([e[attr][mode][k] for e in self.raw_scores if attr in e and e['eval'] in eval_])
@@ -483,10 +490,34 @@ class NERDatasetEvaluator:
 
         return {
             'mean': {
-                'comprehensiveness_Best': _calculate_statistical_function('comprehensiveness',
-                                                                          take_best_rationale=True),
-                'sufficiency_Best': _calculate_statistical_function('sufficiency', take_best_rationale=True),
-                'compdiff_Best': _calculate_statistical_function('compdiff', take_best_rationale=True),
+                'comprehensiveness_Best_5': _calculate_statistical_function('comprehensiveness',
+                                                                            take_best_rationale=True,
+                                                                            take_best_rationale_threshold=0.05)[0],
+                'sufficiency_Best_5': _calculate_statistical_function('sufficiency', take_best_rationale=True,
+                                                                      take_best_rationale_threshold=0.05)[0],
+                'compdiff_Best_5': _calculate_statistical_function('compdiff', take_best_rationale=True,
+                                                                   take_best_rationale_threshold=0.05)[0],
+                'comprehensiveness_Best_k_5': _calculate_statistical_function('comprehensiveness',
+                                                                              take_best_rationale=True,
+                                                                              take_best_rationale_threshold=0.05)[1],
+                'sufficiency_Best_k_5': _calculate_statistical_function('sufficiency', take_best_rationale=True,
+                                                                        take_best_rationale_threshold=0.05)[1],
+                'compdiff_Best_k_5': _calculate_statistical_function('compdiff', take_best_rationale=True,
+                                                                     take_best_rationale_threshold=0.05)[1],
+                'comprehensiveness_Best_10': _calculate_statistical_function('comprehensiveness',
+                                                                             take_best_rationale=True,
+                                                                             take_best_rationale_threshold=0.1)[0],
+                'sufficiency_Best_10': _calculate_statistical_function('sufficiency', take_best_rationale=True,
+                                                                       take_best_rationale_threshold=0.1)[0],
+                'compdiff_Best_10': _calculate_statistical_function('compdiff', take_best_rationale=True,
+                                                                    take_best_rationale_threshold=0.1)[0],
+                'comprehensiveness_Best_k_10': _calculate_statistical_function('comprehensiveness',
+                                                                               take_best_rationale=True,
+                                                                               take_best_rationale_threshold=0.1)[1],
+                'sufficiency_Best_k_10': _calculate_statistical_function('sufficiency', take_best_rationale=True,
+                                                                         take_best_rationale_threshold=0.1)[1],
+                'compdiff_Best_k_10': _calculate_statistical_function('compdiff', take_best_rationale=True,
+                                                                      take_best_rationale_threshold=0.1)[1],
                 'comprehensiveness': _calculate_statistical_function('comprehensiveness'),
                 'sufficiency': _calculate_statistical_function('sufficiency'),
                 'compdiff': _calculate_statistical_function('compdiff'),
@@ -524,11 +555,53 @@ class NERDatasetEvaluator:
                 'other_compdiff_Switched': _calculate_statistical_function('other_compdiff', eval_=['Switched']),
             },
             'median': {
-                'comprehensiveness_Best': _calculate_statistical_function('comprehensiveness', func='median',
-                                                                          take_best_rationale=True),
-                'sufficiency_Best': _calculate_statistical_function('sufficiency', func='median',
-                                                                    take_best_rationale=True),
-                'compdiff_Best': _calculate_statistical_function('compdiff', func='median', take_best_rationale=True),
+                'comprehensiveness_Best_5': _calculate_statistical_function('comprehensiveness',
+                                                                            func='median',
+                                                                            take_best_rationale=True,
+                                                                            take_best_rationale_threshold=0.05)[0],
+                'sufficiency_Best_5': _calculate_statistical_function('sufficiency',
+                                                                      func='median',
+                                                                      take_best_rationale=True,
+                                                                      take_best_rationale_threshold=0.05)[0],
+                'compdiff_Best_5': _calculate_statistical_function('compdiff',
+                                                                   func='median',
+                                                                   take_best_rationale=True,
+                                                                   take_best_rationale_threshold=0.05)[0],
+                'comprehensiveness_Best_k_5': _calculate_statistical_function('comprehensiveness',
+                                                                              func='median',
+                                                                              take_best_rationale=True,
+                                                                              take_best_rationale_threshold=0.05)[1],
+                'sufficiency_Best_k_5': _calculate_statistical_function('sufficiency',
+                                                                        func='median',
+                                                                        take_best_rationale=True,
+                                                                        take_best_rationale_threshold=0.05)[1],
+                'compdiff_Best_k_5': _calculate_statistical_function('compdiff',
+                                                                     func='median',
+                                                                     take_best_rationale=True,
+                                                                     take_best_rationale_threshold=0.05)[1],
+                'comprehensiveness_Best_10': _calculate_statistical_function('comprehensiveness',
+                                                                             func='median',
+                                                                             take_best_rationale=True,
+                                                                             take_best_rationale_threshold=0.1)[0],
+                'sufficiency_Best_10': _calculate_statistical_function('sufficiency',
+                                                                       func='median',
+                                                                       take_best_rationale=True,
+                                                                       take_best_rationale_threshold=0.1)[0],
+                'compdiff_Best_10': _calculate_statistical_function('compdiff',
+                                                                    func='median',take_best_rationale=True,
+                                                                    take_best_rationale_threshold=0.1)[0],
+                'comprehensiveness_Best_k_10': _calculate_statistical_function('comprehensiveness',
+                                                                               func='median',
+                                                                               take_best_rationale=True,
+                                                                               take_best_rationale_threshold=0.1)[1],
+                'sufficiency_Best_k_10': _calculate_statistical_function('sufficiency',
+                                                                         func='median',
+                                                                         take_best_rationale=True,
+                                                                         take_best_rationale_threshold=0.1)[1],
+                'compdiff_Best_k_10': _calculate_statistical_function('compdiff',
+                                                                      func='median',
+                                                                      take_best_rationale=True,
+                                                                      take_best_rationale_threshold=0.1)[1],
                 'comprehensiveness': _calculate_statistical_function('comprehensiveness', func='median'),
                 'sufficiency': _calculate_statistical_function('sufficiency', func='median'),
                 'compdiff': _calculate_statistical_function('compdiff', func='median'),
