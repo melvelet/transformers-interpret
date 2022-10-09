@@ -622,6 +622,7 @@ class NERDatasetEvaluator:
                  max_documents: Optional[Union[int, None]] = None,
                  start_document: Optional[Union[int, None]] = None,
                  evaluate_other: bool = False,
+                 exclude_reference_token: bool = False,
                  ):
         documents = 0
         found_entities = 0
@@ -713,6 +714,7 @@ class NERDatasetEvaluator:
                 'max_documents': max_documents,
                 'evaluate_other': evaluate_other,
                 'class_name': self.class_name,
+                'exclude_reference_token': exclude_reference_token,
             },
             'timing': {
                 'start_time': str(start_time),

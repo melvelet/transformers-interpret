@@ -61,6 +61,7 @@ max_documents = args.max_documents
 start_document = args.start_document
 entity = 'drug' if args.entity == 1 else 'disease'
 k_values = k_value_levels[args.k_value_level]
+exclude_reference_token = False
 
 print('Loading dataset:', dataset_name)
 
@@ -161,11 +162,13 @@ class NpEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-with open(f'{base_file_name}_{str(end_time).replace(" ", "_")}_scores.json', 'w+') as f:
+exclude_string = 'exclude' if exclude_reference_token else 'include'
+
+with open(f'{base_file_name}_{exclude_string}_{str(end_time).replace(" ", "_")}_scores.json', 'w+') as f:
     json.dump(result, f, cls=NpEncoder)
 
-with open(f'{base_file_name}_{str(end_time).replace(" ", "_")}_raw_scores.json', 'w+') as f:
+with open(f'{base_file_name}_{exclude_string}_{str(end_time).replace(" ", "_")}_raw_scores.json', 'w+') as f:
     json.dump(evaluator.raw_scores, f, cls=NpEncoder)
 
-with open(f'{base_file_name}_{str(end_time).replace(" ", "_")}_raw_entities.json', 'w+') as f:
+with open(f'{base_file_name}_{exclude_string}_{str(end_time).replace(" ", "_")}_raw_entities.json', 'w+') as f:
     json.dump(evaluator.raw_entities, f, cls=NpEncoder)
