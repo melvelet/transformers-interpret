@@ -17,6 +17,7 @@ dataset_names = [
     'mlee_bigbio_kb',
     'cadec_bigbio_kb',
     'biorelex_bigbio_kb',
+    'spl_adr_200db_train_bigbio_kb',
 ]
 
 huggingface_models = ('michiyasunaga/BioLinkBERT-base', 'kamalkraj/bioelectra-base-discriminator-pubmed-pmc')
