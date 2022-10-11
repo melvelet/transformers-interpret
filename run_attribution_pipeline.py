@@ -17,6 +17,7 @@ attribution_types = [
     'lig',
     'lgxa',
     'lfa',
+    'lgs',
 ]
 
 dataset_names = [
