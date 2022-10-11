@@ -302,7 +302,6 @@ class SequenceClassificationExplainer(BaseExplainer):
                 self.ref_input_ids,
                 self.sep_idx,
                 self.attention_mask,
-                target_idx=self.selected_index,
                 position_ids=self.position_ids,
                 ref_position_ids=self.ref_position_ids,
                 internal_batch_size=self.internal_batch_size,
