@@ -276,7 +276,7 @@ class SequenceClassificationExplainer(BaseExplainer):
             self.attributions = lgxa
 
         elif self.attribution_type == 'llrp':
-            lgxa = LLRPAttributions(
+            llrp = LLRPAttributions(
                 self._forward,
                 embeddings,
                 reference_tokens,
@@ -285,8 +285,8 @@ class SequenceClassificationExplainer(BaseExplainer):
                 self.attention_mask,
                 position_ids=self.position_ids,
             )
-            lgxa.summarize()
-            self.attributions = lgxa
+            llrp.summarize()
+            self.attributions = llrp
 
 
     def _run(
