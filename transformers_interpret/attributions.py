@@ -363,6 +363,6 @@ class LGSAttributions(Attributions):
             raise AttributionsNotCalculatedError("Attributions are not yet calculated")
 
     def summarize(self, end_idx=None):
-        print(self._attributions.shape, self._attributions)
-        self.attributions_sum = self._attributions.sum(dim=-1).squeeze(0)
+        print(self._attributions.shape)
+        self.attributions_sum = self._attributions.sum(dim=-2).squeeze(0)
         self.attributions_sum = self.attributions_sum[:end_idx] / torch.norm(self.attributions_sum[:end_idx])
