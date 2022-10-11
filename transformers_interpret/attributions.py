@@ -194,6 +194,19 @@ class LGXAAttributions(Attributions):
         self.attributions_sum = self._attributions.sum(dim=-1).squeeze(0)
         self.attributions_sum = self.attributions_sum[:end_idx] / torch.norm(self.attributions_sum[:end_idx])
 
+    def visualize_attributions(self, pred_prob, pred_class, true_class, attr_class, all_tokens):
+
+        return viz.VisualizationDataRecord(
+            self.attributions_sum,
+            pred_prob,
+            pred_class,
+            true_class,
+            attr_class,
+            self.attributions_sum.sum(),
+            all_tokens,
+            0,
+        )
+
 
 class LFAAttributions(Attributions):
     def __init__(
@@ -262,7 +275,6 @@ class LFAAttributions(Attributions):
                 inputs=self.input_ids,
                 # layer_baselines =self.ref_input_ids,
             )
-
     @property
     def word_attributions(self) -> list:
         wa = []
@@ -277,6 +289,19 @@ class LFAAttributions(Attributions):
     def summarize(self, end_idx=None):
         self.attributions_sum = self._attributions.sum(dim=-1).squeeze(0)
         self.attributions_sum = self.attributions_sum[:end_idx] / torch.norm(self.attributions_sum[:end_idx])
+
+    def visualize_attributions(self, pred_prob, pred_class, true_class, attr_class, all_tokens):
+
+        return viz.VisualizationDataRecord(
+            self.attributions_sum,
+            pred_prob,
+            pred_class,
+            true_class,
+            attr_class,
+            self.attributions_sum.sum(),
+            all_tokens,
+            0,
+        )
 
 
 class GradCamAttributions(Attributions):
@@ -344,3 +369,16 @@ class GradCamAttributions(Attributions):
     def summarize(self, end_idx=None):
         self.attributions_sum = self._attributions.sum(dim=-2).squeeze(0)
         self.attributions_sum = self.attributions_sum[:end_idx] / torch.norm(self.attributions_sum[:end_idx])
+
+    def visualize_attributions(self, pred_prob, pred_class, true_class, attr_class, all_tokens):
+
+        return viz.VisualizationDataRecord(
+            self.attributions_sum,
+            pred_prob,
+            pred_class,
+            true_class,
+            attr_class,
+            self.attributions_sum.sum(),
+            all_tokens,
+            0,
+        )
