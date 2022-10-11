@@ -15,7 +15,7 @@ USE_CUDA = True
 
 attribution_types = [
     'lig',
-    'ixg',
+    'lgxa',
 ]
 
 dataset_names = [

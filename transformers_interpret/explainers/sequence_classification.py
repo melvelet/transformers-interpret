@@ -262,7 +262,7 @@ class SequenceClassificationExplainer(BaseExplainer):
             lig.summarize()
             self.attributions = lig
 
-        elif self.attribution_type == 'ixg':
+        elif self.attribution_type == 'lgxa':
             ixg = IXGAttributions(
                 self._forward,
                 embeddings,
@@ -280,7 +280,6 @@ class SequenceClassificationExplainer(BaseExplainer):
             ixg.summarize()
             self.attributions = ixg
 
-        print(f'self.attributions ({self.attribution_type}): ', self.attributions)
 
     def _run(
         self,
