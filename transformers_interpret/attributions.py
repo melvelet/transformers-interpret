@@ -311,7 +311,7 @@ class LGSAttributions(Attributions):
 
         # print('case', self.token_type_ids is not None, self.position_ids is not None)
         if self.token_type_ids is not None and self.position_ids is not None:
-            self._attributions, self.delta = self.lig.attribute(
+            self._attributions = self.lig.attribute(
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
                 # baselines=(
                 #     self.ref_input_ids,
@@ -322,7 +322,7 @@ class LGSAttributions(Attributions):
                 additional_forward_args=(self.attention_mask),
             )
         elif self.position_ids is not None:
-            self._attributions, self.delta = self.lig.attribute(
+            self._attributions = self.lig.attribute(
                 inputs=(self.input_ids, self.position_ids),
                 # baselines=(
                 #     self.ref_input_ids,
@@ -332,7 +332,7 @@ class LGSAttributions(Attributions):
                 additional_forward_args=(self.attention_mask),
             )
         elif self.token_type_ids is not None:
-            self._attributions, self.delta = self.lig.attribute(
+            self._attributions = self.lig.attribute(
                 inputs=(self.input_ids, self.token_type_ids),
                 # baselines=(
                 #     self.ref_input_ids,
@@ -343,7 +343,7 @@ class LGSAttributions(Attributions):
             )
 
         else:
-            self._attributions, self.delta = self.lig.attribute(
+            self._attributions = self.lig.attribute(
                 inputs=self.input_ids,
                 # baselines=self.ref_input_ids,
                 # return_convergence_delta=True,
