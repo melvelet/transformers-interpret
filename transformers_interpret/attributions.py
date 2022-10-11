@@ -226,41 +226,41 @@ class LLRPAttributions(Attributions):
 
         self.attributor = LayerFeatureAblation(self.custom_forward, self.embeddings)
 
-        # print('case', self.token_type_ids is not None, self.position_ids is not None)
+        print('case', self.token_type_ids is not None, self.position_ids is not None)
         if self.token_type_ids is not None and self.position_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
-                layer_baselines =(
-                    self.ref_input_ids,
-                    self.ref_token_type_ids,
-                    self.ref_position_ids,
-                ),
+                # layer_baselines =(
+                #     self.ref_input_ids,
+                #     self.ref_token_type_ids,
+                #     self.ref_position_ids,
+                # ),
                 # target=[target_idx] if target_idx else None,
                 additional_forward_args=(self.attention_mask),
             )
         elif self.position_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.position_ids),
-                layer_baselines =(
-                    self.ref_input_ids,
-                    self.ref_position_ids,
-                ),
+                # layer_baselines =(
+                #     self.ref_input_ids,
+                #     self.ref_position_ids,
+                # ),
                 additional_forward_args=(self.attention_mask),
             )
         elif self.token_type_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids),
-                layer_baselines =(
-                    self.ref_input_ids,
-                    self.ref_token_type_ids,
-                ),
+                # layer_baselines =(
+                #     self.ref_input_ids,
+                #     self.ref_token_type_ids,
+                # ),
                 additional_forward_args=(self.attention_mask),
             )
 
         else:
             self._attributions = self.attributor.attribute(
                 inputs=self.input_ids,
-                layer_baselines =self.ref_input_ids,
+                # layer_baselines =self.ref_input_ids,
             )
 
     @property
