@@ -226,7 +226,7 @@ class LFAAttributions(Attributions):
 
         self.attributor = LayerFeatureAblation(self.custom_forward, self.embeddings)
 
-        print('case', self.token_type_ids is not None, self.position_ids is not None)
+        # print('case', self.token_type_ids is not None, self.position_ids is not None)
         if self.token_type_ids is not None and self.position_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
