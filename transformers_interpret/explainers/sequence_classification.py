@@ -6,7 +6,7 @@ from captum.attr import visualization as viz
 from torch.nn.modules.sparse import Embedding
 from transformers import PreTrainedModel, PreTrainedTokenizer
 
-from transformers_interpret import BaseExplainer, LIGAttributions, LGXAAttributions, LFAAttributions, LGSAttributions
+from transformers_interpret import BaseExplainer, LIGAttributions, LGXAAttributions, LFAAttributions, GradCamAttributions
 from transformers_interpret.errors import (
     AttributionTypeNotSupportedError,
     InputIdsNotCalculatedError,
@@ -293,14 +293,13 @@ class SequenceClassificationExplainer(BaseExplainer):
             lfa.summarize()
             self.attributions = lfa
 
-        elif self.attribution_type == 'lgs':
-            lgs = LGSAttributions(
+        elif self.attribution_type == 'gradcam':
+            lgs = GradCamAttributions(
                 self._forward,
                 embeddings,
                 reference_tokens,
                 self.input_ids,
                 self.ref_input_ids,
-                self.sep_idx,
                 self.attention_mask,
                 position_ids=self.position_ids,
                 ref_position_ids=self.ref_position_ids,

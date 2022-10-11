@@ -279,7 +279,7 @@ class LFAAttributions(Attributions):
         self.attributions_sum = self.attributions_sum[:end_idx] / torch.norm(self.attributions_sum[:end_idx])
 
 
-class LGSAttributions(Attributions):
+class GradCamAttributions(Attributions):
     def __init__(
             self,
             custom_forward: Callable,
@@ -287,7 +287,6 @@ class LGSAttributions(Attributions):
             tokens: list,
             input_ids: torch.Tensor,
             ref_input_ids: torch.Tensor,
-            sep_id: int,
             attention_mask: torch.Tensor,
             token_type_ids: torch.Tensor = None,
             position_ids: torch.Tensor = None,
@@ -307,49 +306,29 @@ class LGSAttributions(Attributions):
         self.internal_batch_size = internal_batch_size
         self.n_steps = n_steps
 
-        self.lig = LayerGradCam(self.custom_forward, self.embeddings)
+        self.attributor = LayerGradCam(self.custom_forward, self.embeddings)
 
         # print('case', self.token_type_ids is not None, self.position_ids is not None)
         if self.token_type_ids is not None and self.position_ids is not None:
-            self._attributions = self.lig.attribute(
+            self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
-                # baselines=(
-                #     self.ref_input_ids,
-                #     self.ref_token_type_ids,
-                #     self.ref_position_ids,
-                # ),
-                # return_convergence_delta=True,
                 additional_forward_args=(self.attention_mask),
             )
         elif self.position_ids is not None:
-            self._attributions = self.lig.attribute(
+            self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.position_ids),
-                # baselines=(
-                #     self.ref_input_ids,
-                #     self.ref_position_ids,
-                # ),
-                # return_convergence_delta=True,
                 additional_forward_args=(self.attention_mask),
             )
         elif self.token_type_ids is not None:
-            self._attributions = self.lig.attribute(
+            self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids),
-                # baselines=(
-                #     self.ref_input_ids,
-                #     self.ref_token_type_ids,
-                # ),
-                # return_convergence_delta=True,
                 additional_forward_args=(self.attention_mask),
             )
 
         else:
-            self._attributions = self.lig.attribute(
+            self._attributions = self.attributor.attribute(
                 inputs=self.input_ids,
-                # baselines=self.ref_input_ids,
-                # return_convergence_delta=True,
             )
-
-        # print('len(self._attributions)', len(self._attributions[0]), 'len(self.input_ids)', len(self.input_ids[0]), 'self.ref_input_ids', len(self.ref_input_ids[0]))
 
     @property
     def word_attributions(self) -> list:
@@ -357,7 +336,6 @@ class LGSAttributions(Attributions):
         if len(self.attributions_sum) >= 1:
             for i, (word, attribution) in enumerate(zip(self.tokens, self.attributions_sum)):
                 wa.append((word, float(attribution.cpu().data.numpy())))
-            print(wa)
             return wa
 
         else:
