@@ -5,13 +5,15 @@ import torch
 from captum.attr import visualization as viz
 from torch.nn.modules.sparse import Embedding
 from transformers import PreTrainedModel, PreTrainedTokenizer
+
+from attributions import IXGAttributions
 from transformers_interpret import BaseExplainer, LIGAttributions
 from transformers_interpret.errors import (
     AttributionTypeNotSupportedError,
     InputIdsNotCalculatedError,
 )
 
-SUPPORTED_ATTRIBUTION_TYPES = ["lig"]
+SUPPORTED_ATTRIBUTION_TYPES = ["lig", 'ixg']
 
 
 class SequenceClassificationExplainer(BaseExplainer):
@@ -243,22 +245,43 @@ class SequenceClassificationExplainer(BaseExplainer):
         #     self.ref_input_ids[0][i] = 1
 
         reference_tokens = [token.replace("Ġ", "") for token in self.decode(self.input_ids)]
-        lig = LIGAttributions(
-            self._forward,
-            embeddings,
-            reference_tokens,
-            self.input_ids,
-            self.ref_input_ids,
-            self.sep_idx,
-            self.attention_mask,
-            target_idx=self.selected_index,
-            position_ids=self.position_ids,
-            ref_position_ids=self.ref_position_ids,
-            internal_batch_size=self.internal_batch_size,
-            n_steps=self.n_steps,
-        )
-        lig.summarize()
-        self.attributions = lig
+        if self.attribution_type == 'lig':
+            lig = LIGAttributions(
+                self._forward,
+                embeddings,
+                reference_tokens,
+                self.input_ids,
+                self.ref_input_ids,
+                self.sep_idx,
+                self.attention_mask,
+                target_idx=self.selected_index,
+                position_ids=self.position_ids,
+                ref_position_ids=self.ref_position_ids,
+                internal_batch_size=self.internal_batch_size,
+                n_steps=self.n_steps,
+            )
+            lig.summarize()
+            self.attributions = lig
+
+        elif self.attribution_type == 'ixg':
+            ixg = IXGAttributions(
+                self._forward,
+                embeddings,
+                reference_tokens,
+                self.input_ids,
+                self.ref_input_ids,
+                self.sep_idx,
+                self.attention_mask,
+                target_idx=self.selected_index,
+                position_ids=self.position_ids,
+                ref_position_ids=self.ref_position_ids,
+                internal_batch_size=self.internal_batch_size,
+                n_steps=self.n_steps,
+            )
+            ixg.summarize()
+            self.attributions = ixg
+
+        print(f'self.attributions ({self.attribution_type}): ', self.attributions)
 
     def _run(
         self,

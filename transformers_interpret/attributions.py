@@ -2,7 +2,7 @@ from typing import Callable
 
 import torch
 import torch.nn as nn
-from captum.attr import LayerIntegratedGradients
+from captum.attr import LayerIntegratedGradients, InputXGradient
 from captum.attr import visualization as viz
 
 from transformers_interpret.errors import AttributionsNotCalculatedError
@@ -54,6 +54,7 @@ class LIGAttributions(Attributions):
 
         # print('target', target_idx)
 
+        print('case', self.token_type_ids is not None, self.position_ids is not None)
         if self.token_type_ids is not None and self.position_ids is not None:
             self._attributions, self.delta = self.lig.attribute(
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
@@ -131,3 +132,81 @@ class LIGAttributions(Attributions):
             all_tokens,
             self.delta,
         )
+
+
+class IXGAttributions(Attributions):
+    def __init__(
+            self,
+            custom_forward: Callable,
+            embeddings: nn.Module,
+            tokens: list,
+            input_ids: torch.Tensor,
+            ref_input_ids: torch.Tensor,
+            sep_id: int,
+            attention_mask: torch.Tensor,
+            token_type_ids: torch.Tensor = None,
+            position_ids: torch.Tensor = None,
+            ref_token_type_ids: torch.Tensor = None,
+            ref_position_ids: torch.Tensor = None,
+            internal_batch_size: int = None,
+            n_steps: int = 50,
+            target_idx: int = None,
+    ):
+        super().__init__(custom_forward, embeddings, tokens)
+        self.input_ids = input_ids
+        self.ref_input_ids = ref_input_ids
+        self.attention_mask = attention_mask
+        self.token_type_ids = token_type_ids
+        self.position_ids = position_ids
+        self.ref_token_type_ids = ref_token_type_ids
+        self.ref_position_ids = ref_position_ids
+        self.internal_batch_size = internal_batch_size
+        self.n_steps = n_steps
+
+        self.idx = InputXGradient(self.custom_forward)
+        # print('self.ref_input_ids', self.ref_input_ids)
+        # print('self.ref_token_type_ids', self.ref_token_type_ids)
+        # print('self.ref_position_ids', self.ref_position_ids)
+        # print('self.input_ids', self.input_ids)
+        # print('self.token_type_ids', self.token_type_ids)
+        # print('self.position_ids', self.position_ids)
+
+        # print('target', target_idx)
+
+        if self.token_type_ids is not None and self.position_ids is not None:
+            self._attributions = self.idx.attribute(
+                inputs=(self.input_ids, self.token_type_ids, self.position_ids),
+                additional_forward_args=(self.attention_mask),
+            )
+        elif self.position_ids is not None:
+            self._attributions = self.idx.attribute(
+                inputs=(self.input_ids, self.position_ids),
+                additional_forward_args=(self.attention_mask),
+            )
+        elif self.token_type_ids is not None:
+            self._attributions = self.idx.attribute(
+                inputs=(self.input_ids, self.token_type_ids),
+                additional_forward_args=(self.attention_mask),
+            )
+
+        else:
+            self._attributions = self.idx.attribute(
+                inputs=self.input_ids,
+            )
+
+        # print('len(self._attributions)', len(self._attributions[0]), 'len(self.input_ids)', len(self.input_ids[0]), 'self.ref_input_ids', len(self.ref_input_ids[0]))
+
+    @property
+    def word_attributions(self) -> list:
+        wa = []
+        if len(self.attributions_sum) >= 1:
+            for i, (word, attribution) in enumerate(zip(self.tokens, self.attributions_sum)):
+                wa.append((word, float(attribution.cpu().data.numpy())))
+            return wa
+
+        else:
+            raise AttributionsNotCalculatedError("Attributions are not yet calculated")
+
+    def summarize(self, end_idx=None):
+        self.attributions_sum = self._attributions.sum(dim=-1).squeeze(0)
+        self.attributions_sum = self.attributions_sum[:end_idx] / torch.norm(self.attributions_sum[:end_idx])
