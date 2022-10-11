@@ -12,7 +12,7 @@ from transformers_interpret.errors import (
     InputIdsNotCalculatedError,
 )
 
-SUPPORTED_ATTRIBUTION_TYPES = ["lig", 'lgxa', 'lfa', 'lgs']
+SUPPORTED_ATTRIBUTION_TYPES = ["lig", 'lgxa', 'lfa', 'gradcam']
 
 
 class SequenceClassificationExplainer(BaseExplainer):
