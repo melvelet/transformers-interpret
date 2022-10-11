@@ -6,7 +6,7 @@ from captum.attr import visualization as viz
 from torch.nn.modules.sparse import Embedding
 from transformers import PreTrainedModel, PreTrainedTokenizer
 
-from transformers_interpret import BaseExplainer, LIGAttributions, IXGAttributions
+from transformers_interpret import BaseExplainer, LIGAttributions, LGXAAttributions
 from transformers_interpret.errors import (
     AttributionTypeNotSupportedError,
     InputIdsNotCalculatedError,
