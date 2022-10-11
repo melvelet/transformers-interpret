@@ -235,7 +235,6 @@ class LLRPAttributions(Attributions):
                     self.ref_token_type_ids,
                     self.ref_position_ids,
                 ),
-                return_convergence_delta=True,
                 # target=[target_idx] if target_idx else None,
                 additional_forward_args=(self.attention_mask),
             )
@@ -246,7 +245,6 @@ class LLRPAttributions(Attributions):
                     self.ref_input_ids,
                     self.ref_position_ids,
                 ),
-                return_convergence_delta=True,
                 additional_forward_args=(self.attention_mask),
             )
         elif self.token_type_ids is not None:
@@ -256,15 +254,13 @@ class LLRPAttributions(Attributions):
                     self.ref_input_ids,
                     self.ref_token_type_ids,
                 ),
-                return_convergence_delta=True,
                 additional_forward_args=(self.attention_mask),
             )
 
         else:
             self._attributions = self.attributor.attribute(
-                return_convergence_delta=True,
-                layer_baselines =self.ref_input_ids,
                 inputs=self.input_ids,
+                layer_baselines =self.ref_input_ids,
             )
 
     @property
