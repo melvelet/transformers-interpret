@@ -1,4 +1,4 @@
-from .attributions import Attributions, LIGAttributions, LGXAAttributions
+from .attributions import Attributions, LIGAttributions, LGXAAttributions, LLRPAttributions
 from .explainer import BaseExplainer
 from .explainers.question_answering import QuestionAnsweringExplainer
 from .explainers.sequence_classification import SequenceClassificationExplainer
