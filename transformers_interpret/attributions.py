@@ -2,7 +2,8 @@ from typing import Callable
 
 import torch
 import torch.nn as nn
-from captum.attr import LayerIntegratedGradients, LayerGradientXActivation, LayerFeatureAblation, LayerGradientShap
+from captum.attr import LayerIntegratedGradients, LayerGradientXActivation, LayerFeatureAblation, LayerGradientShap, \
+    LayerGradCam
 from captum.attr import visualization as viz
 
 from transformers_interpret.errors import AttributionsNotCalculatedError
@@ -306,47 +307,46 @@ class LGSAttributions(Attributions):
         self.internal_batch_size = internal_batch_size
         self.n_steps = n_steps
 
-        self.lig = LayerGradientShap(self.custom_forward, self.embeddings)
+        self.lig = LayerGradCam(self.custom_forward, self.embeddings)
 
         # print('case', self.token_type_ids is not None, self.position_ids is not None)
         if self.token_type_ids is not None and self.position_ids is not None:
             self._attributions, self.delta = self.lig.attribute(
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
-                baselines=(
-                    self.ref_input_ids,
-                    self.ref_token_type_ids,
-                    self.ref_position_ids,
-                ),
-                # target=[target_idx] if target_idx else None,
-                return_convergence_delta=True,
+                # baselines=(
+                #     self.ref_input_ids,
+                #     self.ref_token_type_ids,
+                #     self.ref_position_ids,
+                # ),
+                # return_convergence_delta=True,
                 additional_forward_args=(self.attention_mask),
             )
-        # elif self.position_ids is not None:
-        #     self._attributions, self.delta = self.lig.attribute(
-        #         inputs=(self.input_ids, self.position_ids),
-        #         baselines=(
-        #             self.ref_input_ids,
-        #             self.ref_position_ids,
-        #         ),
-        #         return_convergence_delta=True,
-        #         additional_forward_args=(self.attention_mask),
-        #     )
+        elif self.position_ids is not None:
+            self._attributions, self.delta = self.lig.attribute(
+                inputs=(self.input_ids, self.position_ids),
+                # baselines=(
+                #     self.ref_input_ids,
+                #     self.ref_position_ids,
+                # ),
+                # return_convergence_delta=True,
+                additional_forward_args=(self.attention_mask),
+            )
         elif self.token_type_ids is not None:
             self._attributions, self.delta = self.lig.attribute(
                 inputs=(self.input_ids, self.token_type_ids),
-                baselines=(
-                    self.ref_input_ids,
-                    self.ref_token_type_ids,
-                ),
-                return_convergence_delta=True,
+                # baselines=(
+                #     self.ref_input_ids,
+                #     self.ref_token_type_ids,
+                # ),
+                # return_convergence_delta=True,
                 additional_forward_args=(self.attention_mask),
             )
 
         else:
             self._attributions, self.delta = self.lig.attribute(
                 inputs=self.input_ids,
-                baselines=self.ref_input_ids,
-                return_convergence_delta=True,
+                # baselines=self.ref_input_ids,
+                # return_convergence_delta=True,
             )
 
         # print('len(self._attributions)', len(self._attributions[0]), 'len(self.input_ids)', len(self.input_ids[0]), 'self.ref_input_ids', len(self.ref_input_ids[0]))
