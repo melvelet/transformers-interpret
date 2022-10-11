@@ -195,7 +195,7 @@ class LGXAAttributions(Attributions):
         self.attributions_sum = self.attributions_sum[:end_idx] / torch.norm(self.attributions_sum[:end_idx])
 
 
-class LLRPAttributions(Attributions):
+class LFAAttributions(Attributions):
     def __init__(
             self,
             custom_forward: Callable,

@@ -6,13 +6,13 @@ from captum.attr import visualization as viz
 from torch.nn.modules.sparse import Embedding
 from transformers import PreTrainedModel, PreTrainedTokenizer
 
-from transformers_interpret import BaseExplainer, LIGAttributions, LGXAAttributions, LLRPAttributions
+from transformers_interpret import BaseExplainer, LIGAttributions, LGXAAttributions, LFAAttributions
 from transformers_interpret.errors import (
     AttributionTypeNotSupportedError,
     InputIdsNotCalculatedError,
 )
 
-SUPPORTED_ATTRIBUTION_TYPES = ["lig", 'lgxa', 'llrp']
+SUPPORTED_ATTRIBUTION_TYPES = ["lig", 'lgxa', 'lfa']
 
 
 class SequenceClassificationExplainer(BaseExplainer):
@@ -275,8 +275,8 @@ class SequenceClassificationExplainer(BaseExplainer):
             lgxa.summarize()
             self.attributions = lgxa
 
-        elif self.attribution_type == 'llrp':
-            llrp = LLRPAttributions(
+        elif self.attribution_type == 'lfa':
+            lfa = LFAAttributions(
                 self._forward,
                 embeddings,
                 reference_tokens,
@@ -290,8 +290,8 @@ class SequenceClassificationExplainer(BaseExplainer):
                 internal_batch_size=self.internal_batch_size,
                 n_steps=self.n_steps,
             )
-            llrp.summarize()
-            self.attributions = llrp
+            lfa.summarize()
+            self.attributions = lfa
 
 
     def _run(
