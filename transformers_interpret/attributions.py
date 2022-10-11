@@ -357,6 +357,7 @@ class LGSAttributions(Attributions):
         if len(self.attributions_sum) >= 1:
             for i, (word, attribution) in enumerate(zip(self.tokens, self.attributions_sum)):
                 wa.append((word, float(attribution.cpu().data.numpy())))
+            print(wa)
             return wa
 
         else:
