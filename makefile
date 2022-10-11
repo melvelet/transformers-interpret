@@ -112,22 +112,22 @@ train-roberta-disease:
 	python finetune_model.py -m 2 -d 3 -b 6 -e 10
 
 train-all-cadec: # single gpu
-	python finetune_model.py -m 0 -d 4 -b 32 -e 20 -ent 1
-	python finetune_model.py -m 0 -d 4 -b 16 -e 10 -ent 1
-	python finetune_model.py -m 1 -d 4 -b 32 -e 5 -l 0 -ent 1
-	python finetune_model.py -m 1 -d 4 -b 16 -e 5 -l 0 -ent 1
-	python finetune_model.py -m 2 -d 4 -b 6 -e 10 -ent 1
-	python finetune_model.py -m 2 -d 4 -b 8 -e 10 -ent 1
-	python finetune_model.py -m 2 -d 4 -b 10 -e 10 -ent 1
+	python finetune_model.py -m 0 -d 6 -b 32 -e 20 -ent 1
+	python finetune_model.py -m 0 -d 6 -b 16 -e 10 -ent 1
+	python finetune_model.py -m 1 -d 6 -b 32 -e 5 -l 0 -ent 1
+	python finetune_model.py -m 1 -d 6 -b 16 -e 5 -l 0 -ent 1
+	python finetune_model.py -m 2 -d 6 -b 6 -e 10 -ent 1
+	python finetune_model.py -m 2 -d 6 -b 8 -e 10 -ent 1
+	python finetune_model.py -m 2 -d 6 -b 10 -e 10 -ent 1
 
 train-all-cadec-2gpu: # single gpu
-	python finetune_model.py -m 0 -d 4 -b 16 -e 20 -ent 1
-	python finetune_model.py -m 0 -d 4 -b 8 -e 10 -ent 1
-	python finetune_model.py -m 1 -d 4 -b 16 -e 5 -l 0 -ent 1
-	python finetune_model.py -m 1 -d 4 -b 8 -e 5 -l 0 -ent 1
-	python finetune_model.py -m 2 -d 4 -b 3 -e 10 -ent 1
-	python finetune_model.py -m 2 -d 4 -b 4 -e 10 -ent 1
-	python finetune_model.py -m 2 -d 4 -b 5 -e 10 -ent 1
+	python finetune_model.py -m 0 -d 6 -b 16 -e 20 -ent 1
+	python finetune_model.py -m 0 -d 6 -b 8 -e 10 -ent 1
+	python finetune_model.py -m 1 -d 6 -b 16 -e 5 -l 0 -ent 1
+	python finetune_model.py -m 1 -d 6 -b 8 -e 5 -l 0 -ent 1
+	python finetune_model.py -m 2 -d 6 -b 3 -e 10 -ent 1
+	python finetune_model.py -m 2 -d 6 -b 4 -e 10 -ent 1
+	python finetune_model.py -m 2 -d 6 -b 5 -e 10 -ent 1
 
 cleanup:
 	cd trained_models
