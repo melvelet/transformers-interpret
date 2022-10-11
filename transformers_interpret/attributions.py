@@ -176,7 +176,7 @@ class IXGAttributions(Attributions):
         print('case', self.token_type_ids is not None, self.position_ids is not None)
         self._attributions = self.idx.attribute(
             inputs=self.input_ids,
-            additional_forward_args=(self.attention_mask),
+            # additional_forward_args=(self.attention_mask),
         )
         # if self.token_type_ids is not None and self.position_ids is not None:
         #     self._attributions = self.idx.attribute(
