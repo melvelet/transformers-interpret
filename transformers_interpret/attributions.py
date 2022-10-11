@@ -2,7 +2,7 @@ from typing import Callable
 
 import torch
 import torch.nn as nn
-from captum.attr import LayerIntegratedGradients, InputXGradient
+from captum.attr import LayerIntegratedGradients, InputXGradient, LayerGradientXActivation
 from captum.attr import visualization as viz
 
 from transformers_interpret.errors import AttributionsNotCalculatedError
@@ -163,7 +163,7 @@ class IXGAttributions(Attributions):
         self.internal_batch_size = internal_batch_size
         self.n_steps = n_steps
 
-        self.idx = InputXGradient(self.custom_forward)
+        self.lig = LayerGradientXActivation(self.custom_forward, self.embeddings)
         # print('self.ref_input_ids', self.ref_input_ids)
         # print('self.ref_token_type_ids', self.ref_token_type_ids)
         # print('self.ref_position_ids', self.ref_position_ids)
@@ -175,23 +175,24 @@ class IXGAttributions(Attributions):
 
         print('case', self.token_type_ids is not None, self.position_ids is not None)
         if self.token_type_ids is not None and self.position_ids is not None:
-            self._attributions = self.idx.attribute(
+            self._attributions = self.lig.attribute(
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
+                # target=[target_idx] if target_idx else None,
                 additional_forward_args=(self.attention_mask),
             )
         elif self.position_ids is not None:
-            self._attributions = self.idx.attribute(
+            self._attributions = self.lig.attribute(
                 inputs=(self.input_ids, self.position_ids),
                 additional_forward_args=(self.attention_mask),
             )
         elif self.token_type_ids is not None:
-            self._attributions = self.idx.attribute(
+            self._attributions = self.lig.attribute(
                 inputs=(self.input_ids, self.token_type_ids),
                 additional_forward_args=(self.attention_mask),
             )
 
         else:
-            self._attributions = self.idx.attribute(
+            self._attributions = self.lig.attribute(
                 inputs=self.input_ids,
             )
 
