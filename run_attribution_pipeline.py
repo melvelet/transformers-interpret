@@ -46,6 +46,7 @@ args = parser.parse_args()
 
 huggingface_model = huggingface_models[args.model_no]
 dataset_name = dataset_names[args.dataset_no]
+print(attribution_types)
 attribution_type = attribution_types[args.attribution_type_no]
 max_documents = args.max_documents
 start_document = args.start_document
