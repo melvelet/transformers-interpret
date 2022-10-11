@@ -2,7 +2,8 @@ from typing import Callable
 
 import torch
 import torch.nn as nn
-from captum.attr import LayerIntegratedGradients, InputXGradient, LayerGradientXActivation, LayerLRP
+from captum.attr import LayerIntegratedGradients, InputXGradient, LayerGradientXActivation, LayerLRP, \
+    LayerFeatureAblation
 from captum.attr import visualization as viz
 
 from transformers_interpret.errors import AttributionsNotCalculatedError
@@ -202,9 +203,15 @@ class LLRPAttributions(Attributions):
             tokens: list,
             input_ids: torch.Tensor,
             ref_input_ids: torch.Tensor,
+            sep_id: int,
             attention_mask: torch.Tensor,
             token_type_ids: torch.Tensor = None,
             position_ids: torch.Tensor = None,
+            ref_token_type_ids: torch.Tensor = None,
+            ref_position_ids: torch.Tensor = None,
+            internal_batch_size: int = None,
+            n_steps: int = 50,
+            target_idx: int = None,
     ):
         super().__init__(custom_forward, embeddings, tokens)
         self.input_ids = input_ids
@@ -212,13 +219,22 @@ class LLRPAttributions(Attributions):
         self.attention_mask = attention_mask
         self.token_type_ids = token_type_ids
         self.position_ids = position_ids
+        self.ref_token_type_ids = ref_token_type_ids
+        self.ref_position_ids = ref_position_ids
+        self.internal_batch_size = internal_batch_size
+        self.n_steps = n_steps
 
-        self.attributor = LayerLRP(self.custom_forward, self.embeddings)
+        self.attributor = LayerFeatureAblation(self.custom_forward, self.embeddings)
 
         # print('case', self.token_type_ids is not None, self.position_ids is not None)
         if self.token_type_ids is not None and self.position_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
+                layer_baselines =(
+                    self.ref_input_ids,
+                    self.ref_token_type_ids,
+                    self.ref_position_ids,
+                ),
                 return_convergence_delta=True,
                 # target=[target_idx] if target_idx else None,
                 additional_forward_args=(self.attention_mask),
@@ -226,12 +242,20 @@ class LLRPAttributions(Attributions):
         elif self.position_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.position_ids),
+                layer_baselines =(
+                    self.ref_input_ids,
+                    self.ref_position_ids,
+                ),
                 return_convergence_delta=True,
                 additional_forward_args=(self.attention_mask),
             )
         elif self.token_type_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids),
+                layer_baselines =(
+                    self.ref_input_ids,
+                    self.ref_token_type_ids,
+                ),
                 return_convergence_delta=True,
                 additional_forward_args=(self.attention_mask),
             )
@@ -239,6 +263,7 @@ class LLRPAttributions(Attributions):
         else:
             self._attributions = self.attributor.attribute(
                 return_convergence_delta=True,
+                layer_baselines =self.ref_input_ids,
                 inputs=self.input_ids,
             )
 
