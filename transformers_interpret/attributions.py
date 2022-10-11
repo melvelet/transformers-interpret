@@ -365,4 +365,3 @@ class LGSAttributions(Attributions):
     def summarize(self, end_idx=None):
         self.attributions_sum = self._attributions.sum(dim=-2).squeeze(0)
         self.attributions_sum = self.attributions_sum[:end_idx] / torch.norm(self.attributions_sum[:end_idx])
-        print(len(self.attributions_sum))

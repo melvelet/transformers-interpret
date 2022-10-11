@@ -146,6 +146,7 @@ class NERSentenceAttributor:
                     continue
                 e[f'{prefix}attribution_scores'] = word_attributions[e[f'{prefix}entity']][e['index']]
                 # print('prefix', prefix, 'class', e[f'{prefix}entity'], 'index', e['index'], e[f'{prefix}attribution_scores'])
+                print(len(self.input_token_ids), len(e[f'{prefix}attribution_scores']))
                 if len(self.input_token_ids) != len(e[f'{prefix}attribution_scores']):
                     print(e[f'{prefix}attribution_scores'])
                     raise Exception(
