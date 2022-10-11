@@ -174,30 +174,26 @@ class IXGAttributions(Attributions):
         # print('target', target_idx)
 
         print('case', self.token_type_ids is not None, self.position_ids is not None)
-        self._attributions = self.idx.attribute(
-            inputs=self.input_ids,
-            # additional_forward_args=(self.attention_mask),
-        )
-        # if self.token_type_ids is not None and self.position_ids is not None:
-        #     self._attributions = self.idx.attribute(
-        #         inputs=(self.input_ids, self.token_type_ids, self.position_ids),
-        #         additional_forward_args=(self.attention_mask),
-        #     )
-        # elif self.position_ids is not None:
-        #     self._attributions = self.idx.attribute(
-        #         inputs=(self.input_ids, self.position_ids),
-        #         additional_forward_args=(self.attention_mask),
-        #     )
-        # elif self.token_type_ids is not None:
-        #     self._attributions = self.idx.attribute(
-        #         inputs=(self.input_ids, self.token_type_ids),
-        #         additional_forward_args=(self.attention_mask),
-        #     )
-        #
-        # else:
-        #     self._attributions = self.idx.attribute(
-        #         inputs=self.input_ids,
-        #     )
+        if self.token_type_ids is not None and self.position_ids is not None:
+            self._attributions = self.idx.attribute(
+                inputs=(self.input_ids, self.token_type_ids, self.position_ids),
+                additional_forward_args=(self.attention_mask),
+            )
+        elif self.position_ids is not None:
+            self._attributions = self.idx.attribute(
+                inputs=(self.input_ids, self.position_ids),
+                additional_forward_args=(self.attention_mask),
+            )
+        elif self.token_type_ids is not None:
+            self._attributions = self.idx.attribute(
+                inputs=(self.input_ids, self.token_type_ids),
+                additional_forward_args=(self.attention_mask),
+            )
+
+        else:
+            self._attributions = self.idx.attribute(
+                inputs=self.input_ids,
+            )
 
         # print('len(self._attributions)', len(self._attributions[0]), 'len(self.input_ids)', len(self.input_ids[0]), 'self.ref_input_ids', len(self.ref_input_ids[0]))
 
