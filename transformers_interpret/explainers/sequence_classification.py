@@ -263,19 +263,14 @@ class SequenceClassificationExplainer(BaseExplainer):
             self.attributions = lig
 
         elif self.attribution_type == 'lgxa':
-            ixg = IXGAttributions(
+            ixg = LGXAAttributions(
                 self._forward,
                 embeddings,
                 reference_tokens,
                 self.input_ids,
                 self.ref_input_ids,
-                self.sep_idx,
                 self.attention_mask,
-                target_idx=self.selected_index,
                 position_ids=self.position_ids,
-                ref_position_ids=self.ref_position_ids,
-                internal_batch_size=self.internal_batch_size,
-                n_steps=self.n_steps,
             )
             ixg.summarize()
             self.attributions = ixg
