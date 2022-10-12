@@ -27,6 +27,7 @@ def compute_metrics(eval_pred):
     logits, labels = eval_pred
     print(logits.shape)
     print(logits[0][1])
+    logits = logits.detach().numpy()
     predictions = np.argmax(logits, axis=-1)
     print(predictions)
     print(predictions.shape)
