@@ -72,7 +72,7 @@ for dataset_name in dataset_names:
 
         finetuned_huggingface_model = f"./trained_models/{model_name}/{dataset_name.replace('_bigbio_kb', '')}/final"
         model: AutoModelForTokenClassification = AutoModelForTokenClassification \
-            .from_pretrained(finetuned_huggingface_model)
+            .from_pretrained(finetuned_huggingface_model, local_files_only=True, num_labels=len(label2id))
         model.config.label2id = label2id
         model.config.id2label = id2label
         model.config.num_labels = len(id2label)
