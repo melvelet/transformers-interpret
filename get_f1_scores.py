@@ -107,5 +107,17 @@ for dataset_name in dataset_names:
 
         scores[model_name][dataset_name] = final_score
 
+
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+
 with open('results/f1_scores.json', 'w+') as f:
-    json.dump(scores, f)
+    json.dump(scores, f, cls=NpEncoder)
