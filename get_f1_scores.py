@@ -34,7 +34,7 @@ def compute_metrics(eval_pred):
 
 
 dataset_names = [
-    'bc5cdr_bigbio_kb',
+    # 'bc5cdr_bigbio_kb',
     'ncbi_disease_bigbio_kb',
     'cadec_bigbio_kb',
     'ddi_corpus_bigbio_kb',
