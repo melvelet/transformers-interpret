@@ -85,25 +85,8 @@ for dataset_name in dataset_names:
             test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
         tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 
-        output_dir = f"trained_models/{model_name}/{dataset_name.replace('_bigbio_kb', '')}"
-        training_args = TrainingArguments(
-            output_dir=output_dir,
-            # label_names=label2id.keys(),
-            per_device_train_batch_size=16,
-            per_device_eval_batch_size=16,
-            num_train_epochs=1,
-            fp16=True,
-            save_total_limit=1,
-        )
-        metric = load_metric("seqeval")
+        model_predictions = model([[doc['input_ids']] for doc in test_dataset])
+        gold_references = model([[doc['labels']] for doc in test_dataset])
+        final_score = metric.compute(predictions=model_predictions, references=gold_references)
 
-        trainer = Trainer(
-            model=model,
-            args=training_args,
-            compute_metrics=compute_metrics,
-            data_collator=transformers.DataCollatorForTokenClassification(tokenizer),
-        )
-
-        scores = trainer.evaluate(eval_dataset=test_dataset)
-
-        print(scores)
+        print(final_score)
