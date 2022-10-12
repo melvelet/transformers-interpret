@@ -26,6 +26,7 @@ metric = load_metric("seqeval")
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
+    print(predictions)
     labels = map_to_string_vec(labels)
     predictions = map_to_string_vec(predictions)
     metric_scores = metric.compute(predictions=predictions, references=labels)
@@ -86,7 +87,7 @@ for dataset_name in dataset_names:
             test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
         tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 
-        test = model(torch.tensor([tokenized_datasets[0]['input_ids']]))
+        # test = model(torch.tensor([tokenized_datasets[0]['input_ids']]))
         # print(test)
         len_input_ids = [len(doc['input_ids']) for doc in tokenized_datasets]
         # print(len_input_ids)
