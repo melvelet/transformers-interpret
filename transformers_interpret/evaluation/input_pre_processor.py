@@ -39,7 +39,7 @@ class InputPreProcessor:
         result_text, truncated_tokens, cutoff_index = self.truncate_input(raw_input_text)
         if len(result_text) == 0:
             print(input_document)
-        tokens = self.tokenizer(result_text, padding='max_length', return_offsets_mapping=True)
+        tokens = self.tokenizer(result_text, padding='max_length', max_length=512, return_offsets_mapping=True)
         labels = self.create_labels(input_document, tokens)
         # tokens_str = self.tokenizer.tokenize(result_text)
         # for t, l in zip(tokens_str, labels[1:]):
