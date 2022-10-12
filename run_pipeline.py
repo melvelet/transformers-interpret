@@ -103,15 +103,15 @@ model_name_long = {
 
 print('Loading model:', finetuned_huggingface_model)
 
+label2id, id2label = get_labels_from_dataset(dataset)
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name_long[huggingface_model])
 additional_tokenizers = []
-if huggingface_model == 'biolinkbert':
+if huggingface_model == 'roberta':
     additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['bioelectra-discriminator']))
 elif huggingface_model == 'bioelectra-discriminator':
-    additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['biolinkbert']))
-model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(finetuned_huggingface_model, local_files_only=True)
+    additional_tokenizers.append(AutoTokenizer.from_pretrained(model_name_long['roberta']))
+model: AutoModelForTokenClassification = AutoModelForTokenClassification.from_pretrained(finetuned_huggingface_model, num_labels=len(label2id), local_files_only=True)
 
-label2id, id2label = get_labels_from_dataset(dataset)
 model.config.label2id = label2id
 model.config.id2label = id2label
 model.config.num_labels = len(id2label)
