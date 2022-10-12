@@ -113,7 +113,7 @@ class InputPreProcessor:
         sentences = list(split_sentences.sents)
         tokens_temp = [[], []]
         cutoff_index_temp = [len(raw_input_text), len(raw_input_text)]
-        truncated_tokens_temp = [0, 0]
+        truncated_tokens_temp = [0] * len([self.tokenizer] + self.additional_tokenizers)
         for tokenizer_i, tokenizer in enumerate([self.tokenizer] + self.additional_tokenizers):
             for i, sent in enumerate(sentences):
                 input_tokens_sent = tokenizer.tokenize(str(sent))
