@@ -25,7 +25,8 @@ metric = load_metric("seqeval")
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
-    predictions = np.argmax(logits, axis=1)
+    print(logits.shape)
+    predictions = np.argmax(logits, axis=-2)
     print(predictions)
     labels = map_to_string_vec(labels)
     predictions = map_to_string_vec(predictions)
