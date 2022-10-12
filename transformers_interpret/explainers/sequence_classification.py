@@ -294,18 +294,15 @@ class SequenceClassificationExplainer(BaseExplainer):
             self.attributions = lfa
 
         elif self.attribution_type == 'gradcam':
-            lgs = GradCamAttributions(
-                self._forward,
-                embeddings,
-                reference_tokens,
-                self.input_ids,
-                self.ref_input_ids,
-                self.attention_mask,
-                position_ids=self.position_ids,
-                ref_position_ids=self.ref_position_ids,
-                internal_batch_size=self.internal_batch_size,
-                n_steps=self.n_steps,
-            )
+            lgs = GradCamAttributions(self._forward,
+                                      embeddings,
+                                      reference_tokens,
+                                      self.input_ids,
+                                      self.ref_input_ids,
+                                      self.attention_mask,
+                                      position_ids=self.position_ids,
+                                      ref_position_ids=self.ref_position_ids
+                                      )
             lgs.summarize()
             self.attributions = lgs
 
