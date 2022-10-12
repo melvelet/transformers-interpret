@@ -83,7 +83,7 @@ elif entity == 'drug':
 finetuned_huggingface_model = f"./trained_models/{huggingface_model}/{dataset_name.replace('_bigbio_kb', '')}/final"
 
 model_name_long = {
-    'electra': 'dbmdz/electra-large-discriminator-finetuned-conll03-english',
+    'electra': 'google/electra-base-discriminator',
     'bert': 'dslim/bert-base-NER',
     'roberta': 'Jean-Baptiste/roberta-large-ner-english',
     'biolinkbert': 'michiyasunaga/BioLinkBERT-base',

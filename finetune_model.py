@@ -59,7 +59,6 @@ dataset_names = [
     'cadec_bigbio_kb',
 ]
 
-# huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
 # huggingface_model = 'fran-martinez/scibert_scivocab_cased_ner_jnlpba'
 # huggingface_model = 'alvaroalon2/biobert_chemical_ner'
 # huggingface_model = 'dslim/bert-base-NER'
@@ -71,9 +70,7 @@ huggingface_models = [
     'kamalkraj/bioelectra-base-discriminator-pubmed-pmc',
     'Jean-Baptiste/roberta-large-ner-english',
     'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext',
-    'google/electra-base-discriminator',
-    # 'dbmdz/electra-large-discriminator-finetuned-conll03-english',
-
+    # 'google/electra-base-discriminator',
     # 'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
     # 'alvaroalon2/biobert_chemical_ner',
     # 'dslim/bert-base-NER',
