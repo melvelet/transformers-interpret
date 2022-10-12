@@ -85,10 +85,10 @@ for dataset_name in dataset_names:
             test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
         tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 
-        test = [attr for doc in test_dataset for attr in doc]
+        test = [attr for attr in tokenized_datasets[0]]
         print(test)
-        model_predictions = model([doc['input_ids'] for doc in test_dataset])
-        gold_references = model([doc['labels'] for doc in test_dataset])
+        model_predictions = model([doc['input_ids'] for doc in tokenized_datasets])
+        gold_references = model([doc['labels'] for doc in tokenized_datasets])
         final_score = metric.compute(predictions=model_predictions, references=gold_references)
 
         print(final_score)
