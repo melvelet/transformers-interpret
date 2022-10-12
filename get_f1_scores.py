@@ -34,7 +34,7 @@ def compute_metrics(eval_pred):
 
 
 dataset_names = [
-    # 'bc5cdr_bigbio_kb',
+    'bc5cdr_bigbio_kb',
     'ncbi_disease_bigbio_kb',
     'cadec_bigbio_kb',
     'ddi_corpus_bigbio_kb',
@@ -52,7 +52,7 @@ tokenizers = [
     'Jean-Baptiste/roberta-large-ner-english',
 ]
 
-scores = []
+scores = {model_name: {dataset_name: {} for dataset_name in dataset_names} for model_name in model_names}
 
 for dataset_name in dataset_names:
     conhelps = BigBioConfigHelpers()
@@ -86,7 +86,8 @@ for dataset_name in dataset_names:
         else:
             dataset_length = len(dataset["train"])
             shuffled_dataset = dataset["train"].shuffle(seed=42)
-            test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
+            test_dataset = shuffled_dataset.select(
+                range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
         tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 
         # test = model(torch.tensor([tokenized_datasets[0]['input_ids']]))
