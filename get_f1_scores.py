@@ -88,6 +88,8 @@ for dataset_name in dataset_names:
 
         test = model(torch.tensor([tokenized_datasets[0]['input_ids']]))
         print(test)
+        len_input_ids = [len(doc['input_ids']) for doc in tokenized_datasets]
+        print(len_input_ids)
         input_ids = torch.tensor([doc['input_ids'] for doc in tokenized_datasets])
         # model_predictions = [model(torch.tensor(doc['input_ids'])) for doc in tokenized_datasets]
         model_predictions = model(input_ids)
