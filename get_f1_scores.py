@@ -55,8 +55,8 @@ for dataset_name in dataset_names:
     dataset = conhelps.for_config_name(dataset_name).load_dataset()
     label2id, id2label = get_labels_from_dataset(dataset)
 
-    for model_name in model_names:
-        tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(model_name)
+    for i, model_name in enumerate(model_names):
+        tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained(tokenizers[i])
         additional_tokenizers = []
         if model_name == 'biolinkbert':
             additional_tokenizers.append(AutoTokenizer.from_pretrained(tokenizers[1]))
