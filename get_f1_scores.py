@@ -87,14 +87,15 @@ for dataset_name in dataset_names:
         tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 
         test = model(torch.tensor([tokenized_datasets[0]['input_ids']]))
-        print(test)
+        # print(test)
         len_input_ids = [len(doc['input_ids']) for doc in tokenized_datasets]
-        print(len_input_ids)
+        # print(len_input_ids)
         input_ids = torch.tensor([doc['input_ids'] for doc in tokenized_datasets])
         # model_predictions = [model(torch.tensor(doc['input_ids'])) for doc in tokenized_datasets]
         model_predictions = model(input_ids)
         gold_references = torch.tensor([doc['labels'] for doc in tokenized_datasets])
-        final_score = metric.compute(predictions=model_predictions, references=gold_references)
+        final_score = compute_metrics(input_ids, gold_references)
+        # final_score = metric.compute(predictions=model_predictions, references=gold_references)
         final_score['model_name'] = model_name
         final_score['dataset_name'] = dataset_name
 
