@@ -25,12 +25,8 @@ metric = load_metric("seqeval")
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
-    print(logits.shape)
-    print(logits[0][1])
     logits = logits.detach().numpy()
     predictions = np.argmax(logits, axis=-1)
-    print(predictions)
-    print(predictions.shape)
     labels = map_to_string_vec(labels)
     predictions = map_to_string_vec(predictions)
     metric_scores = metric.compute(predictions=predictions, references=labels)
@@ -55,6 +51,8 @@ tokenizers = [
     'kamalkraj/bioelectra-base-discriminator-pubmed-pmc',
     'Jean-Baptiste/roberta-large-ner-english',
 ]
+
+scores = []
 
 for dataset_name in dataset_names:
     conhelps = BigBioConfigHelpers()
@@ -105,3 +103,8 @@ for dataset_name in dataset_names:
         final_score['dataset_name'] = dataset_name
 
         print(final_score)
+
+        scores.append(final_score)
+
+with open('results/f1_scores.json', 'w+') as f:
+    json.dump(scores, f)
