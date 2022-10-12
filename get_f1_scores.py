@@ -105,7 +105,7 @@ for dataset_name in dataset_names:
 
         print(final_score)
 
-        scores.append(final_score)
+        scores[model_name][dataset_name] = final_score
 
 with open('results/f1_scores.json', 'w+') as f:
     json.dump(scores, f)
