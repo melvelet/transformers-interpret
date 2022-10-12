@@ -33,7 +33,7 @@ def compute_metrics(eval_pred):
 
 
 dataset_names = [
-    'bc5cdr_bigbio_kb',
+    # 'bc5cdr_bigbio_kb',
     'ncbi_disease_bigbio_kb',
     'cadec_bigbio_kb',
     'ddi_corpus_bigbio_kb',
@@ -94,7 +94,7 @@ for dataset_name in dataset_names:
         # model_predictions = [model(torch.tensor(doc['input_ids'])) for doc in tokenized_datasets]
         model_predictions = model(input_ids)
         gold_references = torch.tensor([doc['labels'] for doc in tokenized_datasets])
-        final_score = compute_metrics(input_ids, gold_references)
+        final_score = compute_metrics((input_ids, gold_references))
         # final_score = metric.compute(predictions=model_predictions, references=gold_references)
         final_score['model_name'] = model_name
         final_score['dataset_name'] = dataset_name
