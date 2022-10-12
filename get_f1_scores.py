@@ -85,8 +85,9 @@ for dataset_name in dataset_names:
             test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
         tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 
+        output_dir = f"trained_models/{model_name}/{dataset_name.replace('_bigbio_kb', '')}"
         training_args = TrainingArguments(
-            output_dir='',
+            output_dir=output_dir,
             # label_names=label2id.keys(),
             per_device_train_batch_size=16,
             per_device_eval_batch_size=16,
