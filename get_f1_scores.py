@@ -4,6 +4,7 @@ import math
 from argparse import ArgumentParser
 from pprint import pprint
 import numpy as np
+import torch
 import transformers
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline, TrainingArguments, \
     Trainer
@@ -87,8 +88,10 @@ for dataset_name in dataset_names:
 
         test = [attr for attr in tokenized_datasets[0]]
         print(test)
-        model_predictions = model([doc['input_ids'] for doc in tokenized_datasets])
-        gold_references = model([doc['labels'] for doc in tokenized_datasets])
+        model_predictions = model(torch.tensor([doc['input_ids'] for doc in tokenized_datasets]))
+        gold_references = model(torch.tensor([doc['labels'] for doc in tokenized_datasets]))
         final_score = metric.compute(predictions=model_predictions, references=gold_references)
+        final_score['model_name'] = model_name
+        final_score['dataset_name'] = dataset_name
 
         print(final_score)
