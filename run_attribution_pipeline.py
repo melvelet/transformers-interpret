@@ -27,13 +27,14 @@ dataset_names = [
     'scai_disease_bigbio_kb',
     'ddi_corpus_bigbio_kb',
     'mlee_bigbio_kb',
+    'cadec_bigbio_kb',
 ]
 
 huggingface_models = [
     'biolinkbert',
     'bioelectra-discriminator',
-    'electra',
     'roberta',
+    'electra',
     'bert',
 ]
 
