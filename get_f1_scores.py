@@ -86,10 +86,9 @@ for dataset_name in dataset_names:
             test_dataset = shuffled_dataset.select(range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
         tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 
-        test = [attr for attr in tokenized_datasets[0]]
-        print(test)
-        model_predictions = model(torch.tensor([doc['input_ids'] for doc in tokenized_datasets]))
-        gold_references = model(torch.tensor([doc['labels'] for doc in tokenized_datasets]))
+        model_predictions = [model(torch.tensor(doc['input_ids'])) for doc in tokenized_datasets]
+        # model_predictions = model(input_ids)
+        gold_references = torch.tensor([doc['labels'] for doc in tokenized_datasets])
         final_score = metric.compute(predictions=model_predictions, references=gold_references)
         final_score['model_name'] = model_name
         final_score['dataset_name'] = dataset_name
