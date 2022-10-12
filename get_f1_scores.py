@@ -68,7 +68,7 @@ for dataset_name in dataset_names:
             additional_tokenizers.append(AutoTokenizer.from_pretrained(tokenizers[0]))
             additional_tokenizers.append(AutoTokenizer.from_pretrained(tokenizers[1]))
 
-        pre_processor = InputPreProcessor(tokenizer, additional_tokenizers, label2id)
+        pre_processor = InputPreProcessor(tokenizer, additional_tokenizers, label2id, max_tokens=512)
 
         finetuned_huggingface_model = f"./trained_models/{model_name}/{dataset_name.replace('_bigbio_kb', '')}/final"
         model: AutoModelForTokenClassification = AutoModelForTokenClassification \
