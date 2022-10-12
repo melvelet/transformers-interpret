@@ -131,10 +131,10 @@ tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 document_ids = [doc['document_id'] for doc in tokenized_datasets]
 # print('document_ids', document_ids)
 
-base_file_name = f"results/{dataset_name.replace('_bigbio_kb', '')}_{entity}_{huggingface_model}_{attribution_type}"
+base_file_name = f"{dataset_name.replace('_bigbio_kb', '')}_{entity}_{huggingface_model}_{attribution_type}"
 pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
 
-with open(f'{base_file_name}_attributed_entities.json', 'r') as f:
+with open(f'results/attributions/{base_file_name}_attributed_entities.json', 'r') as f:
     attributions = json.load(f)
 
 evaluator = NERDatasetEvaluator(pipeline, tokenized_datasets, attributions=attributions,
@@ -164,11 +164,11 @@ class NpEncoder(json.JSONEncoder):
 
 exclude_string = 'exclude' if exclude_reference_token else 'include'
 
-with open(f'{base_file_name}_{exclude_string}_{str(end_time).replace(" ", "_")}_scores.json', 'w+') as f:
+with open(f'results/{base_file_name}_{exclude_string}_{str(end_time).replace(" ", "_")}_scores.json', 'w+') as f:
     json.dump(result, f, cls=NpEncoder)
 
-with open(f'{base_file_name}_{exclude_string}_{str(end_time).replace(" ", "_")}_raw_scores.json', 'w+') as f:
+with open(f'results/{base_file_name}_{exclude_string}_{str(end_time).replace(" ", "_")}_raw_scores.json', 'w+') as f:
     json.dump(evaluator.raw_scores, f, cls=NpEncoder)
 
-with open(f'{base_file_name}_{exclude_string}_{str(end_time).replace(" ", "_")}_raw_entities.json', 'w+') as f:
+with open(f'results/{base_file_name}_{exclude_string}_{str(end_time).replace(" ", "_")}_raw_entities.json', 'w+') as f:
     json.dump(evaluator.raw_entities, f, cls=NpEncoder)
