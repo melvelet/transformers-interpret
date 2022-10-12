@@ -301,9 +301,9 @@ class NERSentenceEvaluator:
                     mode = 'continuous'
                 elif bottom_k:
                     mode = 'bottom_k'
-                if mode == 'bottom_k':
-                    print(e[f'{prefix}score'], '-', new_conf, '=', e[f'{prefix}score'] - new_conf)
-                    print(scores)
+                # if mode == 'bottom_k':
+                #     print(e[f'{prefix}score'], '-', new_conf, '=', e[f'{prefix}score'] - new_conf)
+                #     print(scores)
                 e[f'{prefix}comprehensiveness'][mode][k] = e[f'{prefix}score'] - new_conf
 
     def calculate_sufficiency(self, k: int, continuous: bool = False, bottom_k: bool = False):
