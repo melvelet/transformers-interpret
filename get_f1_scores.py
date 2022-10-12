@@ -25,10 +25,10 @@ metric = load_metric("seqeval")
 
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
-    print(logits.shape)
-    print(logits)
-    predictions = np.argmax(logits, axis=-2)
-    print(predictions)
+    # print(logits.shape)
+    # print(logits)
+    predictions = np.argmax(logits, axis=-1)
+    # print(predictions)
     labels = map_to_string_vec(labels)
     predictions = map_to_string_vec(predictions)
     metric_scores = metric.compute(predictions=predictions, references=labels)
@@ -97,7 +97,7 @@ for dataset_name in dataset_names:
         # model_predictions = [model(torch.tensor(doc['input_ids'])) for doc in tokenized_datasets]
         model_predictions = model(input_ids)
         gold_references = torch.tensor([doc['labels'] for doc in tokenized_datasets])
-        final_score = compute_metrics((input_ids, gold_references))
+        final_score = compute_metrics((model_predictions, gold_references))
         # final_score = metric.compute(predictions=model_predictions, references=gold_references)
         final_score['model_name'] = model_name
         final_score['dataset_name'] = dataset_name
