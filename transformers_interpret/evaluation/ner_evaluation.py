@@ -129,7 +129,7 @@ class NERSentenceAttributor:
             self.entities = list(filter(lambda x: x['eval'] != 'TN', self.entities))
             self.discarded_entities = entities_before - len(self.entities)
         test = [e for e in self.entities if 'eval' not in e]
-        assert len(test) == 0
+        assert len(test) == 0, f"entities without eval: {test}"
         # print('self.entities if eval not in e', test)
 
     def calculate_attribution_scores(self):
