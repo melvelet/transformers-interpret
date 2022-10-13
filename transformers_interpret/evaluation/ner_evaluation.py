@@ -88,7 +88,8 @@ class NERSentenceAttributor:
                     entity['pred_label'] = pred_label
                     entity['doc_id'] = self.input_document['id']
                     entity['doc_doc_id'] = self.input_document['document_id']
-                    entity['doc_title'] = self.input_document['passages'][1]['text'][0]
+                    doc_len = len(self.input_document['passages'][0]['text'][0])
+                    entity['doc_title'] = self.input_document['passages'][0]['text'][0][:20 if doc_len >= 20 else doc_len]  # was self.input_document['passages'][1]['text'][0]
                     if gold_label in self.relevant_class_indices:
                         if gold_label == pred_label:
                             entity['eval'] = 'TP'
