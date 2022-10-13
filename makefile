@@ -13,6 +13,11 @@ attr-pipe-lgxa:
 	python run_attribution_pipeline.py -a 1 -m 2 -d 4 -ent 1
 	python run_attribution_pipeline.py -a 1 -m 2 -d 6
 	python run_attribution_pipeline.py -a 1 -m 2 -d 6 -ent 1
+	python run_attribution_pipeline.py -a 1 -m 0 -d 0
+	python run_attribution_pipeline.py -a 1 -m 0 -d 2
+	python run_attribution_pipeline.py -a 1 -m 0 -d 4 -ent 1
+	python run_attribution_pipeline.py -a 1 -m 0 -d 6
+	python run_attribution_pipeline.py -a 1 -m 0 -d 6 -ent 1
 
 attr-pipe-lig-disease: attr-pipe-lig-disease-bc5cdr attr-pipe-lig-disease-ncbi attr-pipe-lig-disease-euadr
 
