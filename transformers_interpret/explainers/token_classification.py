@@ -200,7 +200,7 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
                     self.label_probs_dict[self.id2label[label_j]].append(None)
                 else:
                     attributed_entities += 1
-                    print(f'Attribution {attributed_entities} for class={label_j} token={token_i}', end='\r', flush=True)
+                    # print(f'Attribution {attributed_entities} for class={label_j} token={token_i}', end='\r', flush=True)
                     explainer = SequenceClassificationExplainer(
                         model=self.model,
                         tokenizer=self.tokenizer,
