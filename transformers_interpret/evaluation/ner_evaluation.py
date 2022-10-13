@@ -30,7 +30,8 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k
     if return_mask:
         mask = [0 for _ in range(len(attributions))]
         for i in indices:
-            mask[i] = 1
+            if i not in [0, len(attributions) - 1]:
+                mask[i] = 1
         return mask
 
     return indices.tolist()
