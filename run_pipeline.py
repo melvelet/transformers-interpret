@@ -39,8 +39,8 @@ dataset_names = [
 huggingface_models = [
     'biolinkbert',
     'bioelectra-discriminator',
-    'electra',
     'roberta',
+    'electra',
     'bert',
 ]
 
