@@ -146,22 +146,24 @@ class NERSentenceAttributor:
         self.input_token_ids = self.explainer.input_token_ids
         self.input_tokens = self.explainer.input_tokens
         word_attributions = self.explainer.word_attributions
-        for e in self.entities:
-            for prefix in self.prefixes:
-                if prefix == 'other_' and e['other_entity'] in [None, 'O']:
-                    continue
-                e[f'{prefix}attribution_scores'] = word_attributions[e[f'{prefix}entity']][e['index']]
-                # print('prefix', prefix, 'class', e[f'{prefix}entity'], 'index', e['index'], e[f'{prefix}attribution_scores'])
-                if len(self.input_token_ids) != len(e[f'{prefix}attribution_scores']):
-                    raise Exception(
-                        f"attribution_scores of length {len(e['attribution_scores'])} while input tokens have length of {len(self.input_token_ids)}")
-                # print('attribution_scores length, input:', len(self.input_token_ids), 'attribution_scores:',  len(e['attribution_scores']))
-                e[f'{prefix}comprehensiveness'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
-                e[f'{prefix}sufficiency'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict(),
-                                             'other_top_k': dict(), 'other_continuous': dict(),
-                                             'other_bottom_k': dict()}
-                e[f'{prefix}rationales'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict(),
-                                            'other_top_k': dict(), 'other_continuous': dict(), 'other_bottom_k': dict()}
+        with alive_bar(total=len(self.entities)) as bar:
+            for e in self.entities:
+                for prefix in self.prefixes:
+                    if prefix == 'other_' and e['other_entity'] in [None, 'O']:
+                        continue
+                    e[f'{prefix}attribution_scores'] = word_attributions[e[f'{prefix}entity']][e['index']]
+                    # print('prefix', prefix, 'class', e[f'{prefix}entity'], 'index', e['index'], e[f'{prefix}attribution_scores'])
+                    if len(self.input_token_ids) != len(e[f'{prefix}attribution_scores']):
+                        raise Exception(
+                            f"attribution_scores of length {len(e['attribution_scores'])} while input tokens have length of {len(self.input_token_ids)}")
+                    # print('attribution_scores length, input:', len(self.input_token_ids), 'attribution_scores:',  len(e['attribution_scores']))
+                    e[f'{prefix}comprehensiveness'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
+                    e[f'{prefix}sufficiency'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict(),
+                                                 'other_top_k': dict(), 'other_continuous': dict(),
+                                                 'other_bottom_k': dict()}
+                    e[f'{prefix}rationales'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict(),
+                                                'other_top_k': dict(), 'other_continuous': dict(), 'other_bottom_k': dict()}
+                bar()
 
     def __call__(self, input_document, evaluate_other: bool = False):
         self.input_document = input_document
