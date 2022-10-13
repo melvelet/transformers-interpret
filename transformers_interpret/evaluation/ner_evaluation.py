@@ -22,7 +22,10 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k
     tensor = torch.FloatTensor([a[1] for a in attributions])
     if bottom_k:
         tensor = - tensor
-    indices = torch.topk(tensor, k).indices
+    if len(attributions) >= k:
+        indices = torch.topk(tensor, k).indices
+    else:
+        indices = torch.topk(tensor, len(attributions)).indices
 
     if return_mask:
         mask = [0 for _ in range(len(attributions))]
