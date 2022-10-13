@@ -73,6 +73,8 @@ if entity == 'disease':
         disease_class = 'SpecificDisease'
     elif dataset_name == 'verspoor_2013_bigbio_kb':
         disease_class = 'disease'
+    elif dataset_name == 'cadec_bigbio_kb':
+        disease_class = 'Disease'
 elif entity == 'drug':
     if dataset_name == 'ddi_corpus_bigbio_kb':
         disease_class = 'DRUG'
@@ -80,6 +82,8 @@ elif entity == 'drug':
         disease_class = 'Chemicals & Drugs'
     elif dataset_name == 'mlee_bigbio_kb':
         disease_class = 'Drug_or_compound'
+    elif dataset_name == 'cadec_bigbio_kb':
+        disease_class = 'Drug'
 
 finetuned_huggingface_model = f"./trained_models/{huggingface_model}/{dataset_name.replace('_bigbio_kb', '')}/final"
 
