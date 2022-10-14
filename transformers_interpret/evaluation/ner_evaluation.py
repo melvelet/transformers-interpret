@@ -15,7 +15,8 @@ from transformers_interpret import TokenClassificationExplainer
 
 CUDA_VISIBLE_DEVICES = os.environ.get('CUDA_VISIBLE_DEVICES') if os.environ.get('CUDA_VISIBLE_DEVICES') else 'cpu'
 CUDA_DEVICE = torch.device('cpu') if CUDA_VISIBLE_DEVICES == 'cpu' else torch.device('cuda')
-BATCH_SIZE = 16
+BATCH_SIZE = 8
+
 
 def get_rationale(attributions, k: int, continuous: bool = False, return_mask: bool = False, bottom_k: bool = False):
     if continuous:
@@ -296,7 +297,7 @@ class NERSentenceEvaluator:
         self.discarded_entities = 0
         self.dataset_name = dataset_name
 
-    def calculate_comprehensiveness(self, k_values: List[int], continuous: bool = False, bottom_k: bool = False):
+    def calculate_measure(self, k_values: List[int], measure, continuous: bool = False, bottom_k: bool = False):
         # print('calculate_comprehensiveness, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
         masked_inputs = torch.full(
             size=(len(self.entities) * len(self.prefixes) * len(k_values), len(self.input_token_ids)),
@@ -311,11 +312,19 @@ class NERSentenceEvaluator:
                     i += 1
                     if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                         continue
-                    rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
-                                              bottom_k=bottom_k if not continuous else False)
-                    masked_inputs[i] = torch.tensor(self.input_token_ids)
-                    for j in rationale:
-                        masked_inputs[i][j] = self.tokenizer.mask_token_id
+                    if measure == 'comprehensiveness':
+                        rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
+                                                  bottom_k=bottom_k if not continuous else False)
+                        masked_inputs[i] = torch.tensor(self.input_token_ids)
+                        for j in rationale:
+                            masked_inputs[i][j] = self.tokenizer.mask_token_id
+                    elif measure == 'sufficiency':
+                        rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
+                                                  bottom_k=bottom_k if not continuous else False)
+                        masked_inputs[i] = torch.tensor(self.input_token_ids)
+                        for j, _ in enumerate(masked_inputs[i][1:-1]):
+                            if j + 1 not in rationale:
+                                masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
 
         preds = None
         for i in range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE)):
@@ -344,7 +353,7 @@ class NERSentenceEvaluator:
                     # if mode == 'bottom_k':
                     #     print(e[f'{prefix}score'], '-', new_conf, '=', e[f'{prefix}score'] - new_conf)
                     #     print(scores)
-                    e[f'{prefix}comprehensiveness'][mode][k] = e[f'{prefix}score'] - new_conf
+                    e[f'{prefix}{measure}'][mode][k] = e[f'{prefix}score'] - new_conf
 
     def calculate_sufficiency(self, k_values: List[int], continuous: bool = False, bottom_k: bool = False):
         # print('calculate_sufficiency, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
@@ -450,19 +459,19 @@ class NERSentenceEvaluator:
             self.write_rationales(k, continuous=continuous, bottom_k=bottom_k)
 
         print('calculate top_k scores')
-        self.calculate_comprehensiveness(k_values)
+        self.calculate_measure(k_values, 'comprehensiveness')
         # self.calculate_sufficiency(k_values)
 
         if continuous:
             print('calculate continuous scores')
             modes.append('continuous')
-            self.calculate_comprehensiveness(k_values, continuous=True)
+            self.calculate_measure(k_values, 'comprehensiveness', continuous=True)
             # self.calculate_sufficiency(k_values, continuous=True)
 
         if bottom_k:
             print('calculate bottom_k scores')
             modes.append('bottom_k')
-            self.calculate_comprehensiveness(k_values, bottom_k=True)
+            self.calculate_measure(k_values, 'comprehensiveness', bottom_k=True)
             # self.calculate_sufficiency(k_values, bottom_k=True)
 
         # print('collect scores')
