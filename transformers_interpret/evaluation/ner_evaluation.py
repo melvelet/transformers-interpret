@@ -320,7 +320,7 @@ class NERSentenceEvaluator:
         preds = None
         for i in range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE)):
             print('batch', i)
-            batch = masked_inputs[i:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
+            batch = masked_inputs[i*BATCH_SIZE:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
             if i == 0:
                 preds = self.model(batch).logits
             else:
