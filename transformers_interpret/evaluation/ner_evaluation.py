@@ -313,16 +313,17 @@ class NERSentenceEvaluator:
                     i += 1
                     if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                         continue
+
+                    masked_inputs[i] = torch.tensor(self.input_token_ids)
+
                     if measure == 'comprehensiveness':
                         rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
                                                   bottom_k=bottom_k if not continuous else False)
-                        masked_inputs[i] = torch.tensor(self.input_token_ids)
                         for j in rationale:
                             masked_inputs[i][j] = self.tokenizer.mask_token_id
                     elif measure == 'sufficiency':
                         rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
                                                   bottom_k=bottom_k if not continuous else False)
-                        masked_inputs[i] = torch.tensor(self.input_token_ids)
                         for j, _ in enumerate(masked_inputs[i][1:-1]):
                             if j + 1 not in rationale:
                                 masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
@@ -333,7 +334,8 @@ class NERSentenceEvaluator:
                 # print('batch', i, end='\r', flush=True)
                 batch = masked_inputs[i*BATCH_SIZE:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
                 preds.append(self.model(batch).logits)
-                torch.cuda.empty_cache()
+                print(preds[-1].shape)
+                # torch.cuda.empty_cache()
             preds = torch.cat(preds, dim=0)
             # print(preds.shape)
 
