@@ -309,6 +309,7 @@ class NERSentenceEvaluator:
                 for j in rationale:
                     masked_inputs[i][j] = self.tokenizer.mask_token_id
 
+        print(masked_inputs.shape)
         preds = self.model(masked_inputs)
 
         i = -1
