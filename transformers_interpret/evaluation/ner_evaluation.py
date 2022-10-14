@@ -221,7 +221,7 @@ class NERDatasetAttributor:
         tokens = 0
         start_time = datetime.now()
 
-        with alive_bar(total=len(self.ordered_attributions)) as bar:
+        with alive_bar(total=len(self.dataset)) as bar:
             for document in self.dataset:
                 documents += 1
                 if start_document and documents < start_document:
