@@ -307,7 +307,6 @@ class NERSentenceEvaluator:
                 rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
                                           bottom_k=bottom_k if not continuous else False)
                 masked_inputs[i] = torch.tensor(self.input_token_ids)
-                print(masked_inputs[i].shape)
                 for j in rationale:
                     masked_inputs[i][j] = self.tokenizer.mask_token_id
 
