@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from statistics import mean, median, stdev, variance, StatisticsError
 from typing import List, Dict, Union, Optional
@@ -10,6 +11,9 @@ from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
 from transformers_interpret.evaluation.input_pre_processor import get_labels_from_dataset
 from transformers_interpret import TokenClassificationExplainer
 
+
+CUDA_VISIBLE_DEVICES = os.environ.get('CUDA_VISIBLE_DEVICES') if os.environ.get('CUDA_VISIBLE_DEVICES') else 'cpu'
+CUDA_DEVICE = torch.device('cpu') if CUDA_VISIBLE_DEVICES == 'cpu' else torch.device('cuda', int(CUDA_VISIBLE_DEVICES))
 
 def get_rationale(attributions, k: int, continuous: bool = False, return_mask: bool = False, bottom_k: bool = False):
     if continuous:
@@ -296,6 +300,7 @@ class NERSentenceEvaluator:
             size=(len(self.entities) * len(self.prefixes), len(self.input_token_ids)),
             fill_value=self.tokenizer.pad_token_id,
             dtype=torch.int64,
+            device=CUDA_DEVICE,
         )
 
         i = -1
@@ -336,6 +341,7 @@ class NERSentenceEvaluator:
             size=(len(self.entities) * len(self.prefixes), len(self.input_token_ids)),
             fill_value=self.tokenizer.pad_token_id,
             dtype=torch.int64,
+            device=CUDA_DEVICE,
         )
 
         i = -1
