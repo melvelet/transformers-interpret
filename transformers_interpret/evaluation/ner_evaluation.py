@@ -327,14 +327,12 @@ class NERSentenceEvaluator:
                                 masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
 
         torch.cuda.empty_cache()
-        preds = None
+        preds = []
         for i in range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE)):
             print('batch', i)
             batch = masked_inputs[i*BATCH_SIZE:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
-            if i == 0:
-                preds = self.model(batch).logits
-            else:
-                preds = torch.cat((preds, self.model(batch).logits), dim=0)
+            preds.append(self.model(batch).logits)
+        preds = torch.cat(preds, dim=0)
         print(preds.shape)
 
         i = -1
