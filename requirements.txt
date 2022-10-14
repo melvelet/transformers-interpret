@@ -1,6 +1,6 @@
 pytest==5.4.2
-torchvision
-torchaudio
+torchvision==0.13.1
+torchaudio==0.12.1
 captum==0.4.1
 transformers==4.23.1
 ipython==7.31.1
