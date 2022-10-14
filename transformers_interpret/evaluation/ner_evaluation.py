@@ -6,8 +6,8 @@ from typing import List, Dict, Union, Optional
 
 import numpy as np
 import torch
-from alive_progress import alive_bar
 from datasets import Dataset
+from tqdm import tqdm
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
 from transformers_interpret.evaluation.input_pre_processor import get_labels_from_dataset
 from transformers_interpret import TokenClassificationExplainer
@@ -153,7 +153,6 @@ class NERSentenceAttributor:
         self.input_token_ids = self.explainer.input_token_ids
         self.input_tokens = self.explainer.input_tokens
         word_attributions = self.explainer.word_attributions
-        # with alive_bar(total=len(self.entities)) as bar:
         for e in self.entities:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
@@ -221,27 +220,25 @@ class NERDatasetAttributor:
         tokens = 0
         start_time = datetime.now()
 
-        with alive_bar(total=len(self.dataset)) as bar:
-            for document in self.dataset:
-                documents += 1
-                if start_document and documents < start_document:
-                    continue
-                if max_documents and 0 < max_documents < documents:
-                    break
-                print('Document', documents)
-                result = self.attributor(document,
-                                         evaluate_other=evaluate_other)
-                self.entities.append({
-                    'entities': result['entities'],
-                    'document_id': document['document_id'],
-                    'discarded_entities': result['discarded_entities'],
-                })
-                discarded_entities += result['discarded_entities']
-                self.attributed_entities += len([e for e in result['entities']])
-                self.attributed_entities += len(
-                    [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
-                tokens += result['tokens']
-                bar()
+        for document in tqdm(self.dataset):
+            documents += 1
+            if start_document and documents < start_document:
+                continue
+            if max_documents and 0 < max_documents < documents:
+                break
+            print('Document', documents)
+            result = self.attributor(document,
+                                     evaluate_other=evaluate_other)
+            self.entities.append({
+                'entities': result['entities'],
+                'document_id': document['document_id'],
+                'discarded_entities': result['discarded_entities'],
+            })
+            discarded_entities += result['discarded_entities']
+            self.attributed_entities += len([e for e in result['entities']])
+            self.attributed_entities += len(
+                [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
+            tokens += result['tokens']
 
         end_time = datetime.now()
         duration = end_time - start_time
@@ -328,7 +325,7 @@ class NERSentenceEvaluator:
 
         torch.cuda.empty_cache()
         preds = []
-        for i in range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE)):
+        for i in tqdm(range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE))):
             print('batch', i, end='\r', flush=True)
             batch = masked_inputs[i*BATCH_SIZE:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
             preds.append(self.model(batch).logits)
@@ -707,45 +704,43 @@ class NERDatasetEvaluator:
             assert len(attr) == 1
             self.ordered_attributions.append(attr[0])
 
-        with alive_bar(len(self.dataset)) as bar:
-            for document, doc_attributions in zip(self.dataset, self.ordered_attributions):
-                if len(doc_attributions['entities']) > 0:
-                    first_entity = doc_attributions['entities'][0]
-                    # print(first_entity)
-                    assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity['index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
-                assert document['document_id'] == doc_attributions['document_id'], f"{document['document_id']} --- {doc_attributions['document_id']}"
-                documents += 1
-                if start_document and documents < start_document:
-                    continue
-                if max_documents and 0 < max_documents < documents:
-                    break
-                print('Document', documents)
-                result = self.evaluator(document,
-                                        attributions=doc_attributions,
-                                        k_values=k_values,
-                                        continuous=continuous,
-                                        bottom_k=bottom_k,
-                                        evaluate_other=evaluate_other)
-                # print('Save scores')
-                self.raw_scores.extend(result['scores'])
-                self.raw_entities.extend(result['entities'])
-                discarded_entities += result['discarded_entities']
-                annotated_entities += len([label for label in document['labels'] if label != 0])
-                annotated_entities_positive += len(
-                    [label for label in document['labels'] if label in self.relevant_class_indices])
-                # found_entities += len(result['entities'])
-                # attributed_entities_raw = [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None]
-                # print('attributed_entities_raw', len(attributed_entities_raw), attributed_entities_raw)
-                # test_other = [e['other_entity'] for e in result['entities']]
-                # test_eval = [e['eval'] for e in result['entities']]
-                # print('test_other', test_other)
-                # print('test_eval', test_eval)
-                attributed_entities += len([e for e in result['entities']])
-                attributed_entities += len([e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
-                if len(result['entities']) == 0:
-                    documents_without_entities += 1
-                tokens += result['tokens']
-                bar()
+        for document, doc_attributions in tqdm(zip(self.dataset, self.ordered_attributions)):
+            if len(doc_attributions['entities']) > 0:
+                first_entity = doc_attributions['entities'][0]
+                # print(first_entity)
+                assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity['index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
+            assert document['document_id'] == doc_attributions['document_id'], f"{document['document_id']} --- {doc_attributions['document_id']}"
+            documents += 1
+            if start_document and documents < start_document:
+                continue
+            if max_documents and 0 < max_documents < documents:
+                break
+            print('Document', documents)
+            result = self.evaluator(document,
+                                    attributions=doc_attributions,
+                                    k_values=k_values,
+                                    continuous=continuous,
+                                    bottom_k=bottom_k,
+                                    evaluate_other=evaluate_other)
+            # print('Save scores')
+            self.raw_scores.extend(result['scores'])
+            self.raw_entities.extend(result['entities'])
+            discarded_entities += result['discarded_entities']
+            annotated_entities += len([label for label in document['labels'] if label != 0])
+            annotated_entities_positive += len(
+                [label for label in document['labels'] if label in self.relevant_class_indices])
+            # found_entities += len(result['entities'])
+            # attributed_entities_raw = [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None]
+            # print('attributed_entities_raw', len(attributed_entities_raw), attributed_entities_raw)
+            # test_other = [e['other_entity'] for e in result['entities']]
+            # test_eval = [e['eval'] for e in result['entities']]
+            # print('test_other', test_other)
+            # print('test_eval', test_eval)
+            attributed_entities += len([e for e in result['entities']])
+            attributed_entities += len([e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
+            if len(result['entities']) == 0:
+                documents_without_entities += 1
+            tokens += result['tokens']
 
         end_time = datetime.now()
         duration = end_time - start_time
