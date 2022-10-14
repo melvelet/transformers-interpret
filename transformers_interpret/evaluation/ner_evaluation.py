@@ -36,7 +36,6 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k
     else:
         indices = torch.topk(tensor, len(attributions)).indices
 
-    print(tensor[indices[0]], tensor.shape, tensor)
     if return_mask:
         mask = [0 for _ in range(len(attributions))]
         for i in indices:
@@ -44,6 +43,7 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k
                 mask[i] = 1
         return mask
 
+    print(tensor[indices[0]], tensor.shape, indices.tolist())
     return indices.tolist()
 
 
@@ -719,6 +719,7 @@ class NERDatasetEvaluator:
                     first_entity = doc_attributions['entities'][0]
                     # print(first_entity)
                     assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity['index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
+                    assert len(first_entity['attributions']) == len(document['input_ids']), f"{len(first_entity['attributions'])} {len(document['input_ids'])}"
                 assert document['document_id'] == doc_attributions['document_id'], f"{document['document_id']} --- {doc_attributions['document_id']}"
                 documents += 1
                 if start_document and documents < start_document:
