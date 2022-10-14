@@ -1,3 +1,5 @@
+import math
+import os
 from datetime import datetime
 from statistics import mean, median, stdev, variance, StatisticsError
 from typing import List, Dict, Union, Optional
@@ -6,9 +8,15 @@ import numpy as np
 import torch
 from alive_progress import alive_bar
 from datasets import Dataset
+from tqdm import tqdm
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
 from transformers_interpret.evaluation.input_pre_processor import get_labels_from_dataset
 from transformers_interpret import TokenClassificationExplainer
+
+
+CUDA_VISIBLE_DEVICES = os.environ.get('CUDA_VISIBLE_DEVICES') if os.environ.get('CUDA_VISIBLE_DEVICES') else 'cpu'
+CUDA_DEVICE = torch.device('cpu') if CUDA_VISIBLE_DEVICES == 'cpu' else torch.device('cuda')
+BATCH_SIZE = 64 if CUDA_VISIBLE_DEVICES != 'cpu' else 32
 
 
 def get_rationale(attributions, k: int, continuous: bool = False, return_mask: bool = False, bottom_k: bool = False):
@@ -83,6 +91,7 @@ class NERSentenceAttributor:
         if self.relevant_class_names is not None:
             for i, gold_label in enumerate(self.gold_labels):
                 entity = [e for e in self.entities if e['index'] == i]
+                doc_len = len(self.input_document['passages'][0]['text'][0])
                 if entity:
                     entity = entity[0]
                     pred_label = self.label2id[entity['entity']]
@@ -90,7 +99,6 @@ class NERSentenceAttributor:
                     entity['pred_label'] = pred_label
                     entity['doc_id'] = self.input_document['id']
                     entity['doc_doc_id'] = self.input_document['document_id']
-                    doc_len = len(self.input_document['passages'][0]['text'][0])
                     entity['doc_title'] = self.input_document['passages'][0]['text'][0][:20 if doc_len >= 20 else doc_len]  # was self.input_document['passages'][1]['text'][0]
                     if gold_label in self.relevant_class_indices:
                         if gold_label == pred_label:
@@ -122,7 +130,7 @@ class NERSentenceAttributor:
                         'other_entity': None,
                         'eval': 'FN',
                         'doc_id': self.input_document['id'],
-                        'doc_title': self.input_document['passages'][1]['text'][0],
+                        'doc_title': self.input_document['passages'][0]['text'][0][:20 if doc_len >= 20 else doc_len],
                         'score': np.float64(scores[i][gold_label].item()),
                     }
                     # print('created', gold_label, self.label2id['O'], entity['eval'])
@@ -146,7 +154,6 @@ class NERSentenceAttributor:
         self.input_token_ids = self.explainer.input_token_ids
         self.input_tokens = self.explainer.input_tokens
         word_attributions = self.explainer.word_attributions
-        # with alive_bar(total=len(self.entities)) as bar:
         for e in self.entities:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
@@ -290,55 +297,105 @@ class NERSentenceEvaluator:
         self.discarded_entities = 0
         self.dataset_name = dataset_name
 
-    def calculate_comprehensiveness(self, k: int, continuous: bool = False, bottom_k: bool = False):
+    def calculate_measure(self, k_values: List[int], measure, continuous: bool = False, bottom_k: bool = False):
         # print('calculate_comprehensiveness, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
-        for e in self.entities:
-            for prefix in self.prefixes:
-                if prefix == 'other_' and e['other_entity'] in [None, 'O']:
-                    continue
-                rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
-                                          bottom_k=bottom_k if not continuous else False)
-                masked_input = torch.tensor([self.input_token_ids])
-                for i in rationale:
-                    masked_input[0][i] = self.tokenizer.mask_token_id
-                # print('predict')
-                pred = self.model(masked_input)
-                # print('score')
-                scores = torch.softmax(pred.logits, dim=-1)[0]
-                new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
-                mode = 'top_k'
-                if continuous:
-                    mode = 'continuous'
-                elif bottom_k:
-                    mode = 'bottom_k'
-                # if mode == 'bottom_k':
-                #     print(e[f'{prefix}score'], '-', new_conf, '=', e[f'{prefix}score'] - new_conf)
-                #     print(scores)
-                e[f'{prefix}comprehensiveness'][mode][k] = e[f'{prefix}score'] - new_conf
+        masked_inputs = torch.full(
+            size=(len(self.entities) * len(self.prefixes) * len(k_values), len(self.input_token_ids)),
+            fill_value=self.tokenizer.pad_token_id,
+            dtype=torch.int32,
+        )
 
-    def calculate_sufficiency(self, k: int, continuous: bool = False, bottom_k: bool = False):
+        i = -1
+        for k in k_values:
+            for e in self.entities:
+                for prefix in self.prefixes:
+                    i += 1
+                    if prefix == 'other_' and e['other_entity'] in [None, 'O']:
+                        continue
+                    if measure == 'comprehensiveness':
+                        rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
+                                                  bottom_k=bottom_k if not continuous else False)
+                        masked_inputs[i] = torch.tensor(self.input_token_ids)
+                        for j in rationale:
+                            masked_inputs[i][j] = self.tokenizer.mask_token_id
+                    elif measure == 'sufficiency':
+                        rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
+                                                  bottom_k=bottom_k if not continuous else False)
+                        masked_inputs[i] = torch.tensor(self.input_token_ids)
+                        for j, _ in enumerate(masked_inputs[i][1:-1]):
+                            if j + 1 not in rationale:
+                                masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
+
+        preds = []
+        with torch.no_grad():
+            for i in range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE)):
+                # print('batch', i, end='\r', flush=True)
+                batch = masked_inputs[i*BATCH_SIZE:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
+                preds.append(self.model(batch).logits)
+                torch.cuda.empty_cache()
+            preds = torch.cat(preds, dim=0)
+            # print(preds.shape)
+
+        i = -1
+        for k in k_values:
+            for e in self.entities:
+                for prefix in self.prefixes:
+                    i += 1
+                    if prefix == 'other_' and e['other_entity'] in [None, 'O']:
+                        continue
+                    scores = torch.softmax(preds, dim=-1)[i]
+                    new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
+                    mode = 'top_k'
+                    if continuous:
+                        mode = 'continuous'
+                    elif bottom_k:
+                        mode = 'bottom_k'
+                    # if mode == 'bottom_k':
+                    #     print(e[f'{prefix}score'], '-', new_conf, '=', e[f'{prefix}score'] - new_conf)
+                    #     print(scores)
+                    e[f'{prefix}{measure}'][mode][k] = e[f'{prefix}score'] - new_conf
+
+    def calculate_sufficiency(self, k_values: List[int], continuous: bool = False, bottom_k: bool = False):
         # print('calculate_sufficiency, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
-        for e in self.entities:
-            for prefix in self.prefixes:
-                if prefix == 'other_' and e['other_entity'] in [None, 'O']:
-                    continue
-                rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
-                                          bottom_k=bottom_k if not continuous else False)
-                masked_input = torch.tensor([self.input_token_ids])
-                for i, _ in enumerate(masked_input[0][1:-1]):
-                    if i + 1 not in rationale:
-                        masked_input[0][i + 1] = self.tokenizer.mask_token_id
-                pred = self.model(masked_input)
-                scores = torch.softmax(pred.logits, dim=-1)[0]
-                new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
-                # new_label = self.id2label[scores[e['index']].argmax(axis=-1).item()]
-                # print('old_conf', e['score'], 'new_conf', new_conf, 'old_label', e['entity'], 'new_label', new_label, 'diff', e['score'] - new_conf)
-                mode = 'top_k'
-                if continuous:
-                    mode = 'continuous'
-                elif bottom_k:
-                    mode = 'bottom_k'
-                e[f'{prefix}sufficiency'][mode][k] = e[f'{prefix}score'] - new_conf
+        masked_inputs = torch.full(
+            size=(len(self.entities) * len(self.prefixes) * len(k_values), len(self.input_token_ids)),
+            fill_value=self.tokenizer.pad_token_id,
+            dtype=torch.int64,
+        )
+
+        i = -1
+        for k in k_values:
+            for e in self.entities:
+                for prefix in self.prefixes:
+                    i += 1
+                    if prefix == 'other_' and e['other_entity'] in [None, 'O']:
+                        continue
+                    rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
+                                              bottom_k=bottom_k if not continuous else False)
+                    masked_inputs[i] = torch.tensor(self.input_token_ids)
+                    for j, _ in enumerate(masked_inputs[i][1:-1]):
+                        if j + 1 not in rationale:
+                            masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
+
+        preds = self.model(masked_inputs.to(CUDA_DEVICE))
+
+        i = -1
+        for k in k_values:
+            for e in self.entities:
+                for prefix in self.prefixes:
+                    i += 1
+                    if prefix == 'other_' and e['other_entity'] in [None, 'O']:
+                        continue
+                    scores = torch.softmax(preds.logits, dim=-1)[i]
+                    new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
+                    # new_label = self.id2label[scores[e['index']].argmax(axis=-1).item()]
+                    # print('old_conf', e['score'], 'new_conf', new_conf, 'old_label', e['entity'], 'new_label', new_label, 'diff', e['score'] - new_conf)
+                    mode = 'top_k'
+                    if continuous:
+                        mode = 'continuous'
+                    elif bottom_k:
+                        mode = 'bottom_k'
+                    e[f'{prefix}sufficiency'][mode][k] = e[f'{prefix}score'] - new_conf
 
     def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False):
         for e in self.entities:
@@ -402,26 +459,20 @@ class NERSentenceEvaluator:
             self.write_rationales(k, continuous=continuous, bottom_k=bottom_k)
 
         print('calculate top_k scores')
-        for k in k_values:
-            print(k, end='\r', flush=True)
-            self.calculate_comprehensiveness(k)
-            self.calculate_sufficiency(k)
+        self.calculate_measure(k_values, 'comprehensiveness')
+        self.calculate_measure(k_values, 'sufficiency')
 
         if continuous:
             print('calculate continuous scores')
             modes.append('continuous')
-            for k in k_values:
-                print(k, end='\r', flush=True)
-                self.calculate_comprehensiveness(k, continuous=True)
-                self.calculate_sufficiency(k, continuous=True)
+            self.calculate_measure(k_values, 'comprehensiveness', continuous=True)
+            self.calculate_measure(k_values, 'sufficiency', continuous=True)
 
         if bottom_k:
             print('calculate bottom_k scores')
             modes.append('bottom_k')
-            for k in k_values:
-                print(k, end='\r', flush=True)
-                self.calculate_comprehensiveness(k, bottom_k=True)
-                self.calculate_sufficiency(k, bottom_k=True)
+            self.calculate_measure(k_values, 'comprehensiveness', bottom_k=True)
+            self.calculate_measure(k_values, 'sufficiency', bottom_k=True)
 
         # print('collect scores')
 
@@ -442,6 +493,7 @@ class NERDatasetEvaluator:
                  class_name: str = None,
                  ):
         self.pipeline = pipeline
+        self.pipeline.model.to(CUDA_DEVICE)
         self.dataset = dataset
         self.label2id, self.id2label = get_labels_from_dataset(dataset, has_splits=False)
         print('label2id', self.label2id)
@@ -656,8 +708,8 @@ class NERDatasetEvaluator:
             assert len(attr) == 1
             self.ordered_attributions.append(attr[0])
 
-        with alive_bar(len(self.dataset)) as bar:
-            for document, doc_attributions in zip(self.dataset, self.ordered_attributions):
+        with alive_bar(total=len(self.ordered_attributions)) as bar:
+            for document, doc_attributions in tqdm(zip(self.dataset, self.ordered_attributions)):
                 if len(doc_attributions['entities']) > 0:
                     first_entity = doc_attributions['entities'][0]
                     # print(first_entity)

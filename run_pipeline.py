@@ -1,10 +1,12 @@
 import datetime
 import json
 import math
+import os
 from argparse import ArgumentParser
 from pprint import pprint
 
 import numpy as np
+import torch.cuda
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 
 from transformers_interpret.evaluation import InputPreProcessor, NERDatasetEvaluator
