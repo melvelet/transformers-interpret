@@ -324,12 +324,12 @@ class NERSentenceEvaluator:
                             if j + 1 not in rationale:
                                 masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
 
-        torch.cuda.empty_cache()
         preds = []
         for i in range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE)):
             print('batch', i, end='\r', flush=True)
             batch = masked_inputs[i*BATCH_SIZE:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
             preds.append(self.model(batch).logits)
+            torch.cuda.empty_cache()
         preds = torch.cat(preds, dim=0)
         print(preds.shape)
 
