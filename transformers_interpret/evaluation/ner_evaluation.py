@@ -36,7 +36,7 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k
     else:
         indices = torch.topk(tensor, len(attributions)).indices
 
-    print(tensor[1], tensor[indices[0]])
+    print(tensor[indices[0]], tensor.shape, tensor)
     if return_mask:
         mask = [0 for _ in range(len(attributions))]
         for i in indices:
