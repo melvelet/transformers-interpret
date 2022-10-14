@@ -296,7 +296,7 @@ class NERSentenceEvaluator:
         masked_inputs = torch.empty(
             size=(len(self.entities) * len(self.prefixes), len(self.input_token_ids)),
             dtype=torch.int64
-        )
+        ).fill_(self.tokenizer.pad_token_id)
 
         i = -1
         for e in self.entities:
