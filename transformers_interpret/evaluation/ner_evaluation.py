@@ -292,6 +292,7 @@ class NERSentenceEvaluator:
 
     def calculate_comprehensiveness(self, k: int, continuous: bool = False, bottom_k: bool = False):
         # print('calculate_comprehensiveness, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
+        print(len(self.entities), len(self.prefixes), len(self.input_token_ids))
         masked_inputs = torch.empty(
             size=(len(self.entities) * len(self.prefixes), len(self.input_token_ids)),
             dtype=torch.int64
