@@ -324,7 +324,7 @@ class NERSentenceEvaluator:
             if i == 0:
                 preds = self.model(batch).logits
             else:
-                preds.cat(self.model(batch).logits, dim=0)
+                torch.cat((preds, self.model(batch).logits), dim=0)
 
         i = -1
         for k in k_values:
