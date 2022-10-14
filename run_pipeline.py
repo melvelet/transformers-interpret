@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from pprint import pprint
 
 import numpy as np
+import torch.cuda
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 
 from transformers_interpret.evaluation import InputPreProcessor, NERDatasetEvaluator
@@ -22,6 +23,7 @@ k_value_levels = [
 continuous = True
 bottom_k = True
 evaluate_other = True
+print('torch.cuda.current_device()', torch.cuda.current_device())
 
 attribution_types = [
     'lig',
