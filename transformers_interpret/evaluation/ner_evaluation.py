@@ -322,9 +322,9 @@ class NERSentenceEvaluator:
             print('batch', i)
             batch = masked_inputs[i:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
             if i == 0:
-                preds = self.model(batch)
+                preds = self.model(batch).logits
             else:
-                preds.cat(self.model(batch))
+                preds.cat(self.model(batch).logits, dim=0)
 
         i = -1
         for k in k_values:
