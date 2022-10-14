@@ -358,7 +358,7 @@ class NERSentenceEvaluator:
                 i += 1
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
-                scores = torch.softmax(preds[i].logits, dim=-1)[0]
+                scores = torch.softmax(preds.logits, dim=-1)[i]
                 new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
                 # new_label = self.id2label[scores[e['index']].argmax(axis=-1).item()]
                 # print('old_conf', e['score'], 'new_conf', new_conf, 'old_label', e['entity'], 'new_label', new_label, 'diff', e['score'] - new_conf)
