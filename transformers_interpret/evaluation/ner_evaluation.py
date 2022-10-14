@@ -319,7 +319,7 @@ class NERSentenceEvaluator:
                 i += 1
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
-                scores = torch.softmax(preds[i].logits, dim=-1)[0]
+                scores = torch.softmax(preds.logits[i], dim=-1)[0]
                 new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
                 mode = 'top_k'
                 if continuous:
