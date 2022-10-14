@@ -331,18 +331,33 @@ class NERSentenceEvaluator:
 
     def calculate_sufficiency(self, k: int, continuous: bool = False, bottom_k: bool = False):
         # print('calculate_sufficiency, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
+        masked_inputs = torch.empty(
+            size=(len(self.entities) * len(self.prefixes), len(self.input_token_ids)),
+            dtype=torch.int64
+        )
+
+        i = -1
         for e in self.entities:
             for prefix in self.prefixes:
+                i += 1
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
                 rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
                                           bottom_k=bottom_k if not continuous else False)
-                masked_input = torch.tensor([self.input_token_ids])
-                for i, _ in enumerate(masked_input[0][1:-1]):
-                    if i + 1 not in rationale:
-                        masked_input[0][i + 1] = self.tokenizer.mask_token_id
-                pred = self.model(masked_input)
-                scores = torch.softmax(pred.logits, dim=-1)[0]
+                masked_inputs[i] = torch.tensor(self.input_token_ids)
+                for j, _ in enumerate(masked_inputs[i][1:-1]):
+                    if j + 1 not in rationale:
+                        masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
+
+        preds = self.model(masked_inputs)
+
+        i = -1
+        for e in self.entities:
+            for prefix in self.prefixes:
+                i += 1
+                if prefix == 'other_' and e['other_entity'] in [None, 'O']:
+                    continue
+                scores = torch.softmax(preds[i].logits, dim=-1)[0]
                 new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
                 # new_label = self.id2label[scores[e['index']].argmax(axis=-1).item()]
                 # print('old_conf', e['score'], 'new_conf', new_conf, 'old_label', e['entity'], 'new_label', new_label, 'diff', e['score'] - new_conf)
