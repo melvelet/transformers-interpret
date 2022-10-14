@@ -336,7 +336,8 @@ class NERSentenceEvaluator:
                 preds.append(self.model(batch).logits)
                 print('shape', preds[-1].shape)
                 # torch.cuda.empty_cache()
-            preds = torch.cat(preds, dim=0)
+            if preds:
+                preds = torch.cat(preds, dim=0)
             # print(preds.shape)
 
         i = -1
