@@ -319,6 +319,7 @@ class NERSentenceEvaluator:
                     if measure == 'comprehensiveness':
                         rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
                                                   bottom_k=bottom_k if not continuous else False)
+                        print(rationale, len(self.input_token_ids))
                         for j in rationale:
                             masked_inputs[i][j] = self.tokenizer.mask_token_id
                     elif measure == 'sufficiency':
