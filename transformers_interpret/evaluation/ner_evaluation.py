@@ -719,7 +719,14 @@ class NERDatasetEvaluator:
                     first_entity = doc_attributions['entities'][0]
                     # print(first_entity)
                     assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity['index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
-                    assert len(first_entity['attribution_scores']) == len(document['input_ids']), f"{len(first_entity['attribution_scores'])} {len(document['input_ids'])} --- {document['document_id']} {first_entity['doc_id']} --- {self.tokenizer.decode(document['input_ids'])} \n\n {first_entity['word']}"
+                    if len(first_entity['attribution_scores']) != len(document['input_ids']):
+                        print('truncate', len(first_entity['attribution_scores']), 'to', len(document['input_ids']))
+                        doc_attributions['entities'] = list(filter(lambda x: x['index'] <= len(document['input_ids']) - 1, doc_attributions['entities']))
+                        for e in doc_attributions['entities']:
+                            e['attribution_scores'] = e['attribution_scores'][:len(document['input_ids']) - 1]
+                            if 'other_attribution_scores':
+                                e['other_attribution_scores'] = e['other_attribution_scores'][:len(document['input_ids']) - 1]
+
                 assert document['document_id'] == doc_attributions['document_id'], f"{document['document_id']} --- {doc_attributions['document_id']}"
                 documents += 1
                 if start_document and documents < start_document:
