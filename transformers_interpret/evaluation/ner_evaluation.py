@@ -43,7 +43,7 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k
                 mask[i] = 1
         return mask
 
-    print(tensor[indices[0]], tensor.shape, indices.tolist())
+    # print(tensor[indices[0]], tensor.shape, indices.tolist())
     return indices.tolist()
 
 
@@ -320,7 +320,7 @@ class NERSentenceEvaluator:
                     if measure == 'comprehensiveness':
                         rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
                                                   bottom_k=bottom_k if not continuous else False)
-                        print(rationale, len(self.input_token_ids), 'bottom_k', bottom_k, 'continuous', continuous)
+                        # print(rationale, len(self.input_token_ids), 'bottom_k', bottom_k, 'continuous', continuous)
                         for j in rationale:
                             masked_inputs[i][j] = self.tokenizer.mask_token_id
                     elif measure == 'sufficiency':
