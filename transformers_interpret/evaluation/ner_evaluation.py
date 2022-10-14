@@ -4,6 +4,7 @@ from typing import List, Dict, Union, Optional
 
 import numpy as np
 import torch
+from alive_progress import alive_bar
 from datasets import Dataset
 from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
 from transformers_interpret.evaluation.input_pre_processor import get_labels_from_dataset
@@ -22,12 +23,16 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k
     tensor = torch.FloatTensor([a[1] for a in attributions])
     if bottom_k:
         tensor = - tensor
-    indices = torch.topk(tensor, k).indices
+    if len(attributions) >= k:
+        indices = torch.topk(tensor, k).indices
+    else:
+        indices = torch.topk(tensor, len(attributions)).indices
 
     if return_mask:
         mask = [0 for _ in range(len(attributions))]
         for i in indices:
-            mask[i] = 1
+            if i not in [0, len(attributions) - 1]:
+                mask[i] = 1
         return mask
 
     return indices.tolist()
@@ -40,7 +45,7 @@ def get_continuous_rationale(attributions, k: int, return_mask: bool = False):
     tensor = torch.FloatTensor([a[1] for a in attributions])
     scores: List[float] = list()
     for i, _ in enumerate(tensor[:len(tensor) - k + 1]):
-        scores.append(sum(tensor[i:i+k]))
+        scores.append(sum(tensor[i:i + k]))
 
     argmax = torch.argmax(torch.FloatTensor(scores)).item()
     indices = [i for i in range(argmax, argmax + k)]
@@ -48,7 +53,7 @@ def get_continuous_rationale(attributions, k: int, return_mask: bool = False):
     return indices
 
 
-class NERSentenceEvaluator:
+class NERSentenceAttributor:
     def __init__(self,
                  pipeline: Pipeline,
                  attribution_type: str = "lig",
@@ -84,8 +89,9 @@ class NERSentenceEvaluator:
                     entity['gold_label'] = gold_label
                     entity['pred_label'] = pred_label
                     entity['doc_id'] = self.input_document['id']
-                    if self.dataset_name.startswith('euadr'):
-                        entity['doc_title'] = self.input_document['passages'][1]['text'][0]
+                    entity['doc_doc_id'] = self.input_document['document_id']
+                    doc_len = len(self.input_document['passages'][0]['text'][0])
+                    entity['doc_title'] = self.input_document['passages'][0]['text'][0][:20 if doc_len >= 20 else doc_len]  # was self.input_document['passages'][1]['text'][0]
                     if gold_label in self.relevant_class_indices:
                         if gold_label == pred_label:
                             entity['eval'] = 'TP'
@@ -116,10 +122,9 @@ class NERSentenceEvaluator:
                         'other_entity': None,
                         'eval': 'FN',
                         'doc_id': self.input_document['id'],
+                        'doc_title': self.input_document['passages'][1]['text'][0],
                         'score': np.float64(scores[i][gold_label].item()),
                     }
-                    if self.dataset_name.startswith('euadr'):
-                        entity['doc_title'] = self.input_document['passages'][1]['text'][0]
                     # print('created', gold_label, self.label2id['O'], entity['eval'])
                     self.entities.append(entity)
 
@@ -127,18 +132,21 @@ class NERSentenceEvaluator:
             self.entities = list(filter(lambda x: x['eval'] != 'TN', self.entities))
             self.discarded_entities = entities_before - len(self.entities)
         test = [e for e in self.entities if 'eval' not in e]
-        assert len(test) == 0
+        assert len(test) == 0, f"{len(test)} out of {len(self.entities)} entities without eval: {test}"
         # print('self.entities if eval not in e', test)
 
     def calculate_attribution_scores(self):
-        print(f'calculate_attribution_scores for {len(self.entities)} entities')
+        print(
+            f"calculate_attribution_scores for {len(self.entities) + len([e['other_entity'] for e in self.entities if e['other_entity'] is not None])} entities")
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
-        token_class_index_tuples += [(e['index'], self.label2id[e['other_entity']]) for e in self.entities if e['other_entity'] is not None]
+        token_class_index_tuples += [(e['index'], self.label2id[e['other_entity']]) for e in self.entities if
+                                     e['other_entity'] is not None]
         self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples)
         # print('assert', [t for t in self.input_token_ids if t != 1], self.explainer.input_token_ids)
         self.input_token_ids = self.explainer.input_token_ids
         self.input_tokens = self.explainer.input_tokens
         word_attributions = self.explainer.word_attributions
+        # with alive_bar(total=len(self.entities)) as bar:
         for e in self.entities:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
@@ -146,13 +154,141 @@ class NERSentenceEvaluator:
                 e[f'{prefix}attribution_scores'] = word_attributions[e[f'{prefix}entity']][e['index']]
                 # print('prefix', prefix, 'class', e[f'{prefix}entity'], 'index', e['index'], e[f'{prefix}attribution_scores'])
                 if len(self.input_token_ids) != len(e[f'{prefix}attribution_scores']):
-                    raise Exception(f"attribution_scores of length {len(e['attribution_scores'])} while input tokens have length of {len(self.input_token_ids)}")
+                    raise Exception(
+                        f"attribution_scores of length {len(e['attribution_scores'])} while input tokens have length of {len(self.input_token_ids)}")
                 # print('attribution_scores length, input:', len(self.input_token_ids), 'attribution_scores:',  len(e['attribution_scores']))
                 e[f'{prefix}comprehensiveness'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict()}
                 e[f'{prefix}sufficiency'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict(),
-                                             'other_top_k': dict(), 'other_continuous': dict(), 'other_bottom_k': dict()}
+                                             'other_top_k': dict(), 'other_continuous': dict(),
+                                             'other_bottom_k': dict()}
                 e[f'{prefix}rationales'] = {'top_k': dict(), 'continuous': dict(), 'bottom_k': dict(),
                                             'other_top_k': dict(), 'other_continuous': dict(), 'other_bottom_k': dict()}
+            # bar()
+
+    def __call__(self, input_document, evaluate_other: bool = False):
+        self.input_document = input_document
+        print('document_id', self.input_document['document_id'])
+        self.prefixes = ['']
+        if evaluate_other:
+            self.prefixes.append('other_')
+        self.input_str = input_document['text']
+        self.input_token_ids = input_document['input_ids']
+        self.gold_labels = input_document['labels']
+        self.execute_base_classification()
+        self.calculate_attribution_scores()
+
+        return {
+            'entities': self.entities,
+            'discarded_entities': self.discarded_entities,
+            'tokens': len(self.input_token_ids),
+        }
+
+
+class NERDatasetAttributor:
+    def __init__(self,
+                 pipeline: Pipeline,
+                 dataset: Dataset,
+                 attribution_type: str = "lig",
+                 class_name: str = None,
+                 ):
+        self.pipeline = pipeline
+        self.dataset = dataset
+        self.label2id, self.id2label = get_labels_from_dataset(dataset, has_splits=False)
+        print('label2id', self.label2id)
+        self.attribution_type = attribution_type
+        self.attributor = NERSentenceAttributor(self.pipeline, self.attribution_type, class_name=class_name,
+                                                dataset_name=self.dataset.info.config_name)
+        self.entities: List[Dict] = []
+        self.class_name = class_name
+        self.relevant_class_names = [f"B-{class_name}", f"I-{class_name}"] if class_name else None
+        self.relevant_class_indices = [self.label2id[c] for c in self.relevant_class_names] if class_name else None
+        self.attributed_entities = 0
+
+    def __call__(self,
+                 max_documents: Optional[Union[int, None]] = None,
+                 start_document: Optional[Union[int, None]] = None,
+                 evaluate_other: bool = False,
+                 ):
+        documents = 0
+        discarded_entities = 0
+        tokens = 0
+        start_time = datetime.now()
+
+        with alive_bar(total=len(self.dataset)) as bar:
+            for document in self.dataset:
+                documents += 1
+                if start_document and documents < start_document:
+                    continue
+                if max_documents and 0 < max_documents < documents:
+                    break
+                print('Document', documents)
+                result = self.attributor(document,
+                                         evaluate_other=evaluate_other)
+                self.entities.append({
+                    'entities': result['entities'],
+                    'document_id': document['document_id'],
+                    'discarded_entities': result['discarded_entities'],
+                })
+                discarded_entities += result['discarded_entities']
+                self.attributed_entities += len([e for e in result['entities']])
+                self.attributed_entities += len(
+                    [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
+                tokens += result['tokens']
+                bar()
+
+        end_time = datetime.now()
+        duration = end_time - start_time
+        found_entities = len([e for doc in self.entities for e in doc['entities']])
+        self.stats = {
+            'stats': {
+                'total_documents': len(self.dataset),
+                'processed_documents': documents,
+                'discarded_entities': discarded_entities,
+            },
+            'settings': {
+                'model': self.pipeline.model.config._name_or_path,
+                'tokenizer': self.pipeline.tokenizer.name_or_path,
+                'dataset': self.dataset.info.config_name,
+                'attribution_type': self.attribution_type,
+                'start_document': start_document,
+                'max_documents': max_documents,
+                'evaluate_other': evaluate_other,
+                'class_name': self.class_name,
+            },
+            'timing': {
+                'start_time': str(start_time),
+                'end_time': str(end_time),
+                'duration': str(duration),
+                'per_document': str(duration / documents),
+                'per_entity': str(duration / found_entities),
+                'per_attributed_entity': str(duration / max(1, self.attributed_entities)),
+                'per_token': str(duration / tokens),
+            },
+        }
+
+        return self.stats
+
+
+class NERSentenceEvaluator:
+    def __init__(self,
+                 pipeline: Pipeline,
+                 attribution_type: str = "lig",
+                 class_name: str = None,
+                 dataset_name: str = ''):
+        self.pipeline = pipeline
+        self.model: PreTrainedModel = pipeline.model
+        self.tokenizer: PreTrainedTokenizer = pipeline.tokenizer
+        self.attribution_type: str = attribution_type
+        self.label2id = self.model.config.label2id
+        self.id2label = self.model.config.id2label
+        self.relevant_class_names = [f"B-{class_name}", f"I-{class_name}"] if class_name else None
+        self.relevant_class_indices = [self.label2id[c] for c in self.relevant_class_names] if class_name else None
+        self.entities = None
+        self.input_str = None
+        self.input_tokens = None
+        self.input_token_ids = None
+        self.discarded_entities = 0
+        self.dataset_name = dataset_name
 
     def calculate_comprehensiveness(self, k: int, continuous: bool = False, bottom_k: bool = False):
         # print('calculate_comprehensiveness, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
@@ -160,11 +296,14 @@ class NERSentenceEvaluator:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
-                rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous, bottom_k=bottom_k if not continuous else False)
+                rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
+                                          bottom_k=bottom_k if not continuous else False)
                 masked_input = torch.tensor([self.input_token_ids])
                 for i in rationale:
                     masked_input[0][i] = self.tokenizer.mask_token_id
+                # print('predict')
                 pred = self.model(masked_input)
+                # print('score')
                 scores = torch.softmax(pred.logits, dim=-1)[0]
                 new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
                 mode = 'top_k'
@@ -172,6 +311,9 @@ class NERSentenceEvaluator:
                     mode = 'continuous'
                 elif bottom_k:
                     mode = 'bottom_k'
+                # if mode == 'bottom_k':
+                #     print(e[f'{prefix}score'], '-', new_conf, '=', e[f'{prefix}score'] - new_conf)
+                #     print(scores)
                 e[f'{prefix}comprehensiveness'][mode][k] = e[f'{prefix}score'] - new_conf
 
     def calculate_sufficiency(self, k: int, continuous: bool = False, bottom_k: bool = False):
@@ -180,7 +322,8 @@ class NERSentenceEvaluator:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
-                rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous, bottom_k=bottom_k if not continuous else False)
+                rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
+                                          bottom_k=bottom_k if not continuous else False)
                 masked_input = torch.tensor([self.input_token_ids])
                 for i, _ in enumerate(masked_input[0][1:-1]):
                     if i + 1 not in rationale:
@@ -202,11 +345,14 @@ class NERSentenceEvaluator:
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
-                e['rationales'][f'{prefix}top_k'][k] = get_rationale(e[f'{prefix}attribution_scores'], k, continuous=False)
+                e['rationales'][f'{prefix}top_k'][k] = get_rationale(e[f'{prefix}attribution_scores'], k,
+                                                                     continuous=False)
                 if continuous:
-                    e['rationales'][f'{prefix}continuous'][k] = get_rationale(e[f'{prefix}attribution_scores'], k, continuous=True)
+                    e['rationales'][f'{prefix}continuous'][k] = get_rationale(e[f'{prefix}attribution_scores'], k,
+                                                                              continuous=True)
                 if bottom_k:
-                    e['rationales'][f'{prefix}bottom_k'][k] = get_rationale(e[f'{prefix}attribution_scores'], k, continuous=False, bottom_k=True)
+                    e['rationales'][f'{prefix}bottom_k'][k] = get_rationale(e[f'{prefix}attribution_scores'], k,
+                                                                            continuous=False, bottom_k=True)
 
     def get_all_scores_in_sentence(self, k_values, modes):
         document_scores = list()
@@ -227,8 +373,10 @@ class NERSentenceEvaluator:
                                                     for mode in modes},
                         'other_sufficiency': {mode: {k: e['other_sufficiency'][mode][k] for k in k_values}
                                               for mode in modes},
-                        'other_compdiff': {mode: {k: e['other_comprehensiveness'][mode][k] - e['other_sufficiency'][mode][k] for k in k_values}
-                                           for mode in modes},
+                        'other_compdiff': {
+                            mode: {k: e['other_comprehensiveness'][mode][k] - e['other_sufficiency'][mode][k] for k in
+                                   k_values}
+                            for mode in modes},
                     }
                 )
 
@@ -236,7 +384,9 @@ class NERSentenceEvaluator:
 
         return document_scores
 
-    def __call__(self, input_document, k_values: List[int] = [1], continuous: bool = False, bottom_k: bool = False, evaluate_other: bool = False):
+    def __call__(self, input_document, attributions, k_values: List[int] = [1], continuous: bool = False,
+                 bottom_k: bool = False,
+                 evaluate_other: bool = False):
         self.input_document = input_document
         print('document_id', self.input_document['document_id'])
         self.prefixes = ['']
@@ -245,14 +395,15 @@ class NERSentenceEvaluator:
         self.input_str = input_document['text']
         self.input_token_ids = input_document['input_ids']
         self.gold_labels = input_document['labels']
-        self.execute_base_classification()
-        self.calculate_attribution_scores()
+        self.entities = attributions['entities']
+        self.discarded_entities = attributions['discarded_entities']
         modes = ['top_k']
         for k in k_values:
             self.write_rationales(k, continuous=continuous, bottom_k=bottom_k)
 
         print('calculate top_k scores')
         for k in k_values:
+            print(k, end='\r', flush=True)
             self.calculate_comprehensiveness(k)
             self.calculate_sufficiency(k)
 
@@ -260,6 +411,7 @@ class NERSentenceEvaluator:
             print('calculate continuous scores')
             modes.append('continuous')
             for k in k_values:
+                print(k, end='\r', flush=True)
                 self.calculate_comprehensiveness(k, continuous=True)
                 self.calculate_sufficiency(k, continuous=True)
 
@@ -267,6 +419,7 @@ class NERSentenceEvaluator:
             print('calculate bottom_k scores')
             modes.append('bottom_k')
             for k in k_values:
+                print(k, end='\r', flush=True)
                 self.calculate_comprehensiveness(k, bottom_k=True)
                 self.calculate_sufficiency(k, bottom_k=True)
 
@@ -276,7 +429,7 @@ class NERSentenceEvaluator:
             'scores': self.get_all_scores_in_sentence(k_values, modes),
             'entities': self.entities,
             'discarded_entities': self.discarded_entities,
-            'tokens': len(self.input_tokens),
+            'tokens': len(self.input_token_ids),
         }
 
 
@@ -284,6 +437,7 @@ class NERDatasetEvaluator:
     def __init__(self,
                  pipeline: Pipeline,
                  dataset: Dataset,
+                 attributions,
                  attribution_type: str = "lig",
                  class_name: str = None,
                  ):
@@ -292,7 +446,10 @@ class NERDatasetEvaluator:
         self.label2id, self.id2label = get_labels_from_dataset(dataset, has_splits=False)
         print('label2id', self.label2id)
         self.attribution_type = attribution_type
-        self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type, class_name=class_name, dataset_name=self.dataset.info.config_name)
+        self.attributions = attributions
+        self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type, class_name=class_name,
+                                              dataset_name=self.dataset.info.config_name)
+        self.tokenizer = self.pipeline.tokenizer
         self.raw_scores: List[Dict] = []
         self.raw_entities: List[Dict] = []
         self.scores = None
@@ -301,7 +458,8 @@ class NERDatasetEvaluator:
         self.relevant_class_indices = [self.label2id[c] for c in self.relevant_class_names] if class_name else None
 
     def calculate_average_scores_for_dataset(self, k_values, modes):
-        def _calculate_statistical_function(attr: str, func: str = None, eval_=None, take_best_rationale: bool = False):
+        def _calculate_statistical_function(attr: str, func: str = None, eval_=None, take_best_rationale: bool = False,
+                                            take_best_rationale_threshold: float = 0.05):
             if eval_ is None:
                 eval_ = ['TP', 'FN', 'FP', 'Switched']
             if func == 'median':
@@ -315,21 +473,25 @@ class NERDatasetEvaluator:
 
             try:
                 if take_best_rationale:
+                    mode = 'top_k'
                     best_rationale_scores = []
+                    best_rationale_k_values = []
                     for e in self.raw_scores:
-                        best_rationale_per_mode = []
-                        for mode in modes:
-                            best_rationale_compdiff = -1
-                            if mode == 'bottom_k':
-                                continue
-                            best_rationale_compdiff_prev = 0
-                            for k in k_values:
-                                if e['compdiff'][mode][k] - best_rationale_compdiff_prev > 0.05:
-                                    best_rationale_compdiff = e[attr][mode][k]
-                                best_rationale_compdiff_prev = e['compdiff'][mode][k]
-                            best_rationale_per_mode.append(best_rationale_compdiff)
-                        best_rationale_scores.append(max(best_rationale_per_mode))
-                    return func(best_rationale_scores)
+                        best_rationale_compdiff = -1
+                        best_rationale_per_mode_k_value = 0
+                        best_rationale_compdiff_prev = 0
+                        for k in reversed(k_values):
+                            if best_rationale_compdiff_prev - e['compdiff'][mode][k] > take_best_rationale_threshold:
+                                best_rationale_compdiff = e[attr][mode][k]
+                                best_rationale_per_mode_k_value = k
+                                break
+                            best_rationale_compdiff_prev = e['compdiff'][mode][k]
+                        if best_rationale_compdiff == -1:
+                            best_rationale_compdiff = e[attr][mode][2]
+                            best_rationale_per_mode_k_value = 2
+                        best_rationale_scores.append(best_rationale_compdiff)
+                        best_rationale_k_values.append(best_rationale_per_mode_k_value)
+                    return func(best_rationale_scores), func(best_rationale_k_values)
 
                 return {mode:
                             {k: func([e[attr][mode][k] for e in self.raw_scores if attr in e and e['eval'] in eval_])
@@ -344,9 +506,20 @@ class NERDatasetEvaluator:
 
         return {
             'mean': {
-                'comprehensiveness_Best': _calculate_statistical_function('comprehensiveness', take_best_rationale=True),
-                'sufficiency_Best': _calculate_statistical_function('sufficiency', take_best_rationale=True),
-                'compdiff_Best': _calculate_statistical_function('compdiff', take_best_rationale=True),
+                'comprehensiveness_Best_5': _calculate_statistical_function('comprehensiveness',
+                                                                            take_best_rationale=True,
+                                                                            take_best_rationale_threshold=0.05),
+                'sufficiency_Best_5': _calculate_statistical_function('sufficiency', take_best_rationale=True,
+                                                                      take_best_rationale_threshold=0.05),
+                'compdiff_Best_5': _calculate_statistical_function('compdiff', take_best_rationale=True,
+                                                                   take_best_rationale_threshold=0.05),
+                'comprehensiveness_Best_10': _calculate_statistical_function('comprehensiveness',
+                                                                             take_best_rationale=True,
+                                                                             take_best_rationale_threshold=0.1),
+                'sufficiency_Best_10': _calculate_statistical_function('sufficiency', take_best_rationale=True,
+                                                                       take_best_rationale_threshold=0.1),
+                'compdiff_Best_10': _calculate_statistical_function('compdiff', take_best_rationale=True,
+                                                                    take_best_rationale_threshold=0.1),
                 'comprehensiveness': _calculate_statistical_function('comprehensiveness'),
                 'sufficiency': _calculate_statistical_function('sufficiency'),
                 'compdiff': _calculate_statistical_function('compdiff'),
@@ -384,10 +557,29 @@ class NERDatasetEvaluator:
                 'other_compdiff_Switched': _calculate_statistical_function('other_compdiff', eval_=['Switched']),
             },
             'median': {
-                'comprehensiveness_Best': _calculate_statistical_function('comprehensiveness', func='median',
-                                                                          take_best_rationale=True),
-                'sufficiency_Best': _calculate_statistical_function('sufficiency', func='median', take_best_rationale=True),
-                'compdiff_Best': _calculate_statistical_function('compdiff',  func='median', take_best_rationale=True),
+                'comprehensiveness_Best_5': _calculate_statistical_function('comprehensiveness',
+                                                                            func='median',
+                                                                            take_best_rationale=True,
+                                                                            take_best_rationale_threshold=0.05),
+                'sufficiency_Best_5': _calculate_statistical_function('sufficiency',
+                                                                      func='median',
+                                                                      take_best_rationale=True,
+                                                                      take_best_rationale_threshold=0.05),
+                'compdiff_Best_5': _calculate_statistical_function('compdiff',
+                                                                   func='median',
+                                                                   take_best_rationale=True,
+                                                                   take_best_rationale_threshold=0.05),
+                'comprehensiveness_Best_10': _calculate_statistical_function('comprehensiveness',
+                                                                             func='median',
+                                                                             take_best_rationale=True,
+                                                                             take_best_rationale_threshold=0.1),
+                'sufficiency_Best_10': _calculate_statistical_function('sufficiency',
+                                                                       func='median',
+                                                                       take_best_rationale=True,
+                                                                       take_best_rationale_threshold=0.1),
+                'compdiff_Best_10': _calculate_statistical_function('compdiff',
+                                                                    func='median', take_best_rationale=True,
+                                                                    take_best_rationale_threshold=0.1),
                 'comprehensiveness': _calculate_statistical_function('comprehensiveness', func='median'),
                 'sufficiency': _calculate_statistical_function('sufficiency', func='median'),
                 'compdiff': _calculate_statistical_function('compdiff', func='median'),
@@ -396,10 +588,19 @@ class NERDatasetEvaluator:
                 'other_compdiff': _calculate_statistical_function('other_compdiff', func='median'),
             },
             'stdev': {
-                'comprehensiveness_Best': _calculate_statistical_function('comprehensiveness', func='stdev',
-                                                                          take_best_rationale=True),
-                'sufficiency_Best': _calculate_statistical_function('sufficiency', func='stdev', take_best_rationale=True),
-                'compdiff_Best': _calculate_statistical_function('compdiff',  func='stdev', take_best_rationale=True),
+                'comprehensiveness_Best_5': _calculate_statistical_function('comprehensiveness', func='stdev',
+                                                                            take_best_rationale=True,
+                                                                            take_best_rationale_threshold=0.05),
+                'sufficiency_Best_5': _calculate_statistical_function('sufficiency', func='stdev',
+                                                                      take_best_rationale=True,
+                                                                      take_best_rationale_threshold=0.05),
+                'comprehensiveness_Best_10': _calculate_statistical_function('comprehensiveness', func='stdev',
+                                                                             take_best_rationale=True,
+                                                                             take_best_rationale_threshold=0.1),
+                'sufficiency_Best_10': _calculate_statistical_function('sufficiency', func='stdev',
+                                                                       take_best_rationale=True,
+                                                                       take_best_rationale_threshold=0.1),
+                'compdiff_Best': _calculate_statistical_function('compdiff', func='stdev', take_best_rationale=True),
                 'comprehensiveness': _calculate_statistical_function('comprehensiveness', func='stdev'),
                 'sufficiency': _calculate_statistical_function('sufficiency', func='stdev'),
                 'compdiff': _calculate_statistical_function('compdiff', func='stdev'),
@@ -408,10 +609,19 @@ class NERDatasetEvaluator:
                 'other_compdiff': _calculate_statistical_function('other_compdiff', func='stdev'),
             },
             'variance': {
-                'comprehensiveness_Best': _calculate_statistical_function('comprehensiveness', func='variance',
-                                                                          take_best_rationale=True),
-                'sufficiency_Best': _calculate_statistical_function('sufficiency', func='variance', take_best_rationale=True),
-                'compdiff_Best': _calculate_statistical_function('compdiff',  func='variance', take_best_rationale=True),
+                'comprehensiveness_Best_5': _calculate_statistical_function('comprehensiveness', func='variance',
+                                                                            take_best_rationale=True,
+                                                                            take_best_rationale_threshold=0.05),
+                'sufficiency_Best_5': _calculate_statistical_function('sufficiency', func='variance',
+                                                                      take_best_rationale=True,
+                                                                      take_best_rationale_threshold=0.05),
+                'comprehensiveness_Best_10': _calculate_statistical_function('comprehensiveness', func='variance',
+                                                                             take_best_rationale=True,
+                                                                             take_best_rationale_threshold=0.1),
+                'sufficiency_Best_10': _calculate_statistical_function('sufficiency', func='variance',
+                                                                       take_best_rationale=True,
+                                                                       take_best_rationale_threshold=0.1),
+                'compdiff_Best': _calculate_statistical_function('compdiff', func='variance', take_best_rationale=True),
                 'comprehensiveness': _calculate_statistical_function('comprehensiveness', func='variance'),
                 'sufficiency': _calculate_statistical_function('sufficiency', func='variance'),
                 'compdiff': _calculate_statistical_function('compdiff', func='variance'),
@@ -428,6 +638,7 @@ class NERDatasetEvaluator:
                  max_documents: Optional[Union[int, None]] = None,
                  start_document: Optional[Union[int, None]] = None,
                  evaluate_other: bool = False,
+                 exclude_reference_token: bool = False,
                  ):
         documents = 0
         found_entities = 0
@@ -439,36 +650,51 @@ class NERDatasetEvaluator:
         documents_without_entities = 0
         start_time = datetime.now()
 
-        for document in self.dataset:
-            documents += 1
-            if start_document and documents < start_document:
-                continue
-            if max_documents and 0 < max_documents < documents:
-                break
-            print('Document', documents)
-            print('Evaluate')
-            result = self.evaluator(document,
-                                    k_values=k_values,
-                                    continuous=continuous,
-                                    bottom_k=bottom_k,
-                                    evaluate_other=evaluate_other)
-            # print('Save scores')
-            self.raw_scores.extend(result['scores'])
-            self.raw_entities.extend(result['entities'])
-            discarded_entities += result['discarded_entities']
-            annotated_entities += len([label for label in document['labels'] if label != 0])
-            annotated_entities_positive += len([label for label in document['labels'] if label in self.relevant_class_indices])
-            # found_entities += len(result['entities'])
-            attributed_entities_raw = [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None]
-            # print('attributed_entities_raw', len(attributed_entities_raw), attributed_entities_raw)
-            test_other = [e['other_entity'] for e in result['entities']]
-            test_eval = [e['eval'] for e in result['entities']]
-            # print('test_other', test_other)
-            # print('test_eval', test_eval)
-            attributed_entities += len([e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
-            if len(result['entities']) == 0:
-                documents_without_entities += 1
-            tokens += result['tokens']
+        self.ordered_attributions: List[Dict] = []
+        for doc in self.dataset:
+            attr = [e for e in self.attributions if e['document_id'] == doc['document_id']]
+            assert len(attr) == 1
+            self.ordered_attributions.append(attr[0])
+
+        with alive_bar(len(self.dataset)) as bar:
+            for document, doc_attributions in zip(self.dataset, self.ordered_attributions):
+                if len(doc_attributions['entities']) > 0:
+                    first_entity = doc_attributions['entities'][0]
+                    # print(first_entity)
+                    assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity['index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
+                assert document['document_id'] == doc_attributions['document_id'], f"{document['document_id']} --- {doc_attributions['document_id']}"
+                documents += 1
+                if start_document and documents < start_document:
+                    continue
+                if max_documents and 0 < max_documents < documents:
+                    break
+                print('Document', documents)
+                result = self.evaluator(document,
+                                        attributions=doc_attributions,
+                                        k_values=k_values,
+                                        continuous=continuous,
+                                        bottom_k=bottom_k,
+                                        evaluate_other=evaluate_other)
+                # print('Save scores')
+                self.raw_scores.extend(result['scores'])
+                self.raw_entities.extend(result['entities'])
+                discarded_entities += result['discarded_entities']
+                annotated_entities += len([label for label in document['labels'] if label != 0])
+                annotated_entities_positive += len(
+                    [label for label in document['labels'] if label in self.relevant_class_indices])
+                # found_entities += len(result['entities'])
+                # attributed_entities_raw = [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None]
+                # print('attributed_entities_raw', len(attributed_entities_raw), attributed_entities_raw)
+                # test_other = [e['other_entity'] for e in result['entities']]
+                # test_eval = [e['eval'] for e in result['entities']]
+                # print('test_other', test_other)
+                # print('test_eval', test_eval)
+                attributed_entities += len([e for e in result['entities']])
+                attributed_entities += len([e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
+                if len(result['entities']) == 0:
+                    documents_without_entities += 1
+                tokens += result['tokens']
+                bar()
 
         end_time = datetime.now()
         duration = end_time - start_time
@@ -498,7 +724,8 @@ class NERDatasetEvaluator:
                 'avg_found_entities_per_document': found_entities / documents,
                 'avg_found_entities_per_document_all_classes': (found_entities + discarded_entities) / documents,
                 'found_to_annotated_entities_ratio': found_entities / annotated_entities_positive,
-                'found_to_annotated_entities_ratio_all_classes': (found_entities + discarded_entities) / annotated_entities,
+                'found_to_annotated_entities_ratio_all_classes': (
+                                                                         found_entities + discarded_entities) / annotated_entities,
                 'tokens': tokens,
                 'avg_tokens_per_document': tokens / documents,
                 'documents_without_entities': documents_without_entities,
@@ -515,6 +742,7 @@ class NERDatasetEvaluator:
                 'max_documents': max_documents,
                 'evaluate_other': evaluate_other,
                 'class_name': self.class_name,
+                'exclude_reference_token': exclude_reference_token,
             },
             'timing': {
                 'start_time': str(start_time),
@@ -529,4 +757,3 @@ class NERDatasetEvaluator:
         }
 
         return self.scores
-

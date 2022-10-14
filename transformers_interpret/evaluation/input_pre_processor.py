@@ -37,7 +37,13 @@ class InputPreProcessor:
         raw_input_text = ' '.join([i[0] for i in [passage['text'] for passage in input_document['passages']]])\
             .replace('(ABSTRACT TRUNCATED AT 250 WORDS)', '')
         result_text, truncated_tokens, cutoff_index = self.truncate_input(raw_input_text)
-        tokens = self.tokenizer(result_text, padding='max_length', return_offsets_mapping=True)
+        if len(result_text) == 0:
+            print(input_document)
+        tokens = self.tokenizer(result_text,
+                                padding='max_length',
+                                # max_length=self.max_tokens,
+                                return_offsets_mapping=True
+                                )
         labels = self.create_labels(input_document, tokens)
         # tokens_str = self.tokenizer.tokenize(result_text)
         # for t, l in zip(tokens_str, labels[1:]):
@@ -106,12 +112,13 @@ class InputPreProcessor:
 
     def truncate_input(self, raw_input_text):
         if not raw_input_text:
-            return '', 0
+            return '', 0, 0
         split_sentences = self.sentence_segmentation(raw_input_text)
         sentences = list(split_sentences.sents)
-        tokens_temp = [[], []]
-        cutoff_index_temp = [len(raw_input_text), len(raw_input_text)]
-        truncated_tokens_temp = [0, 0]
+        no_additional_tokenizers = len([self.tokenizer] + self.additional_tokenizers)
+        tokens_temp = [[] for _ in range(no_additional_tokenizers)]
+        cutoff_index_temp = [len(raw_input_text) for _ in range(no_additional_tokenizers)]
+        truncated_tokens_temp = [0] * no_additional_tokenizers
         for tokenizer_i, tokenizer in enumerate([self.tokenizer] + self.additional_tokenizers):
             for i, sent in enumerate(sentences):
                 input_tokens_sent = tokenizer.tokenize(str(sent))

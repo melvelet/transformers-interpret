@@ -33,6 +33,7 @@ model_name_short = {
     'kamalkraj/bioelectra-base-discriminator-pubmed-pmc': 'bioelectra-discriminator',
     'michiyasunaga/BioLinkBERT-base': 'biolinkbert',
     'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext': 'pubmedbert',
+    'google/electra-base-discriminator': 'electra',
 }
 
 # batch_size = 4
@@ -55,9 +56,9 @@ dataset_names = [
     'scai_disease_bigbio_kb',
     'ddi_corpus_bigbio_kb',
     'mlee_bigbio_kb',
+    'cadec_bigbio_kb',
 ]
 
-# huggingface_model = 'dbmdz/electra-large-discriminator-finetuned-conll03-english'
 # huggingface_model = 'fran-martinez/scibert_scivocab_cased_ner_jnlpba'
 # huggingface_model = 'alvaroalon2/biobert_chemical_ner'
 # huggingface_model = 'dslim/bert-base-NER'
@@ -69,8 +70,7 @@ huggingface_models = [
     'kamalkraj/bioelectra-base-discriminator-pubmed-pmc',
     'Jean-Baptiste/roberta-large-ner-english',
     'microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext',
-    # 'dbmdz/electra-large-discriminator-finetuned-conll03-english',
-
+    # 'google/electra-base-discriminator',
     # 'fran-martinez/scibert_scivocab_cased_ner_jnlpba',
     # 'alvaroalon2/biobert_chemical_ner',
     # 'dslim/bert-base-NER',
@@ -121,6 +121,8 @@ elif entity == 'drug':
         disease_class = 'Chemicals & Drugs'
     elif dataset_name == 'mlee_bigbio_kb':
         disease_class = 'Drug_or_compound'
+    elif dataset_name == 'cadec_bigbio_kb':
+        disease_class = 'Drug'
 else:
     disease_class = None
 
@@ -143,7 +145,8 @@ model: AutoModelForTokenClassification = AutoModelForTokenClassification\
     .from_pretrained(huggingface_model,
                      ignore_mismatched_sizes=True,
                      num_labels=len(label2id))
-id2label[-100] = 'O'  # label_pad_token_id from data_collator
+if model_name_short[huggingface_model] != 'roberta':
+    id2label[-100] = 'O'  # label_pad_token_id from data_collator
 model.config.label2id = label2id
 model.config.id2label = id2label
 model.config.num_labels = len(label2id)
