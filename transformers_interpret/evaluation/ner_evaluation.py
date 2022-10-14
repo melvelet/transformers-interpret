@@ -317,14 +317,14 @@ class NERSentenceEvaluator:
                     for j in rationale:
                         masked_inputs[i][j] = self.tokenizer.mask_token_id
 
-        masked_inputs.to(CUDA_DEVICE)
         preds = None
         for i in range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE)):
             print('batch', i)
+            batch = masked_inputs[i:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
             if i == 0:
-                preds = self.model(masked_inputs[i:(i+1)*BATCH_SIZE,:])
+                preds = self.model(batch)
             else:
-                preds.cat(self.model(masked_inputs[i:(i+1)*BATCH_SIZE,:]))
+                preds.cat(self.model(batch))
 
         i = -1
         for k in k_values:
