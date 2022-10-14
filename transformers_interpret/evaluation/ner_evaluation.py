@@ -332,9 +332,10 @@ class NERSentenceEvaluator:
 
     def calculate_sufficiency(self, k: int, continuous: bool = False, bottom_k: bool = False):
         # print('calculate_sufficiency, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
-        masked_inputs = torch.empty(
+        masked_inputs = torch.full(
             size=(len(self.entities) * len(self.prefixes), len(self.input_token_ids)),
-            dtype=torch.int64
+            fill_value=self.tokenizer.pad_token_id,
+            dtype=torch.int64,
         )
 
         i = -1
