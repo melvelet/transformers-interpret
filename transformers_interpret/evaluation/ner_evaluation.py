@@ -457,19 +457,19 @@ class NERSentenceEvaluator:
 
         print('calculate top_k scores')
         self.calculate_measure(k_values, 'comprehensiveness')
-        # self.calculate_sufficiency(k_values)
+        self.calculate_measure(k_values, 'sufficiency')
 
         if continuous:
             print('calculate continuous scores')
             modes.append('continuous')
             self.calculate_measure(k_values, 'comprehensiveness', continuous=True)
-            # self.calculate_sufficiency(k_values, continuous=True)
+            self.calculate_measure(k_values, 'sufficiency', continuous=True)
 
         if bottom_k:
             print('calculate bottom_k scores')
             modes.append('bottom_k')
             self.calculate_measure(k_values, 'comprehensiveness', bottom_k=True)
-            # self.calculate_sufficiency(k_values, bottom_k=True)
+            self.calculate_measure(k_values, 'sufficiency', bottom_k=True)
 
         # print('collect scores')
 
