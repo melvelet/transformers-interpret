@@ -434,8 +434,13 @@ class NERSentenceEvaluator:
 
 
 class NERDatasetEvaluator:
-    def __init__(self, pipeline: Pipeline, dataset: Dataset, attributions, attribution_type: str = "lig",
-                 class_name: str = None):
+    def __init__(self,
+                 pipeline: Pipeline,
+                 dataset: Dataset,
+                 attributions,
+                 attribution_type: str = "lig",
+                 class_name: str = None,
+                 ):
         self.pipeline = pipeline
         self.dataset = dataset
         self.label2id, self.id2label = get_labels_from_dataset(dataset, has_splits=False)
@@ -444,6 +449,7 @@ class NERDatasetEvaluator:
         self.attributions = attributions
         self.evaluator = NERSentenceEvaluator(self.pipeline, self.attribution_type, class_name=class_name,
                                               dataset_name=self.dataset.info.config_name)
+        self.tokenizer = self.pipeline.tokenizer
         self.raw_scores: List[Dict] = []
         self.raw_entities: List[Dict] = []
         self.scores = None
@@ -644,39 +650,51 @@ class NERDatasetEvaluator:
         documents_without_entities = 0
         start_time = datetime.now()
 
-        for document, doc_attributions in zip(self.dataset, self.attributions):
-            assert document['document_id'] == doc_attributions['document_id']
-            documents += 1
-            if start_document and documents < start_document:
-                continue
-            if max_documents and 0 < max_documents < documents:
-                break
-            print('Document', documents)
-            result = self.evaluator(document,
-                                    attributions=doc_attributions,
-                                    k_values=k_values,
-                                    continuous=continuous,
-                                    bottom_k=bottom_k,
-                                    evaluate_other=evaluate_other)
-            # print('Save scores')
-            self.raw_scores.extend(result['scores'])
-            self.raw_entities.extend(result['entities'])
-            discarded_entities += result['discarded_entities']
-            annotated_entities += len([label for label in document['labels'] if label != 0])
-            annotated_entities_positive += len(
-                [label for label in document['labels'] if label in self.relevant_class_indices])
-            # found_entities += len(result['entities'])
-            # attributed_entities_raw = [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None]
-            # print('attributed_entities_raw', len(attributed_entities_raw), attributed_entities_raw)
-            # test_other = [e['other_entity'] for e in result['entities']]
-            # test_eval = [e['eval'] for e in result['entities']]
-            # print('test_other', test_other)
-            # print('test_eval', test_eval)
-            attributed_entities += len([e for e in result['entities']])
-            attributed_entities += len([e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
-            if len(result['entities']) == 0:
-                documents_without_entities += 1
-            tokens += result['tokens']
+        self.ordered_attributions: List[Dict] = []
+        for doc in self.dataset:
+            attr = [e for e in self.attributions if e['document_id'] == doc['document_id']]
+            assert len(attr) == 1
+            self.ordered_attributions.append(attr[0])
+
+        with alive_bar(len(self.dataset)) as bar:
+            for document, doc_attributions in zip(self.dataset, self.ordered_attributions):
+                if len(doc_attributions['entities']) > 0:
+                    first_entity = doc_attributions['entities'][0]
+                    # print(first_entity)
+                    assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity['index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
+                assert document['document_id'] == doc_attributions['document_id'], f"{document['document_id']} --- {doc_attributions['document_id']}"
+                documents += 1
+                if start_document and documents < start_document:
+                    continue
+                if max_documents and 0 < max_documents < documents:
+                    break
+                print('Document', documents)
+                result = self.evaluator(document,
+                                        attributions=doc_attributions,
+                                        k_values=k_values,
+                                        continuous=continuous,
+                                        bottom_k=bottom_k,
+                                        evaluate_other=evaluate_other)
+                # print('Save scores')
+                self.raw_scores.extend(result['scores'])
+                self.raw_entities.extend(result['entities'])
+                discarded_entities += result['discarded_entities']
+                annotated_entities += len([label for label in document['labels'] if label != 0])
+                annotated_entities_positive += len(
+                    [label for label in document['labels'] if label in self.relevant_class_indices])
+                # found_entities += len(result['entities'])
+                # attributed_entities_raw = [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None]
+                # print('attributed_entities_raw', len(attributed_entities_raw), attributed_entities_raw)
+                # test_other = [e['other_entity'] for e in result['entities']]
+                # test_eval = [e['eval'] for e in result['entities']]
+                # print('test_other', test_other)
+                # print('test_eval', test_eval)
+                attributed_entities += len([e for e in result['entities']])
+                attributed_entities += len([e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
+                if len(result['entities']) == 0:
+                    documents_without_entities += 1
+                tokens += result['tokens']
+                bar()
 
         end_time = datetime.now()
         duration = end_time - start_time
