@@ -334,7 +334,6 @@ class NERSentenceEvaluator:
                 # print('batch', i, end='\r', flush=True)
                 batch = masked_inputs[i*BATCH_SIZE:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
                 preds.append(self.model(batch).logits)
-                print('shape', preds[-1].shape)
                 # torch.cuda.empty_cache()
             if preds:
                 preds = torch.cat(preds, dim=0)
