@@ -26,6 +26,7 @@ bottom_k = True
 evaluate_other = True
 CUDA_VISIBLE_DEVICES = os.environ.get('CUDA_VISIBLE_DEVICES') if os.environ.get('CUDA_VISIBLE_DEVICES') else 'cpu'
 torch.device('cpu') if CUDA_VISIBLE_DEVICES == 'cpu' else torch.device('cuda', int(CUDA_VISIBLE_DEVICES))
+torch.cuda.is_available()
 print('torch.cuda.current_device()', torch.cuda.current_device())
 
 attribution_types = [
