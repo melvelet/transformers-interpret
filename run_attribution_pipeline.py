@@ -129,10 +129,11 @@ document_ids = [doc['document_id'] for doc in tokenized_datasets]
 pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer, device=0 if CUDA_VISIBLE_DEVICES != 'cpu' else -1)
 
 attributor = NERDatasetAttributor(pipeline, tokenized_datasets, attribution_type, class_name=disease_class)
-result = attributor(
-                   max_documents=max_documents,
-                   start_document=start_document,
-                   evaluate_other=evaluate_other)
+with torch.no_grad():
+    result = attributor(
+                       max_documents=max_documents,
+                       start_document=start_document,
+                       evaluate_other=evaluate_other)
 
 pprint(result)
 
