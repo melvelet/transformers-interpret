@@ -225,6 +225,7 @@ class NERDatasetAttributor:
 
         with alive_bar(total=len(self.dataset)) as bar:
             for document in self.dataset:
+                torch.cuda.empty_cache()
                 documents += 1
                 if start_document and documents < start_document:
                     continue
