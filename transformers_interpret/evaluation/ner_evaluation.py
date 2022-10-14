@@ -479,7 +479,6 @@ class NERDatasetEvaluator:
                  ):
         self.pipeline = pipeline
         self.pipeline.model.to(CUDA_DEVICE)
-        self.pipeline.tokenizer.to(CUDA_DEVICE)
         self.dataset = dataset
         self.label2id, self.id2label = get_labels_from_dataset(dataset, has_splits=False)
         print('label2id', self.label2id)
