@@ -221,25 +221,27 @@ class NERDatasetAttributor:
         tokens = 0
         start_time = datetime.now()
 
-        for document in tqdm(self.dataset):
-            documents += 1
-            if start_document and documents < start_document:
-                continue
-            if max_documents and 0 < max_documents < documents:
-                break
-            print('Document', documents)
-            result = self.attributor(document,
-                                     evaluate_other=evaluate_other)
-            self.entities.append({
-                'entities': result['entities'],
-                'document_id': document['document_id'],
-                'discarded_entities': result['discarded_entities'],
-            })
-            discarded_entities += result['discarded_entities']
-            self.attributed_entities += len([e for e in result['entities']])
-            self.attributed_entities += len(
-                [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
-            tokens += result['tokens']
+        with alive_bar(total=len(self.ordered_attributions)) as bar:
+            for document in self.dataset:
+                documents += 1
+                if start_document and documents < start_document:
+                    continue
+                if max_documents and 0 < max_documents < documents:
+                    break
+                print('Document', documents)
+                result = self.attributor(document,
+                                         evaluate_other=evaluate_other)
+                self.entities.append({
+                    'entities': result['entities'],
+                    'document_id': document['document_id'],
+                    'discarded_entities': result['discarded_entities'],
+                })
+                discarded_entities += result['discarded_entities']
+                self.attributed_entities += len([e for e in result['entities']])
+                self.attributed_entities += len(
+                    [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
+                tokens += result['tokens']
+                bar()
 
         end_time = datetime.now()
         duration = end_time - start_time
