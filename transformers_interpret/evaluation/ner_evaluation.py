@@ -292,19 +292,32 @@ class NERSentenceEvaluator:
 
     def calculate_comprehensiveness(self, k: int, continuous: bool = False, bottom_k: bool = False):
         # print('calculate_comprehensiveness, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
+        masked_inputs = torch.empty(
+            size=(len(self.entities) * len(self.prefixes), len(self.input_token_ids)),
+            dtype=torch.int64
+        )
+
+        i = -1
         for e in self.entities:
             for prefix in self.prefixes:
+                i += 1
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
                 rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
                                           bottom_k=bottom_k if not continuous else False)
-                masked_input = torch.tensor([self.input_token_ids])
-                for i in rationale:
-                    masked_input[0][i] = self.tokenizer.mask_token_id
-                # print('predict')
-                pred = self.model(masked_input)
-                # print('score')
-                scores = torch.softmax(pred.logits, dim=-1)[0]
+                masked_inputs[i] = torch.tensor(self.input_token_ids)
+                for j in rationale:
+                    masked_inputs[i][j] = self.tokenizer.mask_token_id
+
+        preds = self.model(masked_inputs)
+
+        i = -1
+        for e in self.entities:
+            for prefix in self.prefixes:
+                i += 1
+                if prefix == 'other_' and e['other_entity'] in [None, 'O']:
+                    continue
+                scores = torch.softmax(preds[i].logits, dim=-1)[0]
                 new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
                 mode = 'top_k'
                 if continuous:
