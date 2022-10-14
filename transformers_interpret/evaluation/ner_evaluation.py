@@ -305,7 +305,7 @@ class NERSentenceEvaluator:
         )
 
         i = -1
-        for k in k_values
+        for k in k_values:
             for e in self.entities:
                 for prefix in self.prefixes:
                     i += 1
@@ -327,7 +327,7 @@ class NERSentenceEvaluator:
                 preds.cat(self.model(masked_inputs[i:(i+1)*BATCH_SIZE,:]))
 
         i = -1
-        for k in k_values
+        for k in k_values:
             for e in self.entities:
                 for prefix in self.prefixes:
                     i += 1
