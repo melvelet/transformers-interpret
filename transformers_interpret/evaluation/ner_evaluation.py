@@ -36,6 +36,7 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k
     else:
         indices = torch.topk(tensor, len(attributions)).indices
 
+    print(tensor[1], tensor[indices[0]])
     if return_mask:
         mask = [0 for _ in range(len(attributions))]
         for i in indices:
@@ -319,7 +320,7 @@ class NERSentenceEvaluator:
                     if measure == 'comprehensiveness':
                         rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
                                                   bottom_k=bottom_k if not continuous else False)
-                        print(rationale, len(self.input_token_ids))
+                        print(rationale, len(self.input_token_ids), 'bottom_k', bottom_k, 'continuous', continuous)
                         for j in rationale:
                             masked_inputs[i][j] = self.tokenizer.mask_token_id
                     elif measure == 'sufficiency':
