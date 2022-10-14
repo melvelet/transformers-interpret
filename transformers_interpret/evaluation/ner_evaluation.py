@@ -300,7 +300,6 @@ class NERSentenceEvaluator:
             size=(len(self.entities) * len(self.prefixes), len(self.input_token_ids)),
             fill_value=self.tokenizer.pad_token_id,
             dtype=torch.int64,
-            device=CUDA_DEVICE,
         )
 
         i = -1
@@ -315,7 +314,7 @@ class NERSentenceEvaluator:
                 for j in rationale:
                     masked_inputs[i][j] = self.tokenizer.mask_token_id
 
-        preds = self.model(masked_inputs)
+        preds = self.model(masked_inputs.to(CUDA_DEVICE))
 
         i = -1
         for e in self.entities:
@@ -341,7 +340,6 @@ class NERSentenceEvaluator:
             size=(len(self.entities) * len(self.prefixes), len(self.input_token_ids)),
             fill_value=self.tokenizer.pad_token_id,
             dtype=torch.int64,
-            device=CUDA_DEVICE,
         )
 
         i = -1
@@ -357,7 +355,7 @@ class NERSentenceEvaluator:
                     if j + 1 not in rationale:
                         masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
 
-        preds = self.model(masked_inputs)
+        preds = self.model(masked_inputs.to(CUDA_DEVICE))
 
         i = -1
         for e in self.entities:
