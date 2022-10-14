@@ -325,7 +325,7 @@ class NERSentenceEvaluator:
 
         torch.cuda.empty_cache()
         preds = []
-        for i in tqdm(range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE))):
+        for i in range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE)):
             print('batch', i, end='\r', flush=True)
             batch = masked_inputs[i*BATCH_SIZE:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
             preds.append(self.model(batch).logits)
