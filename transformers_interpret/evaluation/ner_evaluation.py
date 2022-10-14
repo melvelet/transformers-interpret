@@ -724,7 +724,7 @@ class NERDatasetEvaluator:
                         doc_attributions['entities'] = list(filter(lambda x: x['index'] <= len(document['input_ids']) - 1, doc_attributions['entities']))
                         for e in doc_attributions['entities']:
                             e['attribution_scores'] = e['attribution_scores'][:len(document['input_ids']) - 1]
-                            if 'other_attribution_scores':
+                            if 'other_attribution_scores' in e:
                                 e['other_attribution_scores'] = e['other_attribution_scores'][:len(document['input_ids']) - 1]
 
                 assert document['document_id'] == doc_attributions['document_id'], f"{document['document_id']} --- {doc_attributions['document_id']}"
