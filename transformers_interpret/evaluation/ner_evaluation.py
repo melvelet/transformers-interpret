@@ -86,7 +86,7 @@ class NERSentenceAttributor:
     def execute_base_classification(self):
         # print('Base classification')
         self.entities = self.pipeline(self.input_str)
-        pred = self.model(torch.tensor([self.input_token_ids]))
+        pred = self.model(torch.tensor([self.input_token_ids]).to(CUDA_DEVICE))
         scores = torch.softmax(pred.logits, dim=-1)[0]
         if self.relevant_class_names is not None:
             for i, gold_label in enumerate(self.gold_labels):
@@ -199,6 +199,7 @@ class NERDatasetAttributor:
                  class_name: str = None,
                  ):
         self.pipeline = pipeline
+        self.pipeline.model.to(CUDA_DEVICE)
         self.dataset = dataset
         self.label2id, self.id2label = get_labels_from_dataset(dataset, has_splits=False)
         print('label2id', self.label2id)
