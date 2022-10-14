@@ -126,7 +126,7 @@ tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 document_ids = [doc['document_id'] for doc in tokenized_datasets]
 # print('document_ids', document_ids)
 
-pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer, device=int(CUDA_VISIBLE_DEVICES))
+pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer, device=0 if CUDA_VISIBLE_DEVICES != 'cpu' else -1)
 
 attributor = NERDatasetAttributor(pipeline, tokenized_datasets, attribution_type, class_name=disease_class)
 result = attributor(
