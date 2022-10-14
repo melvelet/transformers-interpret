@@ -1,3 +1,4 @@
+import math
 import os
 from datetime import datetime
 from statistics import mean, median, stdev, variance, StatisticsError
@@ -14,6 +15,7 @@ from transformers_interpret import TokenClassificationExplainer
 
 CUDA_VISIBLE_DEVICES = os.environ.get('CUDA_VISIBLE_DEVICES') if os.environ.get('CUDA_VISIBLE_DEVICES') else 'cpu'
 CUDA_DEVICE = torch.device('cpu') if CUDA_VISIBLE_DEVICES == 'cpu' else torch.device('cuda')
+BATCH_SIZE = 16
 
 def get_rationale(attributions, k: int, continuous: bool = False, return_mask: bool = False, bottom_k: bool = False):
     if continuous:
@@ -315,7 +317,14 @@ class NERSentenceEvaluator:
                     for j in rationale:
                         masked_inputs[i][j] = self.tokenizer.mask_token_id
 
-        preds = self.model(masked_inputs.to(CUDA_DEVICE))
+        masked_inputs.to(CUDA_DEVICE)
+        preds = None
+        for i in range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE)):
+            print('batch', i)
+            if i == 0:
+                preds = self.model(masked_inputs[i:(i+1)*BATCH_SIZE,:])
+            else:
+                preds.cat(self.model(masked_inputs[i:(i+1)*BATCH_SIZE,:]))
 
         i = -1
         for k in k_values
@@ -440,26 +449,20 @@ class NERSentenceEvaluator:
             self.write_rationales(k, continuous=continuous, bottom_k=bottom_k)
 
         print('calculate top_k scores')
-        for k in k_values:
-            print(k, end='\r', flush=True)
-            self.calculate_comprehensiveness(k)
-            self.calculate_sufficiency(k)
+        self.calculate_comprehensiveness(k_values)
+        # self.calculate_sufficiency(k_values)
 
         if continuous:
             print('calculate continuous scores')
             modes.append('continuous')
-            for k in k_values:
-                print(k, end='\r', flush=True)
-                self.calculate_comprehensiveness(k, continuous=True)
-                self.calculate_sufficiency(k, continuous=True)
+            self.calculate_comprehensiveness(k_values, continuous=True)
+            # self.calculate_sufficiency(k_values, continuous=True)
 
         if bottom_k:
             print('calculate bottom_k scores')
             modes.append('bottom_k')
-            for k in k_values:
-                print(k, end='\r', flush=True)
-                self.calculate_comprehensiveness(k, bottom_k=True)
-                self.calculate_sufficiency(k, bottom_k=True)
+            self.calculate_comprehensiveness(k_values, bottom_k=True)
+            # self.calculate_sufficiency(k_values, bottom_k=True)
 
         # print('collect scores')
 
