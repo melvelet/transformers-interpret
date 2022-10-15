@@ -167,25 +167,21 @@ class LGXAAttributions(Attributions):
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
                 # target=[target_idx] if target_idx else None,
                 additional_forward_args=(self.attention_mask),
-                internal_batch_size=self.internal_batch_size,
             )
         elif self.position_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.position_ids),
                 additional_forward_args=(self.attention_mask),
-                internal_batch_size=self.internal_batch_size,
             )
         elif self.token_type_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids),
                 additional_forward_args=(self.attention_mask),
-                internal_batch_size=self.internal_batch_size,
             )
 
         else:
             self._attributions = self.attributor.attribute(
                 inputs=self.input_ids,
-                internal_batch_size=self.internal_batch_size,
             )
 
     @property
@@ -253,25 +249,21 @@ class LFAAttributions(Attributions):
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
                 additional_forward_args=(self.attention_mask),
-                internal_batch_size=self.internal_batch_size,
             )
         elif self.position_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.position_ids),
                 additional_forward_args=(self.attention_mask),
-                internal_batch_size=self.internal_batch_size,
             )
         elif self.token_type_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids),
                 additional_forward_args=(self.attention_mask),
-                internal_batch_size=self.internal_batch_size,
             )
 
         else:
             self._attributions = self.attributor.attribute(
                 inputs=self.input_ids,
-                internal_batch_size=self.internal_batch_size,
             )
 
     @property
