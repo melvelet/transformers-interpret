@@ -728,6 +728,7 @@ class NERDatasetEvaluator:
         discarded_entities = 0
         tokens = 0
         documents_without_entities = 0
+        first_entity_no_word = 0
         start_time = datetime.now()
 
         self.ordered_attributions: List[Dict] = []
@@ -742,10 +743,13 @@ class NERDatasetEvaluator:
                     first_entity = doc_attributions['entities'][0]
                     # print(first_entity)
                     if first_entity['index'] < len(document['input_ids']):
-                        print(self.tokenizer.decode(document['input_ids'][first_entity[
-                            'index']]))
-                        assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity[
-                            'index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
+                        if 'word' in first_entity:
+                            print(self.tokenizer.decode(document['input_ids'][first_entity[
+                                'index']]))
+                            assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity[
+                                'index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
+                        else:
+                            first_entity_no_word += 1
                     if len(first_entity['attribution_scores']) != len(document['input_ids']):
                         print('truncate', len(first_entity['attribution_scores']), 'to', len(document['input_ids']))
                         doc_attributions['entities'] = list(
@@ -826,6 +830,7 @@ class NERDatasetEvaluator:
                 'tokens': tokens,
                 'avg_tokens_per_document': tokens / documents,
                 'documents_without_entities': documents_without_entities,
+                'first_entity_no_word': first_entity_no_word,
             },
             'settings': {
                 'model': self.pipeline.model.config._name_or_path,
