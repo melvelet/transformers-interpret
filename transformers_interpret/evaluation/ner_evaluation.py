@@ -719,12 +719,8 @@ class NERDatasetEvaluator:
                 if len(doc_attributions['entities']) > 0:
                     first_entity = doc_attributions['entities'][0]
                     # print(first_entity)
-                    print(first_entity['word'])
-                    print(first_entity['index'])
-                    print(document['input_ids'][first_entity['index']])
-                    print(self.tokenizer.decode(document['input_ids'][first_entity['index']]))
-                    print()
-                    assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity['index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
+                    if first_entity['index'] < len(document['input_ids']):
+                        assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity['index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
                     if len(first_entity['attribution_scores']) != len(document['input_ids']):
                         print('truncate', len(first_entity['attribution_scores']), 'to', len(document['input_ids']))
                         doc_attributions['entities'] = list(filter(lambda x: x['index'] <= len(document['input_ids']) - 1, doc_attributions['entities']))
