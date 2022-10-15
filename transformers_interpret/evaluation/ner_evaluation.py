@@ -53,6 +53,8 @@ def get_continuous_rationale(attributions, k: int, return_mask: bool = False):
 
     tensor = torch.FloatTensor([a[1] for a in attributions])
     scores: List[float] = list()
+    if k >= len(attributions):
+        k = len(attributions)
     for i, _ in enumerate(tensor[:len(tensor) - k + 1]):
         scores.append(sum(tensor[i:i + k]))
 
