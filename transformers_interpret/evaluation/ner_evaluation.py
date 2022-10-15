@@ -13,7 +13,6 @@ from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
 from transformers_interpret.evaluation.input_pre_processor import get_labels_from_dataset
 from transformers_interpret import TokenClassificationExplainer
 
-
 CUDA_VISIBLE_DEVICES = os.environ.get('CUDA_VISIBLE_DEVICES') if os.environ.get('CUDA_VISIBLE_DEVICES') else 'cpu'
 CUDA_DEVICE = torch.device('cpu') if CUDA_VISIBLE_DEVICES == 'cpu' else torch.device('cuda')
 if os.environ.get('BATCH_SIZE'):
@@ -105,7 +104,8 @@ class NERSentenceAttributor:
                     entity['pred_label'] = pred_label
                     entity['doc_id'] = self.input_document['id']
                     entity['doc_doc_id'] = self.input_document['document_id']
-                    entity['doc_title'] = self.input_document['passages'][0]['text'][0][:20 if doc_len >= 20 else doc_len]  # was self.input_document['passages'][1]['text'][0]
+                    entity['doc_title'] = self.input_document['passages'][0]['text'][0][
+                                          :20 if doc_len >= 20 else doc_len]  # was self.input_document['passages'][1]['text'][0]
                     if gold_label in self.relevant_class_indices:
                         if gold_label == pred_label:
                             entity['eval'] = 'TP'
@@ -155,7 +155,8 @@ class NERSentenceAttributor:
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
         token_class_index_tuples += [(e['index'], self.label2id[e['other_entity']]) for e in self.entities if
                                      e['other_entity'] is not None]
-        self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples, internal_batch_size=BATCH_SIZE)
+        self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples,
+                       internal_batch_size=BATCH_SIZE)
         # print('assert', [t for t in self.input_token_ids if t != 1], self.explainer.input_token_ids)
         self.input_token_ids = self.explainer.input_token_ids
         self.input_tokens = self.explainer.input_tokens
@@ -338,9 +339,9 @@ class NERSentenceEvaluator:
 
         preds = []
         with torch.no_grad():
-            for i in range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE)):
+            for i in range(math.ceil(masked_inputs.shape[0] / BATCH_SIZE)):
                 # print('batch', i, end='\r', flush=True)
-                batch = masked_inputs[i*BATCH_SIZE:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
+                batch = masked_inputs[i * BATCH_SIZE:(i + 1) * BATCH_SIZE, :].to(CUDA_DEVICE)
                 preds.append(self.model(batch).logits)
                 # torch.cuda.empty_cache()
             if preds:
@@ -595,6 +596,10 @@ class NERDatasetEvaluator:
                 'comprehensiveness_FN': _calculate_statistical_function('comprehensiveness', eval_=['FN']),
                 'sufficiency_FN': _calculate_statistical_function('sufficiency', eval_=['FN']),
                 'compdiff_FN': _calculate_statistical_function('compdiff', eval_=['FN']),
+                'comprehensiveness_FN_Switched': _calculate_statistical_function('comprehensiveness',
+                                                                                 eval_=['FN', 'Switched']),
+                'sufficiency_FN_Switched': _calculate_statistical_function('sufficiency', eval_=['FN', 'Switched']),
+                'compdiff_FN_Switched': _calculate_statistical_function('compdiff', eval_=['FN', 'Switched']),
                 'comprehensiveness_Switched': _calculate_statistical_function('comprehensiveness', eval_=['Switched']),
                 'sufficiency_Switched': _calculate_statistical_function('sufficiency', eval_=['Switched']),
                 'compdiff_Switched': _calculate_statistical_function('compdiff', eval_=['Switched']),
@@ -618,6 +623,18 @@ class NERDatasetEvaluator:
                                                                                     eval_=['Switched']),
                 'other_sufficiency_Switched': _calculate_statistical_function('other_sufficiency', eval_=['Switched']),
                 'other_compdiff_Switched': _calculate_statistical_function('other_compdiff', eval_=['Switched']),
+                'other_comprehensiveness_FN_Switched': _calculate_statistical_function('other_comprehensiveness',
+                                                                                       eval_=['FN', 'Switched']),
+                'other_sufficiency_FN_Switched': _calculate_statistical_function('other_sufficiency',
+                                                                                 eval_=['FN', 'Switched']),
+                'other_compdiff_FN_Switched': _calculate_statistical_function('other_compdiff',
+                                                                              eval_=['FN', 'Switched']),
+                'other_comprehensiveness_Error': _calculate_statistical_function('other_comprehensiveness',
+                                                                                 eval_=['FN', 'FP', 'Switched']),
+                'other_sufficiency_Error': _calculate_statistical_function('other_sufficiency',
+                                                                           eval_=['FN', 'FP', 'Switched']),
+                'other_compdiff_Error': _calculate_statistical_function('other_compdiff',
+                                                                        eval_=['FN', 'FP', 'Switched']),
             },
             'median': {
                 'comprehensiveness_Best_5': _calculate_statistical_function('comprehensiveness',
@@ -719,22 +736,27 @@ class NERDatasetEvaluator:
             assert len(attr) == 1
             self.ordered_attributions.append(attr[0])
 
-        with alive_bar(total=len(self.ordered_attributions)-start_document) as bar:
+        with alive_bar(total=len(self.ordered_attributions) - start_document) as bar:
             for document, doc_attributions in tqdm(zip(self.dataset, self.ordered_attributions)):
                 if len(doc_attributions['entities']) > 0:
                     first_entity = doc_attributions['entities'][0]
                     # print(first_entity)
                     if first_entity['index'] < len(document['input_ids']):
-                        assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity['index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
+                        assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity[
+                            'index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
                     if len(first_entity['attribution_scores']) != len(document['input_ids']):
                         print('truncate', len(first_entity['attribution_scores']), 'to', len(document['input_ids']))
-                        doc_attributions['entities'] = list(filter(lambda x: x['index'] <= len(document['input_ids']) - 1, doc_attributions['entities']))
+                        doc_attributions['entities'] = list(
+                            filter(lambda x: x['index'] <= len(document['input_ids']) - 1,
+                                   doc_attributions['entities']))
                         for e in doc_attributions['entities']:
                             e['attribution_scores'] = e['attribution_scores'][:len(document['input_ids']) - 1]
                             if 'other_attribution_scores' in e:
-                                e['other_attribution_scores'] = e['other_attribution_scores'][:len(document['input_ids']) - 1]
+                                e['other_attribution_scores'] = e['other_attribution_scores'][
+                                                                :len(document['input_ids']) - 1]
 
-                assert document['document_id'] == doc_attributions['document_id'], f"{document['document_id']} --- {doc_attributions['document_id']}"
+                assert document['document_id'] == doc_attributions[
+                    'document_id'], f"{document['document_id']} --- {doc_attributions['document_id']}"
                 documents += 1
                 if start_document and documents < start_document:
                     continue
@@ -762,7 +784,8 @@ class NERDatasetEvaluator:
                 # print('test_other', test_other)
                 # print('test_eval', test_eval)
                 attributed_entities += len([e for e in result['entities']])
-                attributed_entities += len([e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
+                attributed_entities += len(
+                    [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
                 if len(result['entities']) == 0:
                     documents_without_entities += 1
                 tokens += result['tokens']
