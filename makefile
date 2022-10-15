@@ -3,9 +3,9 @@ attr-pipe-all: attr-pipe-lig
 attr-pipe-lig: attr-pipe-lig-disease attr-pipe-lig-drug
 
 attr-pipe-lgxa:
-	# python run_attribution_pipeline.py -a 1 -m 1 -d 0
-	# python run_attribution_pipeline.py -a 1 -m 1 -d 2
-	# python run_attribution_pipeline.py -a 1 -m 1 -d 4 -ent 1
+	python run_attribution_pipeline.py -a 1 -m 1 -d 0
+	python run_attribution_pipeline.py -a 1 -m 1 -d 2
+	python run_attribution_pipeline.py -a 1 -m 1 -d 4 -ent 1
 	python run_attribution_pipeline.py -a 1 -m 1 -d 6
 	python run_attribution_pipeline.py -a 1 -m 1 -d 6 -ent 1
 	python run_attribution_pipeline.py -a 1 -m 2 -d 0
