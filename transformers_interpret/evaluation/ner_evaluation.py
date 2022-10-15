@@ -16,7 +16,7 @@ from transformers_interpret import TokenClassificationExplainer
 
 CUDA_VISIBLE_DEVICES = os.environ.get('CUDA_VISIBLE_DEVICES') if os.environ.get('CUDA_VISIBLE_DEVICES') else 'cpu'
 CUDA_DEVICE = torch.device('cpu') if CUDA_VISIBLE_DEVICES == 'cpu' else torch.device('cuda')
-BATCH_SIZE = 32 if CUDA_VISIBLE_DEVICES != 'cpu' else 32
+BATCH_SIZE = 16 if CUDA_VISIBLE_DEVICES != 'cpu' else 32
 
 
 def get_rationale(attributions, k: int, continuous: bool = False, return_mask: bool = False, bottom_k: bool = False):

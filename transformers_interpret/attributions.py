@@ -9,9 +9,6 @@ from captum.attr import visualization as viz
 from transformers_interpret.errors import AttributionsNotCalculatedError
 
 
-INTERNAL_BATCH_SIZE = 16
-
-
 class Attributions:
     def __init__(self, custom_forward: Callable, embeddings: nn.Module, tokens: list):
         self.custom_forward = custom_forward
