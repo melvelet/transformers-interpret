@@ -742,6 +742,7 @@ class NERDatasetEvaluator:
                     first_entity = doc_attributions['entities'][0]
                     # print(first_entity)
                     if first_entity['index'] < len(document['input_ids']):
+                        print(first_entity)
                         assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity[
                             'index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
                     if len(first_entity['attribution_scores']) != len(document['input_ids']):
