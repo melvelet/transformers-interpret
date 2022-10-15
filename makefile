@@ -15,6 +15,23 @@ attr-lgxa:
 	python run_attribution_pipeline.py -a 1 -m 0 -d 6
 	python run_attribution_pipeline.py -a 1 -m 0 -d 6 -ent 1
 
+attr-gradcam:
+	python run_attribution_pipeline.py -a 3 -m 1 -d 0
+	python run_attribution_pipeline.py -a 3 -m 1 -d 2
+	python run_attribution_pipeline.py -a 3 -m 1 -d 4 -ent 1
+	python run_attribution_pipeline.py -a 3 -m 1 -d 6
+	python run_attribution_pipeline.py -a 3 -m 1 -d 6 -ent 1
+	python run_attribution_pipeline.py -a 3 -m 2 -d 0
+	python run_attribution_pipeline.py -a 3 -m 2 -d 2
+	python run_attribution_pipeline.py -a 3 -m 2 -d 4 -ent 1
+	python run_attribution_pipeline.py -a 3 -m 2 -d 6
+	python run_attribution_pipeline.py -a 3 -m 2 -d 6 -ent 1
+	python run_attribution_pipeline.py -a 3 -m 0 -d 0
+	python run_attribution_pipeline.py -a 3 -m 0 -d 2
+	python run_attribution_pipeline.py -a 3 -m 0 -d 4 -ent 1
+	python run_attribution_pipeline.py -a 3 -m 0 -d 6
+	python run_attribution_pipeline.py -a 3 -m 0 -d 6 -ent 1
+
 attr-lig-rob:
 	python run_attribution_pipeline.py -m 2 -d 0
 	python run_attribution_pipeline.py -m 2 -d 2
