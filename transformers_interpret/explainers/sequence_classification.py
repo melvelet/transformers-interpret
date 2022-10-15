@@ -272,6 +272,7 @@ class SequenceClassificationExplainer(BaseExplainer):
                     self.ref_input_ids,
                     self.attention_mask,
                     position_ids=self.position_ids,
+                    internal_batch_size=self.internal_batch_size,
                 )
                 lgxa.summarize()
                 self.attributions = lgxa
@@ -302,7 +303,8 @@ class SequenceClassificationExplainer(BaseExplainer):
                                           self.ref_input_ids,
                                           self.attention_mask,
                                           position_ids=self.position_ids,
-                                          ref_position_ids=self.ref_position_ids
+                                          ref_position_ids=self.ref_position_ids,
+                                          internal_batch_size=self.internal_batch_size,
                                           )
                 lgs.summarize()
                 self.attributions = lgs

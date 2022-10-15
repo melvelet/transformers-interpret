@@ -9,6 +9,9 @@ from captum.attr import visualization as viz
 from transformers_interpret.errors import AttributionsNotCalculatedError
 
 
+INTERNAL_BATCH_SIZE = 16
+
+
 class Attributions:
     def __init__(self, custom_forward: Callable, embeddings: nn.Module, tokens: list):
         self.custom_forward = custom_forward
@@ -146,6 +149,7 @@ class LGXAAttributions(Attributions):
             attention_mask: torch.Tensor,
             token_type_ids: torch.Tensor = None,
             position_ids: torch.Tensor = None,
+            internal_batch_size: int = None,
     ):
         super().__init__(custom_forward, embeddings, tokens)
         self.input_ids = input_ids
@@ -153,6 +157,7 @@ class LGXAAttributions(Attributions):
         self.attention_mask = attention_mask
         self.token_type_ids = token_type_ids
         self.position_ids = position_ids
+        self.internal_batch_size = internal_batch_size
 
         self.attributor = LayerGradientXActivation(self.custom_forward, self.embeddings)
 
@@ -162,21 +167,25 @@ class LGXAAttributions(Attributions):
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
                 # target=[target_idx] if target_idx else None,
                 additional_forward_args=(self.attention_mask),
+                internal_batch_size=self.internal_batch_size,
             )
         elif self.position_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.position_ids),
                 additional_forward_args=(self.attention_mask),
+                internal_batch_size=self.internal_batch_size,
             )
         elif self.token_type_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids),
                 additional_forward_args=(self.attention_mask),
+                internal_batch_size=self.internal_batch_size,
             )
 
         else:
             self._attributions = self.attributor.attribute(
                 inputs=self.input_ids,
+                internal_batch_size=self.internal_batch_size,
             )
 
     @property
@@ -244,21 +253,25 @@ class LFAAttributions(Attributions):
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
                 additional_forward_args=(self.attention_mask),
+                internal_batch_size=self.internal_batch_size,
             )
         elif self.position_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.position_ids),
                 additional_forward_args=(self.attention_mask),
+                internal_batch_size=self.internal_batch_size,
             )
         elif self.token_type_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids),
                 additional_forward_args=(self.attention_mask),
+                internal_batch_size=self.internal_batch_size,
             )
 
         else:
             self._attributions = self.attributor.attribute(
                 inputs=self.input_ids,
+                internal_batch_size=self.internal_batch_size,
             )
 
     @property
@@ -291,10 +304,19 @@ class LFAAttributions(Attributions):
 
 
 class GradCamAttributions(Attributions):
-    def __init__(self, custom_forward: Callable, embeddings: nn.Module, tokens: list, input_ids: torch.Tensor,
-                 ref_input_ids: torch.Tensor, attention_mask: torch.Tensor, token_type_ids: torch.Tensor = None,
-                 position_ids: torch.Tensor = None, ref_token_type_ids: torch.Tensor = None,
-                 ref_position_ids: torch.Tensor = None):
+    def __init__(self,
+                 custom_forward: Callable,
+                 embeddings: nn.Module,
+                 tokens: list,
+                 input_ids: torch.Tensor,
+                 ref_input_ids: torch.Tensor,
+                 attention_mask: torch.Tensor,
+                 token_type_ids: torch.Tensor = None,
+                 position_ids: torch.Tensor = None,
+                 ref_token_type_ids: torch.Tensor = None,
+                 ref_position_ids: torch.Tensor = None,
+                 internal_batch_size: int = None,
+                 ):
         super().__init__(custom_forward, embeddings, tokens)
         self.input_ids = input_ids
         self.ref_input_ids = ref_input_ids
@@ -303,6 +325,7 @@ class GradCamAttributions(Attributions):
         self.position_ids = position_ids
         self.ref_token_type_ids = ref_token_type_ids
         self.ref_position_ids = ref_position_ids
+        self.internal_batch_size = internal_batch_size
 
         self.attributor = LayerGradCam(self.custom_forward, self.embeddings)
 
@@ -311,21 +334,25 @@ class GradCamAttributions(Attributions):
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids, self.position_ids),
                 additional_forward_args=(self.attention_mask),
+                internal_batch_size=self.internal_batch_size,
             )
         elif self.position_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.position_ids),
                 additional_forward_args=(self.attention_mask),
+                internal_batch_size=self.internal_batch_size,
             )
         elif self.token_type_ids is not None:
             self._attributions = self.attributor.attribute(
                 inputs=(self.input_ids, self.token_type_ids),
                 additional_forward_args=(self.attention_mask),
+                internal_batch_size=self.internal_batch_size,
             )
 
         else:
             self._attributions = self.attributor.attribute(
                 inputs=self.input_ids,
+                internal_batch_size=self.internal_batch_size,
             )
 
     @property
