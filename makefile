@@ -53,12 +53,40 @@ eval-lig-ele:
 	python run_pipeline.py -m 1 -d 6
 	python run_pipeline.py -m 1 -d 6 -ent 1
 
+eval-lgxa-ele:
+	python run_pipeline.py -a 1 -m 1 -d 0
+	python run_pipeline.py -a 1 -m 1 -d 2
+	python run_pipeline.py -a 1 -m 1 -d 4 -ent 1
+	python run_pipeline.py -a 1 -m 1 -d 6
+	python run_pipeline.py -a 1 -m 1 -d 6 -ent 1
+
+eval-gradcam-ele:
+	python run_pipeline.py -a 3 -m 1 -d 0
+	python run_pipeline.py -a 3 -m 1 -d 2
+	python run_pipeline.py -a 3 -m 1 -d 4 -ent 1
+	python run_pipeline.py -a 3 -m 1 -d 6
+	python run_pipeline.py -a 3 -m 1 -d 6 -ent 1
+
 eval-lig-rob:
 	python run_pipeline.py -m 2 -d 0
 	python run_pipeline.py -m 2 -d 2
 	python run_pipeline.py -m 2 -d 4 -ent 1
 	python run_pipeline.py -m 2 -d 6
 	python run_pipeline.py -m 2 -d 6 -ent 1
+
+eval-lgxa-rob:
+	python run_pipeline.py -a 1 -m 2 -d 0
+	python run_pipeline.py -a 1 -m 2 -d 2
+	python run_pipeline.py -a 1 -m 2 -d 4 -ent 1
+	python run_pipeline.py -a 1 -m 2 -d 6
+	python run_pipeline.py -a 1 -m 2 -d 6 -ent 1
+
+eval-gradcam-rob:
+	python run_pipeline.py -a 3 -m 2 -d 0
+	python run_pipeline.py -a 3 -m 2 -d 2
+	python run_pipeline.py -a 3 -m 2 -d 4 -ent 1
+	python run_pipeline.py -a 3 -m 2 -d 6
+	python run_pipeline.py -a 3 -m 2 -d 6 -ent 1
 
 train-all: train-disease train-drug cleanup
 
