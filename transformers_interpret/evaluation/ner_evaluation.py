@@ -323,7 +323,8 @@ class NERSentenceEvaluator:
                                                   bottom_k=bottom_k if not continuous else False)
                         # print(rationale, len(self.input_token_ids), 'bottom_k', bottom_k, 'continuous', continuous)
                         for j in rationale:
-                            print(len(masked_inputs))
+                            print('len(masked_inputs)', len(masked_inputs))
+                            print('len(self.input_token_ids)', len(self.input_token_ids))
                             print(len(masked_inputs[i]))
                             masked_inputs[i][j] = self.tokenizer.mask_token_id
                     elif measure == 'sufficiency':
