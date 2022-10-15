@@ -744,8 +744,8 @@ class NERDatasetEvaluator:
                     # print(first_entity)
                     if first_entity['index'] < len(document['input_ids']):
                         if 'word' in first_entity:
-                            entity_word = first_entity['word'].replace('Ġ', '')
-                            doc_word = self.tokenizer.decode(document['input_ids'][first_entity['index']]).replace('Ġ', '')
+                            entity_word = first_entity['word'].replace('Ġ', '').strip()
+                            doc_word = self.tokenizer.decode(document['input_ids'][first_entity['index']]).replace('Ġ', '').strip()
                             assert entity_word == doc_word, f"{entity_word} ({len(entity_word)}) != {doc_word} ({len(doc_word)})"
                         else:
                             first_entity_no_word += 1
