@@ -714,7 +714,7 @@ class NERDatasetEvaluator:
             assert len(attr) == 1
             self.ordered_attributions.append(attr[0])
 
-        with alive_bar(total=len(self.ordered_attributions)) as bar:
+        with alive_bar(total=len(self.ordered_attributions)-start_document) as bar:
             for document, doc_attributions in tqdm(zip(self.dataset, self.ordered_attributions)):
                 if len(doc_attributions['entities']) > 0:
                     first_entity = doc_attributions['entities'][0]
