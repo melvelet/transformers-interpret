@@ -325,6 +325,7 @@ class NERSentenceEvaluator:
                         for j in rationale:
                             print('len(masked_inputs)', len(masked_inputs))
                             print('len(self.input_token_ids)', len(self.input_token_ids))
+                            print('rationale', rationale)
                             print(len(masked_inputs[i]))
                             masked_inputs[i][j] = self.tokenizer.mask_token_id
                     elif measure == 'sufficiency':
