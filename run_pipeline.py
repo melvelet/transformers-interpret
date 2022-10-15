@@ -27,6 +27,9 @@ evaluate_other = True
 
 attribution_types = [
     'lig',
+    'lgxa',
+    'lfa',
+    'gradcam',
 ]
 
 dataset_names = [
