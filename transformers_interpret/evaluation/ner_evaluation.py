@@ -505,7 +505,7 @@ class NERDatasetEvaluator:
                         prev_k = k_values[-1]
                         for k in reversed(k_values):
                             if best_rationale_compdiff_prev - e['compdiff'][mode][k] > take_best_rationale_threshold:
-                                best_rationale_compdiff = e[attr][mode][k]
+                                best_rationale_compdiff = e[attr][mode][prev_k]
                                 best_rationale_per_mode_k_value = prev_k
                                 break
                             best_rationale_compdiff_prev = e['compdiff'][mode][k]
