@@ -799,7 +799,7 @@ class NERDatasetEvaluator:
         end_time = datetime.now()
         duration = end_time - start_time
         modes = ['top_k']
-        found_entities = len([e for e in self.raw_entities if e['eval'] in ['TP', 'Switched', 'FP']])
+        found_entities = len([e for e in self.raw_entities if e['eval'] in ['TP', 'Switched', 'FP', 'FN']])
         if bottom_k:
             modes.append('bottom_k')
         if continuous:
