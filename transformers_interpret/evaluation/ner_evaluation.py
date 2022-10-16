@@ -367,48 +367,6 @@ class NERSentenceEvaluator:
                     #     print(scores)
                     e[f'{prefix}{measure}'][mode][k] = e[f'{prefix}score'] - new_conf
 
-    def calculate_sufficiency(self, k_values: List[int], continuous: bool = False, bottom_k: bool = False):
-        # print('calculate_sufficiency, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
-        masked_inputs = torch.full(
-            size=(len(self.entities) * len(self.prefixes) * len(k_values), len(self.input_token_ids)),
-            fill_value=self.tokenizer.pad_token_id,
-            dtype=torch.int64,
-        )
-
-        i = -1
-        for k in k_values:
-            for e in self.entities:
-                for prefix in self.prefixes:
-                    i += 1
-                    if prefix == 'other_' and e['other_entity'] in [None, 'O']:
-                        continue
-                    rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
-                                              bottom_k=bottom_k if not continuous else False)
-                    masked_inputs[i] = torch.tensor(self.input_token_ids)
-                    for j, _ in enumerate(masked_inputs[i][1:-1]):
-                        if j + 1 not in rationale:
-                            masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
-
-        preds = self.model(masked_inputs.to(CUDA_DEVICE))
-
-        i = -1
-        for k in k_values:
-            for e in self.entities:
-                for prefix in self.prefixes:
-                    i += 1
-                    if prefix == 'other_' and e['other_entity'] in [None, 'O']:
-                        continue
-                    scores = torch.softmax(preds.logits, dim=-1)[i]
-                    new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
-                    # new_label = self.id2label[scores[e['index']].argmax(axis=-1).item()]
-                    # print('old_conf', e['score'], 'new_conf', new_conf, 'old_label', e['entity'], 'new_label', new_label, 'diff', e['score'] - new_conf)
-                    mode = 'top_k'
-                    if continuous:
-                        mode = 'continuous'
-                    elif bottom_k:
-                        mode = 'bottom_k'
-                    e[f'{prefix}sufficiency'][mode][k] = e[f'{prefix}score'] - new_conf
-
     def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False):
         for e in self.entities:
             for prefix in self.prefixes:
@@ -544,12 +502,14 @@ class NERDatasetEvaluator:
                         best_rationale_compdiff = -1
                         best_rationale_per_mode_k_value = 0
                         best_rationale_compdiff_prev = 0
+                        prev_k = k_values[-1]
                         for k in reversed(k_values):
                             if best_rationale_compdiff_prev - e['compdiff'][mode][k] > take_best_rationale_threshold:
                                 best_rationale_compdiff = e[attr][mode][k]
-                                best_rationale_per_mode_k_value = k
+                                best_rationale_per_mode_k_value = prev_k
                                 break
                             best_rationale_compdiff_prev = e['compdiff'][mode][k]
+                            prev_k = k
                         if best_rationale_compdiff == -1:
                             best_rationale_compdiff = e[attr][mode][2]
                             best_rationale_per_mode_k_value = 2
