@@ -69,6 +69,7 @@ start_document = args.start_document
 entity = 'drug' if args.entity == 1 else 'disease'
 k_values = k_value_levels[args.k_value_level]
 exclude_reference_token = args.exclude_reference_token
+print('exclude_reference_token', exclude_reference_token)
 
 print('Loading dataset:', dataset_name)
 
