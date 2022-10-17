@@ -337,7 +337,7 @@ class NERSentenceEvaluator:
                     masked_inputs[i] = torch.tensor(self.input_token_ids)
                     mode = 'top_k'
                     if continuous:
-                        mode = 'top_k'
+                        mode = 'continuous'
                     elif bottom_k:
                         mode = 'bottom_k'
                     rationale = e['rationales'][f'{prefix}{mode}'][k]
