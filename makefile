@@ -61,32 +61,32 @@ eval-lgxa-ele:
 	python run_pipeline.py -a 1 -m 1 -d 6 -ent 1 --exclude ${EXCLUDE}
 
 eval-gradcam-ele:
-	python run_pipeline.py -a 3 -m 1 -d 0
-	python run_pipeline.py -a 3 -m 1 -d 2
-	python run_pipeline.py -a 3 -m 1 -d 4 -ent 1
-	python run_pipeline.py -a 3 -m 1 -d 6
-	python run_pipeline.py -a 3 -m 1 -d 6 -ent 1
+	python run_pipeline.py -a 3 -m 1 -d 0 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 1 -d 2 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 1 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 1 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 1 -d 6 -ent 1 --exclude ${EXCLUDE}
 
 eval-lig-rob:
-	python run_pipeline.py -m 2 -d 0
-	python run_pipeline.py -m 2 -d 2
-	python run_pipeline.py -m 2 -d 4 -ent 1
-	python run_pipeline.py -m 2 -d 6
-	python run_pipeline.py -m 2 -d 6 -ent 1
+	python run_pipeline.py -m 2 -d 0 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 2 -d 2 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 2 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 2 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 2 -d 6 -ent 1 --exclude ${EXCLUDE}
 
 eval-lgxa-rob:
-	python run_pipeline.py -a 1 -m 2 -d 0
-	python run_pipeline.py -a 1 -m 2 -d 2
-	python run_pipeline.py -a 1 -m 2 -d 4 -ent 1
-	python run_pipeline.py -a 1 -m 2 -d 6
-	python run_pipeline.py -a 1 -m 2 -d 6 -ent 1
+	python run_pipeline.py -a 1 -m 2 -d 0 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 2 -d 2 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 2 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 2 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 2 -d 6 -ent 1 --exclude ${EXCLUDE}
 
 eval-gradcam-rob:
-	python run_pipeline.py -a 3 -m 2 -d 0
-	python run_pipeline.py -a 3 -m 2 -d 2
-	python run_pipeline.py -a 3 -m 2 -d 4 -ent 1
-	python run_pipeline.py -a 3 -m 2 -d 6
-	python run_pipeline.py -a 3 -m 2 -d 6 -ent 1
+	python run_pipeline.py -a 3 -m 2 -d 0 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 2 -d 2 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 2 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 2 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 2 -d 6 -ent 1 --exclude ${EXCLUDE}
 
 train-all: train-disease train-drug cleanup
 
