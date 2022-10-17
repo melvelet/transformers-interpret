@@ -21,18 +21,25 @@ else:
     BATCH_SIZE = 16 if CUDA_VISIBLE_DEVICES != 'cpu' else 32
 
 
-def get_rationale(attributions, k: int, continuous: bool = False, return_mask: bool = False, bottom_k: bool = False):
+def get_rationale(attributions,
+                  k: int,
+                  continuous: bool = False,
+                  return_mask: bool = False,
+                  bottom_k: bool = False,
+                  exclude_reference_token_idx = None):
     if continuous:
-        return get_continuous_rationale(attributions, k, return_mask)
-    return get_topk_rationale(attributions, k, return_mask, bottom_k)
+        return get_continuous_rationale(attributions, k, return_mask, exclude_reference_token_idx)
+    return get_topk_rationale(attributions, k, return_mask, bottom_k, exclude_reference_token_idx)
 
 
-def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k: bool = False):
+def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k: bool = False, exclude_reference_token_idx = None):
     if len(attributions) == 0:
         return []
     tensor = torch.FloatTensor([a[1] for a in attributions])
     if bottom_k:
         tensor = - tensor
+    if exclude_reference_token_idx:
+        tensor[exclude_reference_token_idx] = -100.0
     if len(attributions) >= k:
         indices = torch.topk(tensor, k).indices
     else:
@@ -41,6 +48,8 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k
     if return_mask:
         mask = [0 for _ in range(len(attributions))]
         for i in indices:
+            if exclude_reference_token_idx and i == exclude_reference_token_idx:
+                continue
             if i not in [0, len(attributions) - 1]:
                 mask[i] = 1
         return mask
@@ -49,16 +58,19 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k
     return indices.tolist()
 
 
-def get_continuous_rationale(attributions, k: int, return_mask: bool = False):
+def get_continuous_rationale(attributions, k: int, return_mask: bool = False, exclude_reference_token_idx = None):
     if len(attributions) == 0 or return_mask:
         return []
 
     tensor = torch.FloatTensor([a[1] for a in attributions])
     scores: List[float] = list()
-    if k >= len(attributions):
-        k = len(attributions)
+    if k >= len(attributions) - 2:
+        k = len(attributions) - 2
     for i, _ in enumerate(tensor[:len(tensor) - k + 1]):
-        scores.append(sum(tensor[i:i + k]))
+        if exclude_reference_token_idx and exclude_reference_token_idx in range(i, i + k):
+            scores.append(-100.0)
+        else:
+            scores.append(sum(tensor[i:i + k]))
 
     argmax = torch.argmax(torch.FloatTensor(scores)).item()
     indices = [i for i in range(argmax, argmax + k)]
@@ -323,16 +335,18 @@ class NERSentenceEvaluator:
                         continue
 
                     masked_inputs[i] = torch.tensor(self.input_token_ids)
+                    mode = 'top_k'
+                    if continuous:
+                        mode = 'top_k'
+                    elif bottom_k:
+                        mode = 'bottom_k'
+                    rationale = e['rationales'][f'{prefix}{mode}'][k]
 
                     if measure == 'comprehensiveness':
-                        rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
-                                                  bottom_k=bottom_k if not continuous else False)
                         # print(rationale, len(self.input_token_ids), 'bottom_k', bottom_k, 'continuous', continuous)
                         for j in rationale:
                             masked_inputs[i][j] = self.tokenizer.mask_token_id
                     elif measure == 'sufficiency':
-                        rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
-                                                  bottom_k=bottom_k if not continuous else False)
                         for j, _ in enumerate(masked_inputs[i][1:-1]):
                             if j + 1 not in rationale:
                                 masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
@@ -367,19 +381,24 @@ class NERSentenceEvaluator:
                     #     print(scores)
                     e[f'{prefix}{measure}'][mode][k] = e[f'{prefix}score'] - new_conf
 
-    def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False):
+    def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False, exclude_reference_token: bool = False):
         for e in self.entities:
+            exclude_reference_token_idx = e['index'] if exclude_reference_token else None
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
                 e['rationales'][f'{prefix}top_k'][k] = get_rationale(e[f'{prefix}attribution_scores'], k,
-                                                                     continuous=False)
+                                                                     continuous=False,
+                                                                     exclude_reference_token_idx=exclude_reference_token_idx)
                 if continuous:
                     e['rationales'][f'{prefix}continuous'][k] = get_rationale(e[f'{prefix}attribution_scores'], k,
-                                                                              continuous=True)
+                                                                              continuous=True,
+                                                                              exclude_reference_token_idx=exclude_reference_token_idx)
                 if bottom_k:
                     e['rationales'][f'{prefix}bottom_k'][k] = get_rationale(e[f'{prefix}attribution_scores'], k,
-                                                                            continuous=False, bottom_k=True)
+                                                                            continuous=False,
+                                                                            bottom_k=True,
+                                                                            exclude_reference_token_idx=exclude_reference_token_idx)
 
     def get_all_scores_in_sentence(self, k_values, modes):
         document_scores = list()
@@ -411,9 +430,15 @@ class NERSentenceEvaluator:
 
         return document_scores
 
-    def __call__(self, input_document, attributions, k_values: List[int] = [1], continuous: bool = False,
+    def __call__(self,
+                 input_document,
+                 attributions,
+                 k_values: List[int] = [1],
+                 continuous: bool = False,
                  bottom_k: bool = False,
-                 evaluate_other: bool = False):
+                 evaluate_other: bool = False,
+                 exclude_reference_token: bool = False,
+                 ):
         self.input_document = input_document
         print('document_id', self.input_document['document_id'])
         self.prefixes = ['']
@@ -426,7 +451,7 @@ class NERSentenceEvaluator:
         self.discarded_entities = attributions['discarded_entities']
         modes = ['top_k']
         for k in k_values:
-            self.write_rationales(k, continuous=continuous, bottom_k=bottom_k)
+            self.write_rationales(k, continuous=continuous, bottom_k=bottom_k, exclude_reference_token=exclude_reference_token)
 
         print('calculate top_k scores')
         self.calculate_measure(k_values, 'comprehensiveness')
@@ -733,7 +758,8 @@ class NERDatasetEvaluator:
                                         k_values=k_values,
                                         continuous=continuous,
                                         bottom_k=bottom_k,
-                                        evaluate_other=evaluate_other)
+                                        evaluate_other=evaluate_other,
+                                        exclude_reference_token=exclude_reference_token)
                 # print('Save scores')
                 self.raw_scores.extend(result['scores'])
                 self.raw_entities.extend(result['entities'])
