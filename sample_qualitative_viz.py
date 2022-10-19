@@ -226,7 +226,7 @@ class QualitativeVisualizer:
                 chosen_entities.append(self.entities[self.huggingface_models[0]][attribution_types[0]][i])
             self.entity = chosen_entities[0]
 
-        print(self.entity)
+        # print(self.entity)
         doc_id = self.entity['doc_id']
         idx = self.entity['index']
         doc = [doc for doc in self.dataset if doc['document_id'] == doc_id][0]
@@ -251,7 +251,7 @@ class QualitativeVisualizer:
 
         # latex_texts += f"{text}\n\n"
         print(text)
-        return tokens[idx], doc_id
+        return idx, tokens[idx], doc_id
 
     def find_in_other_model(self, model_1_token, reference_token_idx=-1):
         other_model = self.huggingface_models[1]

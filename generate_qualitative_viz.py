@@ -11,14 +11,16 @@ parser.add_argument("-d", "--dataset", dest="dataset_no", type=int)
 parser.add_argument("-k", "--k-value", dest="k_value", type=int, default=5)
 parser.add_argument("-ent", "--entity", dest="entity", type=int, default=0)
 parser.add_argument("-doc", "--doc-id", dest="doc_id", type=str, default='0')
-parser.add_argument("-ref", "--ref-token-idx", dest="ref_token_idx", type=int, default=0)
+parser.add_argument("-mod1", "--mod1-ref-token-idx", dest="mod1_ref_token_idx", type=int, default=0)
+parser.add_argument("-mod2", "--mod2-ref-token-idx", dest="mod2_ref_token_idx", type=int, default=0)
 parser.add_argument("-eval", "--eval", dest="eval", type=str, default='')
 # parser.add_argument("-e", "--exclude", dest="exclude_reference_token", type=bool, default=False)
 args = parser.parse_args()
 
 huggingface_models = [1, 2] if args.model_no == 1 else [2, 1]
 doc_id = args.doc_id
-ref_token_idx = args.ref_token_idx
+mod1_ref_token_idx = args.mod1_ref_token_idx
+mod2_ref_token_idx = args.mod2_ref_token_idx
 k_value = args.k_value
 # eval = args.eval
 
@@ -27,6 +29,6 @@ viz.load_dataset(dataset=args.dataset_no)
 viz.load_tokenizers(models=huggingface_models)
 viz.load_other_pipeline(base_path='./trained_models/')
 viz.load_entities(base_path='./results/scores/')
-viz.prepare(doc_id=doc_id, ref_token_idx=ref_token_idx)
-viz.ensure_attr_scores_in_other_model(ref_token_idx)
+viz.prepare(doc_id=doc_id, ref_token_idx=mod1_ref_token_idx)
+viz.ensure_attr_scores_in_other_model(mod2_ref_token_idx)
 viz.print_table(k_value=k_value)
