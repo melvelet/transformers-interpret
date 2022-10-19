@@ -167,7 +167,11 @@ class QualitativeVisualizer:
             for attribution_type in self.attribution_types:
                 base_file_name = f"{base_path}{self.dataset_name.replace('_bigbio_kb', '')}_{self.entity_type}_{model}_{attribution_type}_{exclude_string}"
                 with open(f'{base_file_name}_raw_entities.json', 'r') as f:
-                    self.entities.update({model: {attribution_type: json.load(f)}})
+                    entities = json.load(f)
+                    print(model, attribution_type, len(entities))
+                    if model not in self.entities:
+                        self.entities[model] = {}
+                    self.entities[model][attribution_type] = entities
 
     def prepare(self, doc_id, ref_token_idx):
         self.doc_id = doc_id
@@ -199,6 +203,8 @@ class QualitativeVisualizer:
     def pick_entities(self, eval_=None, doc_id=None, n_value=1, k_values=[5, 10]):
         if eval_:
             for attribution_type in self.attribution_types:
+                test = [i for i in self.entities[self.huggingface_models[0]]]
+                print(test)
                 filtered_entities = list(
                     filter(lambda x: x['eval'] == eval_ and x['entity'].startswith('B'),
                            self.entities[self.huggingface_models[0]][attribution_type]))
@@ -225,20 +231,7 @@ class QualitativeVisualizer:
         model = self.huggingface_models[0]
         tokens = self.tokenizers[model].batch_decode(self.docs[model]['input_ids'])
         print(len(tokens))
-        # entity = \
-        #     [e for e in self.entities[model][attribution_types[0]] if
-        #      e['doc_id'] == doc_id and e['index'] == idx][
-        #         0]
-        # text = generate_latex_text(
-        #     entity['attribution_scores'],
-        #     tokens,
-        #     reference_token_idx=entity['index'],
-        #     rationale_1=e['rationales']['top_k'][str(k_values[0])],
-        #     collapse_threshold=0,
-        # )
         text = ''
-        # print('idx', type(idx), idx)
-        # print('rat', type(self.entity['rationales']['top_k'][str(k_values[0])]), self.entity['rationales']['top_k'][str(k_values[0])])
         for i, tok in enumerate(tokens):
             if tok in ['<s>', '</s>', '<pad>', '[CLS]', '[SEP]']:
                 continue
