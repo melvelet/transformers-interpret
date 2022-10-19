@@ -173,9 +173,10 @@ class QualitativeVisualizer:
                         self.entities[model] = {}
                     self.entities[model][attribution_type] = entities
 
-    def prepare(self, doc_id, ref_token_idx):
+    def prepare(self, doc_id, ref1_token_idx, ref2_token_idx):
         self.doc_id = doc_id
-        self.ref_token_idx = ref_token_idx
+        self.ref1_token_idx = ref1_token_idx
+        self.ref2_token_idx = ref2_token_idx
         self.entity = None
         # for e in self.entities[self.huggingface_models[0]][attribution_types[0]]:
         #     print(e['doc_id'] == str(doc_id), e['doc_id'], str(doc_id), e['index'] == ref_token_idx, e['index'], ref_token_idx)
@@ -183,7 +184,9 @@ class QualitativeVisualizer:
         #         self.entity = e
         # assert self.entity is not None
         self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]]
-                       if e['doc_id'] == str(doc_id) and e['index'] == ref_token_idx][0]
+                       if e['doc_id'] == str(doc_id) and e['index'] == ref1_token_idx][0]
+        self.other_entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]]
+                             if e['doc_id'] == str(doc_id) and e['index'] == ref2_token_idx][0]
         doc = [doc for doc in self.dataset if doc['document_id'] == doc_id][0]
         self.docs = {
             'bioelectra-discriminator': self.pre_processors['bioelectra-discriminator'](doc),
@@ -192,10 +195,17 @@ class QualitativeVisualizer:
 
     def print_table(self, k_value=5):
         latex_tables = ''
-        for model in self.huggingface_models:
+        for model_i, model in enumerate(self.huggingface_models):
+            ref_token_idx = self.ref1_token_idx if model_i == 0 else self.ref2_token_idx
             tokens = self.tokenizers[model].batch_decode(self.docs[model]['input_ids'])
             for attribution_type in self.attribution_types:
                 print(model, attribution_type)
+                # for e in self.entities[model][attribution_type]:
+                #     if e['doc_id'] == self.doc_id:
+                #         if e['index'] == self.ref_token_idx:
+                #             entity = e
+                #         else:
+                #             print(e['index'], )
                 entity = [e for e in self.entities[model][attribution_type]
                           if e['doc_id'] == self.doc_id and e['index'] == self.ref_token_idx][0]
                 for prefix in ['', 'other_']:
