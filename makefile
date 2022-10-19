@@ -1,11 +1,7 @@
-attr-pipe-all: attr-pipe-lig
-
-attr-pipe-lig: attr-pipe-lig-disease attr-pipe-lig-drug
-
-attr-pipe-lgxa:
-	# python run_attribution_pipeline.py -a 1 -m 1 -d 0
-	# python run_attribution_pipeline.py -a 1 -m 1 -d 2
-	# python run_attribution_pipeline.py -a 1 -m 1 -d 4 -ent 1
+attr-lgxa:
+	python run_attribution_pipeline.py -a 1 -m 1 -d 0
+	python run_attribution_pipeline.py -a 1 -m 1 -d 2
+	python run_attribution_pipeline.py -a 1 -m 1 -d 4 -ent 1
 	python run_attribution_pipeline.py -a 1 -m 1 -d 6
 	python run_attribution_pipeline.py -a 1 -m 1 -d 6 -ent 1
 	python run_attribution_pipeline.py -a 1 -m 2 -d 0
@@ -19,63 +15,78 @@ attr-pipe-lgxa:
 	python run_attribution_pipeline.py -a 1 -m 0 -d 6
 	python run_attribution_pipeline.py -a 1 -m 0 -d 6 -ent 1
 
-attr-pipe-lig-disease: attr-pipe-lig-disease-bc5cdr attr-pipe-lig-disease-ncbi attr-pipe-lig-disease-euadr
+attr-gradcam:
+	python run_attribution_pipeline.py -a 3 -m 1 -d 0
+	python run_attribution_pipeline.py -a 3 -m 1 -d 2
+	python run_attribution_pipeline.py -a 3 -m 1 -d 4 -ent 1
+	python run_attribution_pipeline.py -a 3 -m 1 -d 6
+	python run_attribution_pipeline.py -a 3 -m 1 -d 6 -ent 1
+	python run_attribution_pipeline.py -a 3 -m 2 -d 0
+	python run_attribution_pipeline.py -a 3 -m 2 -d 2
+	python run_attribution_pipeline.py -a 3 -m 2 -d 4 -ent 1
+	python run_attribution_pipeline.py -a 3 -m 2 -d 6
+	python run_attribution_pipeline.py -a 3 -m 2 -d 6 -ent 1
+	python run_attribution_pipeline.py -a 3 -m 0 -d 0
+	python run_attribution_pipeline.py -a 3 -m 0 -d 2
+	python run_attribution_pipeline.py -a 3 -m 0 -d 4 -ent 1
+	python run_attribution_pipeline.py -a 3 -m 0 -d 6
+	python run_attribution_pipeline.py -a 3 -m 0 -d 6 -ent 1
 
-attr-pipe-lig-drug: attr-pipe-lig-drug-euadr attr-pipe-lig-drug-ddi
+attr-lig-rob:
+	python run_attribution_pipeline.py -m 2 -d 0
+	python run_attribution_pipeline.py -m 2 -d 2
+	python run_attribution_pipeline.py -m 2 -d 4 -ent 1
+	python run_attribution_pipeline.py -m 2 -d 6
+	python run_attribution_pipeline.py -m 2 -d 6 -ent 1
 
-attr-pipe-lig-disease-bc5cdr:
-	python run_attribution_pipeline.py -m 0 -d 0
+attr-lig-ele:
 	python run_attribution_pipeline.py -m 1 -d 0
-
-attr-pipe-lig-disease-ncbi:
-	python run_attribution_pipeline.py -m 0 -d 2
 	python run_attribution_pipeline.py -m 1 -d 2
-
-attr-pipe-lig-disease-euadr:
-	python run_attribution_pipeline.py -m 0 -d 1
-	python run_attribution_pipeline.py -m 1 -d 1
-
-attr-pipe-lig-drug-euadr:
-	python run_attribution_pipeline.py -m 0 -d 1 -ent 1
-	python run_attribution_pipeline.py -m 1 -d 1 -ent 1
-
-attr-pipe-lig-drug-ddi:
-	python run_attribution_pipeline.py -m 0 -d 4 -ent 1
 	python run_attribution_pipeline.py -m 1 -d 4 -ent 1
+	python run_attribution_pipeline.py -m 1 -d 6
+	python run_attribution_pipeline.py -m 1 -d 6 -ent 1
 
-eval-pipe-all: eval-pipe-lig
+eval-lig-ele:
+	python run_pipeline.py -m 1 -d 0 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 1 -d 2 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 1 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 1 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 1 -d 6 -ent 1 --exclude ${EXCLUDE}
 
-eval-pipe-lig: eval-pipe-lig-disease eval-pipe-lig-drug
+eval-lgxa-ele:
+	python run_pipeline.py -a 1 -m 1 -d 0 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 1 -d 2 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 1 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 1 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 1 -d 6 -ent 1 --exclude ${EXCLUDE}
 
-eval-pipe-lig-disease: eval-pipe-lig-disease-bc5cdr eval-pipe-lig-disease-ncbi eval-pipe-lig-disease-euadr
+eval-gradcam-ele:
+	python run_pipeline.py -a 3 -m 1 -d 0 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 1 -d 2 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 1 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 1 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 1 -d 6 -ent 1 --exclude ${EXCLUDE}
 
-eval-pipe-lig-drug: eval-pipe-lig-drug-euadr eval-pipe-lig-drug-ddi
+eval-lig-rob:
+	python run_pipeline.py -m 2 -d 0 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 2 -d 2 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 2 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 2 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -m 2 -d 6 -ent 1 --exclude ${EXCLUDE}
 
-eval-pipe-lig-disease-bc5cdr:
-	python run_pipeline.py -m 0 -d 0
-	python run_pipeline.py -m 1 -d 0
+eval-lgxa-rob:
+	python run_pipeline.py -a 1 -m 2 -d 0 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 2 -d 2 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 2 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 2 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 2 -d 6 -ent 1 --exclude ${EXCLUDE}
 
-eval-pipe-lig-disease-ncbi:
-	python run_pipeline.py -m 0 -d 2
-	python run_pipeline.py -m 1 -d 2
-
-eval-pipe-lig-disease-euadr:
-	python run_pipeline.py -m 0 -d 1
-	python run_pipeline.py -m 1 -d 1
-
-eval-pipe-lig-drug-euadr:
-	python run_pipeline.py -m 0 -d 1 -ent 1
-	python run_pipeline.py -m 1 -d 1 -ent 1
-
-eval-pipe-lig-drug-ddi:
-	python run_pipeline.py -m 0 -d 4 -ent 1
-	python run_pipeline.py -m 1 -d 4 -ent 1
-
-eval-pipe-lig-cadec:
-	python run_pipeline.py -m 0 -d 6
-	python run_pipeline.py -m 1 -d 6
-	python run_pipeline.py -m 0 -d 6 -ent 1
-	python run_pipeline.py -m 1 -d 6 -ent 1
+eval-gradcam-rob:
+	python run_pipeline.py -a 3 -m 2 -d 0 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 2 -d 2 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 2 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 2 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 2 -d 6 -ent 1 --exclude ${EXCLUDE}
 
 train-all: train-disease train-drug cleanup
 

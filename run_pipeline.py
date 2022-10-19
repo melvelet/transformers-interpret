@@ -27,6 +27,9 @@ evaluate_other = True
 
 attribution_types = [
     'lig',
+    'lgxa',
+    'lfa',
+    'gradcam',
 ]
 
 dataset_names = [
@@ -36,6 +39,7 @@ dataset_names = [
     'scai_disease_bigbio_kb',
     'ddi_corpus_bigbio_kb',
     'mlee_bigbio_kb',
+    'cadec_bigbio_kb',
 ]
 
 huggingface_models = [
@@ -54,6 +58,7 @@ parser.add_argument("-max", "--max-documents", dest="max_documents", type=int, d
 parser.add_argument("-s", "--start-document", dest="start_document", type=int, default=0)
 parser.add_argument("-k", "--k-value-level", dest="k_value_level", type=int, default=2)
 parser.add_argument("-ent", "--entity", dest="entity", type=int, default=0)
+parser.add_argument("-e", "--exclude", dest="exclude_reference_token", type=bool, default=False)
 args = parser.parse_args()
 
 huggingface_model = huggingface_models[args.model_no]
@@ -63,7 +68,8 @@ max_documents = args.max_documents
 start_document = args.start_document
 entity = 'drug' if args.entity == 1 else 'disease'
 k_values = k_value_levels[args.k_value_level]
-exclude_reference_token = False
+exclude_reference_token = args.exclude_reference_token
+print('exclude_reference_token', exclude_reference_token)
 
 print('Loading dataset:', dataset_name)
 
@@ -150,7 +156,9 @@ result = evaluator(k_values=k_values,
                    bottom_k=bottom_k,
                    max_documents=max_documents,
                    start_document=start_document,
-                   evaluate_other=evaluate_other)
+                   evaluate_other=evaluate_other,
+                   exclude_reference_token=exclude_reference_token,
+                   )
 
 pprint(result)
 

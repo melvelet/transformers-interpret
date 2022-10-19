@@ -1,9 +1,11 @@
 import datetime
 import json
 import math
+import os
 from argparse import ArgumentParser
 from pprint import pprint
 import numpy as np
+import torch
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 
 from transformers_interpret.evaluation import InputPreProcessor, NERDatasetAttributor
@@ -12,6 +14,8 @@ from bigbio.dataloader import BigBioConfigHelpers
 
 evaluate_other = True
 USE_CUDA = True
+CUDA_VISIBLE_DEVICES = os.environ.get('CUDA_VISIBLE_DEVICES') if os.environ.get('CUDA_VISIBLE_DEVICES') else 'cpu'
+CUDA_DEVICE = torch.device('cpu') if CUDA_VISIBLE_DEVICES == 'cpu' else torch.device('cuda')
 
 attribution_types = [
     'lig',
@@ -122,13 +126,14 @@ tokenized_datasets = test_dataset.map(lambda a: pre_processor(a))
 document_ids = [doc['document_id'] for doc in tokenized_datasets]
 # print('document_ids', document_ids)
 
-pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
+pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer, device=0 if CUDA_VISIBLE_DEVICES != 'cpu' else -1)
 
 attributor = NERDatasetAttributor(pipeline, tokenized_datasets, attribution_type, class_name=disease_class)
-result = attributor(
-                   max_documents=max_documents,
-                   start_document=start_document,
-                   evaluate_other=evaluate_other)
+with torch.no_grad():
+    result = attributor(
+                       max_documents=max_documents,
+                       start_document=start_document,
+                       evaluate_other=evaluate_other)
 
 pprint(result)
 

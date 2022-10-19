@@ -207,7 +207,12 @@ class TokenClassificationExplainer(SequenceClassificationExplainer):
                         attribution_type=self.attribution_type,
                         token_index=[token_i],
                     )
-                    explainer(text, label_j, None, embedding_type)
+                    explainer(text=text,
+                              class_index=label_j,
+                              class_name=None,
+                              embedding_type=embedding_type,
+                              internal_batch_size=self.internal_batch_size,
+                              )
 
                     self.attributions[label_j].append(explainer.attributions)
                     self.pred_probs[token_i].append(explainer.pred_probs)

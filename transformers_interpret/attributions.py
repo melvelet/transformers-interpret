@@ -146,6 +146,7 @@ class LGXAAttributions(Attributions):
             attention_mask: torch.Tensor,
             token_type_ids: torch.Tensor = None,
             position_ids: torch.Tensor = None,
+            internal_batch_size: int = None,
     ):
         super().__init__(custom_forward, embeddings, tokens)
         self.input_ids = input_ids
@@ -153,6 +154,7 @@ class LGXAAttributions(Attributions):
         self.attention_mask = attention_mask
         self.token_type_ids = token_type_ids
         self.position_ids = position_ids
+        self.internal_batch_size = internal_batch_size
 
         self.attributor = LayerGradientXActivation(self.custom_forward, self.embeddings)
 
@@ -291,10 +293,19 @@ class LFAAttributions(Attributions):
 
 
 class GradCamAttributions(Attributions):
-    def __init__(self, custom_forward: Callable, embeddings: nn.Module, tokens: list, input_ids: torch.Tensor,
-                 ref_input_ids: torch.Tensor, attention_mask: torch.Tensor, token_type_ids: torch.Tensor = None,
-                 position_ids: torch.Tensor = None, ref_token_type_ids: torch.Tensor = None,
-                 ref_position_ids: torch.Tensor = None):
+    def __init__(self,
+                 custom_forward: Callable,
+                 embeddings: nn.Module,
+                 tokens: list,
+                 input_ids: torch.Tensor,
+                 ref_input_ids: torch.Tensor,
+                 attention_mask: torch.Tensor,
+                 token_type_ids: torch.Tensor = None,
+                 position_ids: torch.Tensor = None,
+                 ref_token_type_ids: torch.Tensor = None,
+                 ref_position_ids: torch.Tensor = None,
+                 internal_batch_size: int = None,
+                 ):
         super().__init__(custom_forward, embeddings, tokens)
         self.input_ids = input_ids
         self.ref_input_ids = ref_input_ids
@@ -303,6 +314,7 @@ class GradCamAttributions(Attributions):
         self.position_ids = position_ids
         self.ref_token_type_ids = ref_token_type_ids
         self.ref_position_ids = ref_position_ids
+        self.internal_batch_size = internal_batch_size
 
         self.attributor = LayerGradCam(self.custom_forward, self.embeddings)
 

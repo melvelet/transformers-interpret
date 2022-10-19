@@ -13,24 +13,33 @@ from transformers import PreTrainedModel, PreTrainedTokenizer, Pipeline
 from transformers_interpret.evaluation.input_pre_processor import get_labels_from_dataset
 from transformers_interpret import TokenClassificationExplainer
 
-
 CUDA_VISIBLE_DEVICES = os.environ.get('CUDA_VISIBLE_DEVICES') if os.environ.get('CUDA_VISIBLE_DEVICES') else 'cpu'
 CUDA_DEVICE = torch.device('cpu') if CUDA_VISIBLE_DEVICES == 'cpu' else torch.device('cuda')
-BATCH_SIZE = 64 if CUDA_VISIBLE_DEVICES != 'cpu' else 32
+if os.environ.get('BATCH_SIZE'):
+    BATCH_SIZE = os.environ.get('BATCH_SIZE')
+else:
+    BATCH_SIZE = 16 if CUDA_VISIBLE_DEVICES != 'cpu' else 32
 
 
-def get_rationale(attributions, k: int, continuous: bool = False, return_mask: bool = False, bottom_k: bool = False):
+def get_rationale(attributions,
+                  k: int,
+                  continuous: bool = False,
+                  return_mask: bool = False,
+                  bottom_k: bool = False,
+                  exclude_reference_token_idx = None):
     if continuous:
-        return get_continuous_rationale(attributions, k, return_mask)
-    return get_topk_rationale(attributions, k, return_mask, bottom_k)
+        return get_continuous_rationale(attributions, k, return_mask, exclude_reference_token_idx)
+    return get_topk_rationale(attributions, k, return_mask, bottom_k, exclude_reference_token_idx)
 
 
-def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k: bool = False):
+def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k: bool = False, exclude_reference_token_idx = None):
     if len(attributions) == 0:
         return []
     tensor = torch.FloatTensor([a[1] for a in attributions])
     if bottom_k:
         tensor = - tensor
+    if exclude_reference_token_idx:
+        tensor[exclude_reference_token_idx] = -100.0
     if len(attributions) >= k:
         indices = torch.topk(tensor, k).indices
     else:
@@ -39,21 +48,29 @@ def get_topk_rationale(attributions, k: int, return_mask: bool = False, bottom_k
     if return_mask:
         mask = [0 for _ in range(len(attributions))]
         for i in indices:
+            if exclude_reference_token_idx and i == exclude_reference_token_idx:
+                continue
             if i not in [0, len(attributions) - 1]:
                 mask[i] = 1
         return mask
 
+    # print(tensor[indices[0]], tensor.shape, indices.tolist())
     return indices.tolist()
 
 
-def get_continuous_rationale(attributions, k: int, return_mask: bool = False):
+def get_continuous_rationale(attributions, k: int, return_mask: bool = False, exclude_reference_token_idx = None):
     if len(attributions) == 0 or return_mask:
         return []
 
     tensor = torch.FloatTensor([a[1] for a in attributions])
     scores: List[float] = list()
+    if k >= len(attributions) - 2:
+        k = len(attributions) - 2
     for i, _ in enumerate(tensor[:len(tensor) - k + 1]):
-        scores.append(sum(tensor[i:i + k]))
+        if exclude_reference_token_idx and exclude_reference_token_idx in range(i, i + k):
+            scores.append(-100.0)
+        else:
+            scores.append(sum(tensor[i:i + k]))
 
     argmax = torch.argmax(torch.FloatTensor(scores)).item()
     indices = [i for i in range(argmax, argmax + k)]
@@ -86,7 +103,7 @@ class NERSentenceAttributor:
     def execute_base_classification(self):
         # print('Base classification')
         self.entities = self.pipeline(self.input_str)
-        pred = self.model(torch.tensor([self.input_token_ids]))
+        pred = self.model(torch.tensor([self.input_token_ids]).to(CUDA_DEVICE))
         scores = torch.softmax(pred.logits, dim=-1)[0]
         if self.relevant_class_names is not None:
             for i, gold_label in enumerate(self.gold_labels):
@@ -99,7 +116,8 @@ class NERSentenceAttributor:
                     entity['pred_label'] = pred_label
                     entity['doc_id'] = self.input_document['id']
                     entity['doc_doc_id'] = self.input_document['document_id']
-                    entity['doc_title'] = self.input_document['passages'][0]['text'][0][:20 if doc_len >= 20 else doc_len]  # was self.input_document['passages'][1]['text'][0]
+                    entity['doc_title'] = self.input_document['passages'][0]['text'][0][
+                                          :20 if doc_len >= 20 else doc_len]  # was self.input_document['passages'][1]['text'][0]
                     if gold_label in self.relevant_class_indices:
                         if gold_label == pred_label:
                             entity['eval'] = 'TP'
@@ -149,7 +167,8 @@ class NERSentenceAttributor:
         token_class_index_tuples = [(e['index'], self.label2id[e['entity']]) for e in self.entities]
         token_class_index_tuples += [(e['index'], self.label2id[e['other_entity']]) for e in self.entities if
                                      e['other_entity'] is not None]
-        self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples)
+        self.explainer(self.input_str, token_class_index_tuples=token_class_index_tuples,
+                       internal_batch_size=BATCH_SIZE)
         # print('assert', [t for t in self.input_token_ids if t != 1], self.explainer.input_token_ids)
         self.input_token_ids = self.explainer.input_token_ids
         self.input_tokens = self.explainer.input_tokens
@@ -199,6 +218,7 @@ class NERDatasetAttributor:
                  class_name: str = None,
                  ):
         self.pipeline = pipeline
+        self.pipeline.model.to(CUDA_DEVICE)
         self.dataset = dataset
         self.label2id, self.id2label = get_labels_from_dataset(dataset, has_splits=False)
         print('label2id', self.label2id)
@@ -223,6 +243,7 @@ class NERDatasetAttributor:
 
         with alive_bar(total=len(self.dataset)) as bar:
             for document in self.dataset:
+                torch.cuda.empty_cache()
                 documents += 1
                 if start_document and documents < start_document:
                     continue
@@ -312,28 +333,33 @@ class NERSentenceEvaluator:
                     i += 1
                     if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                         continue
+
+                    masked_inputs[i] = torch.tensor(self.input_token_ids)
+                    mode = 'top_k'
+                    if continuous:
+                        mode = 'continuous'
+                    elif bottom_k:
+                        mode = 'bottom_k'
+                    rationale = e['rationales'][f'{prefix}{mode}'][k]
+
                     if measure == 'comprehensiveness':
-                        rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
-                                                  bottom_k=bottom_k if not continuous else False)
-                        masked_inputs[i] = torch.tensor(self.input_token_ids)
+                        # print(rationale, len(self.input_token_ids), 'bottom_k', bottom_k, 'continuous', continuous)
                         for j in rationale:
                             masked_inputs[i][j] = self.tokenizer.mask_token_id
                     elif measure == 'sufficiency':
-                        rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
-                                                  bottom_k=bottom_k if not continuous else False)
-                        masked_inputs[i] = torch.tensor(self.input_token_ids)
                         for j, _ in enumerate(masked_inputs[i][1:-1]):
                             if j + 1 not in rationale:
                                 masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
 
         preds = []
         with torch.no_grad():
-            for i in range(math.ceil(masked_inputs.shape[0]/BATCH_SIZE)):
+            for i in range(math.ceil(masked_inputs.shape[0] / BATCH_SIZE)):
                 # print('batch', i, end='\r', flush=True)
-                batch = masked_inputs[i*BATCH_SIZE:(i+1)*BATCH_SIZE, :].to(CUDA_DEVICE)
+                batch = masked_inputs[i * BATCH_SIZE:(i + 1) * BATCH_SIZE, :].to(CUDA_DEVICE)
                 preds.append(self.model(batch).logits)
-                torch.cuda.empty_cache()
-            preds = torch.cat(preds, dim=0)
+                # torch.cuda.empty_cache()
+            if preds:
+                preds = torch.cat(preds, dim=0)
             # print(preds.shape)
 
         i = -1
@@ -355,61 +381,24 @@ class NERSentenceEvaluator:
                     #     print(scores)
                     e[f'{prefix}{measure}'][mode][k] = e[f'{prefix}score'] - new_conf
 
-    def calculate_sufficiency(self, k_values: List[int], continuous: bool = False, bottom_k: bool = False):
-        # print('calculate_sufficiency, k=', k, 'continuous=', continuous, 'bottom_k=', bottom_k)
-        masked_inputs = torch.full(
-            size=(len(self.entities) * len(self.prefixes) * len(k_values), len(self.input_token_ids)),
-            fill_value=self.tokenizer.pad_token_id,
-            dtype=torch.int64,
-        )
-
-        i = -1
-        for k in k_values:
-            for e in self.entities:
-                for prefix in self.prefixes:
-                    i += 1
-                    if prefix == 'other_' and e['other_entity'] in [None, 'O']:
-                        continue
-                    rationale = get_rationale(e[f'{prefix}attribution_scores'], k, continuous,
-                                              bottom_k=bottom_k if not continuous else False)
-                    masked_inputs[i] = torch.tensor(self.input_token_ids)
-                    for j, _ in enumerate(masked_inputs[i][1:-1]):
-                        if j + 1 not in rationale:
-                            masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
-
-        preds = self.model(masked_inputs.to(CUDA_DEVICE))
-
-        i = -1
-        for k in k_values:
-            for e in self.entities:
-                for prefix in self.prefixes:
-                    i += 1
-                    if prefix == 'other_' and e['other_entity'] in [None, 'O']:
-                        continue
-                    scores = torch.softmax(preds.logits, dim=-1)[i]
-                    new_conf = scores[e['index']][self.label2id[e[f'{prefix}entity']]].item()
-                    # new_label = self.id2label[scores[e['index']].argmax(axis=-1).item()]
-                    # print('old_conf', e['score'], 'new_conf', new_conf, 'old_label', e['entity'], 'new_label', new_label, 'diff', e['score'] - new_conf)
-                    mode = 'top_k'
-                    if continuous:
-                        mode = 'continuous'
-                    elif bottom_k:
-                        mode = 'bottom_k'
-                    e[f'{prefix}sufficiency'][mode][k] = e[f'{prefix}score'] - new_conf
-
-    def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False):
+    def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False, exclude_reference_token: bool = False):
         for e in self.entities:
+            exclude_reference_token_idx = e['index'] if exclude_reference_token else None
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
                     continue
                 e['rationales'][f'{prefix}top_k'][k] = get_rationale(e[f'{prefix}attribution_scores'], k,
-                                                                     continuous=False)
+                                                                     continuous=False,
+                                                                     exclude_reference_token_idx=exclude_reference_token_idx)
                 if continuous:
                     e['rationales'][f'{prefix}continuous'][k] = get_rationale(e[f'{prefix}attribution_scores'], k,
-                                                                              continuous=True)
+                                                                              continuous=True,
+                                                                              exclude_reference_token_idx=exclude_reference_token_idx)
                 if bottom_k:
                     e['rationales'][f'{prefix}bottom_k'][k] = get_rationale(e[f'{prefix}attribution_scores'], k,
-                                                                            continuous=False, bottom_k=True)
+                                                                            continuous=False,
+                                                                            bottom_k=True,
+                                                                            exclude_reference_token_idx=exclude_reference_token_idx)
 
     def get_all_scores_in_sentence(self, k_values, modes):
         document_scores = list()
@@ -441,9 +430,15 @@ class NERSentenceEvaluator:
 
         return document_scores
 
-    def __call__(self, input_document, attributions, k_values: List[int] = [1], continuous: bool = False,
+    def __call__(self,
+                 input_document,
+                 attributions,
+                 k_values: List[int] = [1],
+                 continuous: bool = False,
                  bottom_k: bool = False,
-                 evaluate_other: bool = False):
+                 evaluate_other: bool = False,
+                 exclude_reference_token: bool = False,
+                 ):
         self.input_document = input_document
         print('document_id', self.input_document['document_id'])
         self.prefixes = ['']
@@ -456,7 +451,7 @@ class NERSentenceEvaluator:
         self.discarded_entities = attributions['discarded_entities']
         modes = ['top_k']
         for k in k_values:
-            self.write_rationales(k, continuous=continuous, bottom_k=bottom_k)
+            self.write_rationales(k, continuous=continuous, bottom_k=bottom_k, exclude_reference_token=exclude_reference_token)
 
         print('calculate top_k scores')
         self.calculate_measure(k_values, 'comprehensiveness')
@@ -532,12 +527,14 @@ class NERDatasetEvaluator:
                         best_rationale_compdiff = -1
                         best_rationale_per_mode_k_value = 0
                         best_rationale_compdiff_prev = 0
+                        prev_k = k_values[-1]
                         for k in reversed(k_values):
                             if best_rationale_compdiff_prev - e['compdiff'][mode][k] > take_best_rationale_threshold:
-                                best_rationale_compdiff = e[attr][mode][k]
-                                best_rationale_per_mode_k_value = k
+                                best_rationale_compdiff = e[attr][mode][prev_k]
+                                best_rationale_per_mode_k_value = prev_k
                                 break
                             best_rationale_compdiff_prev = e['compdiff'][mode][k]
+                            prev_k = k
                         if best_rationale_compdiff == -1:
                             best_rationale_compdiff = e[attr][mode][2]
                             best_rationale_per_mode_k_value = 2
@@ -584,6 +581,10 @@ class NERDatasetEvaluator:
                 'comprehensiveness_FN': _calculate_statistical_function('comprehensiveness', eval_=['FN']),
                 'sufficiency_FN': _calculate_statistical_function('sufficiency', eval_=['FN']),
                 'compdiff_FN': _calculate_statistical_function('compdiff', eval_=['FN']),
+                'comprehensiveness_FN_Switched': _calculate_statistical_function('comprehensiveness',
+                                                                                 eval_=['FN', 'Switched']),
+                'sufficiency_FN_Switched': _calculate_statistical_function('sufficiency', eval_=['FN', 'Switched']),
+                'compdiff_FN_Switched': _calculate_statistical_function('compdiff', eval_=['FN', 'Switched']),
                 'comprehensiveness_Switched': _calculate_statistical_function('comprehensiveness', eval_=['Switched']),
                 'sufficiency_Switched': _calculate_statistical_function('sufficiency', eval_=['Switched']),
                 'compdiff_Switched': _calculate_statistical_function('compdiff', eval_=['Switched']),
@@ -607,6 +608,18 @@ class NERDatasetEvaluator:
                                                                                     eval_=['Switched']),
                 'other_sufficiency_Switched': _calculate_statistical_function('other_sufficiency', eval_=['Switched']),
                 'other_compdiff_Switched': _calculate_statistical_function('other_compdiff', eval_=['Switched']),
+                'other_comprehensiveness_FN_Switched': _calculate_statistical_function('other_comprehensiveness',
+                                                                                       eval_=['FN', 'Switched']),
+                'other_sufficiency_FN_Switched': _calculate_statistical_function('other_sufficiency',
+                                                                                 eval_=['FN', 'Switched']),
+                'other_compdiff_FN_Switched': _calculate_statistical_function('other_compdiff',
+                                                                              eval_=['FN', 'Switched']),
+                'other_comprehensiveness_Error': _calculate_statistical_function('other_comprehensiveness',
+                                                                                 eval_=['FN', 'FP', 'Switched']),
+                'other_sufficiency_Error': _calculate_statistical_function('other_sufficiency',
+                                                                           eval_=['FN', 'FP', 'Switched']),
+                'other_compdiff_Error': _calculate_statistical_function('other_compdiff',
+                                                                        eval_=['FN', 'FP', 'Switched']),
             },
             'median': {
                 'comprehensiveness_Best_5': _calculate_statistical_function('comprehensiveness',
@@ -700,6 +713,7 @@ class NERDatasetEvaluator:
         discarded_entities = 0
         tokens = 0
         documents_without_entities = 0
+        first_entity_no_word = 0
         start_time = datetime.now()
 
         self.ordered_attributions: List[Dict] = []
@@ -708,13 +722,31 @@ class NERDatasetEvaluator:
             assert len(attr) == 1
             self.ordered_attributions.append(attr[0])
 
-        with alive_bar(total=len(self.ordered_attributions)) as bar:
+        with alive_bar(total=len(self.ordered_attributions) - start_document) as bar:
             for document, doc_attributions in tqdm(zip(self.dataset, self.ordered_attributions)):
                 if len(doc_attributions['entities']) > 0:
                     first_entity = doc_attributions['entities'][0]
                     # print(first_entity)
-                    assert first_entity['word'] == self.tokenizer.decode(document['input_ids'][first_entity['index']]), f"{first_entity['text']} != {self.tokenizer.decode(document['input_ids'][first_entity['index']])}"
-                assert document['document_id'] == doc_attributions['document_id'], f"{document['document_id']} --- {doc_attributions['document_id']}"
+                    if first_entity['index'] < len(document['input_ids']):
+                        if 'word' in first_entity:
+                            entity_word = first_entity['word'].replace('Ġ', '').strip()
+                            doc_word = self.tokenizer.decode(document['input_ids'][first_entity['index']]).replace('Ġ', '').strip()
+                            assert entity_word == doc_word, f"{entity_word} ({len(entity_word)}) != {doc_word} ({len(doc_word)})"
+                        else:
+                            first_entity_no_word += 1
+                    if len(first_entity['attribution_scores']) != len(document['input_ids']):
+                        print('truncate', len(first_entity['attribution_scores']), 'to', len(document['input_ids']))
+                        doc_attributions['entities'] = list(
+                            filter(lambda x: x['index'] <= len(document['input_ids']) - 1,
+                                   doc_attributions['entities']))
+                        for e in doc_attributions['entities']:
+                            e['attribution_scores'] = e['attribution_scores'][:len(document['input_ids']) - 1]
+                            if 'other_attribution_scores' in e:
+                                e['other_attribution_scores'] = e['other_attribution_scores'][
+                                                                :len(document['input_ids']) - 1]
+
+                assert document['document_id'] == doc_attributions[
+                    'document_id'], f"{document['document_id']} --- {doc_attributions['document_id']}"
                 documents += 1
                 if start_document and documents < start_document:
                     continue
@@ -726,7 +758,8 @@ class NERDatasetEvaluator:
                                         k_values=k_values,
                                         continuous=continuous,
                                         bottom_k=bottom_k,
-                                        evaluate_other=evaluate_other)
+                                        evaluate_other=evaluate_other,
+                                        exclude_reference_token=exclude_reference_token)
                 # print('Save scores')
                 self.raw_scores.extend(result['scores'])
                 self.raw_entities.extend(result['entities'])
@@ -742,7 +775,8 @@ class NERDatasetEvaluator:
                 # print('test_other', test_other)
                 # print('test_eval', test_eval)
                 attributed_entities += len([e for e in result['entities']])
-                attributed_entities += len([e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
+                attributed_entities += len(
+                    [e['other_entity'] for e in result['entities'] if e['other_entity'] is not None])
                 if len(result['entities']) == 0:
                     documents_without_entities += 1
                 tokens += result['tokens']
@@ -751,7 +785,7 @@ class NERDatasetEvaluator:
         end_time = datetime.now()
         duration = end_time - start_time
         modes = ['top_k']
-        found_entities = len([e for e in self.raw_entities if e['eval'] in ['TP', 'Switched', 'FP']])
+        found_entities = len([e for e in self.raw_entities if e['eval'] in ['TP', 'Switched', 'FP', 'FN']])
         if bottom_k:
             modes.append('bottom_k')
         if continuous:
@@ -763,8 +797,8 @@ class NERDatasetEvaluator:
                 'processed_documents': documents,
                 'annotated_entities_all_classes': annotated_entities,
                 'annotated_entities': annotated_entities_positive,
-                'avg_annotated_entities_all_classes': annotated_entities / documents,
-                'avg_annotated_entities': annotated_entities_positive / documents,
+                'avg_annotated_entities_all_classes': annotated_entities / max(1, documents),
+                'avg_annotated_entities': annotated_entities_positive / max(1, documents),
                 'found_entities': found_entities,
                 'found_entities_tp': len([e for e in self.raw_entities if e['eval'] == 'TP']),
                 'found_entities_fp': len([e for e in self.raw_entities if e['eval'] == 'FP']),
@@ -773,14 +807,15 @@ class NERDatasetEvaluator:
                 'found_entities_all_classes': found_entities + discarded_entities,
                 'attributed_entities': attributed_entities,
                 'discarded_entities': discarded_entities,
-                'avg_found_entities_per_document': found_entities / documents,
-                'avg_found_entities_per_document_all_classes': (found_entities + discarded_entities) / documents,
-                'found_to_annotated_entities_ratio': found_entities / annotated_entities_positive,
+                'avg_found_entities_per_document': found_entities / max(1, documents),
+                'avg_found_entities_per_document_all_classes': (found_entities + discarded_entities) / max(1, documents),
+                'found_to_annotated_entities_ratio': found_entities / max(1, annotated_entities_positive),
                 'found_to_annotated_entities_ratio_all_classes': (
-                                                                         found_entities + discarded_entities) / annotated_entities,
+                                                                         found_entities + discarded_entities) / max(1, annotated_entities),
                 'tokens': tokens,
                 'avg_tokens_per_document': tokens / documents,
                 'documents_without_entities': documents_without_entities,
+                'first_entity_no_word': first_entity_no_word,
             },
             'settings': {
                 'model': self.pipeline.model.config._name_or_path,
@@ -800,9 +835,9 @@ class NERDatasetEvaluator:
                 'start_time': str(start_time),
                 'end_time': str(end_time),
                 'duration': str(duration),
-                'per_k_value': str(duration / len(k_values)),
-                'per_document': str(duration / documents),
-                'per_entity': str(duration / found_entities),
+                'per_k_value': str(duration / max(1, len(k_values))),
+                'per_document': str(duration / max(1, documents)),
+                'per_entity': str(duration / max(1, found_entities)),
                 'per_attributed_entity': str(duration / max(1, attributed_entities)),
                 'per_token': str(duration / tokens),
             },
