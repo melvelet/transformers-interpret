@@ -176,8 +176,14 @@ class QualitativeVisualizer:
     def prepare(self, doc_id, ref_token_idx):
         self.doc_id = doc_id
         self.ref_token_idx = ref_token_idx
-        self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]]
-                       if e['doc_id'] == str(doc_id) and e['index'] == ref_token_idx][0]
+        self.entity = None
+        for e in self.entities[self.huggingface_models[0]][attribution_types[0]]:
+            print(e['doc_id'] == str(doc_id), e['doc_id'], str(doc_id), e['index'] == ref_token_idx, e['index'], ref_token_idx)
+            if e['doc_id'] == str(doc_id) and e['index'] == ref_token_idx:
+                self.entity = e
+        assert self.entity is not None
+        # self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]]
+        #                if e['doc_id'] == str(doc_id) and e['index'] == ref_token_idx][0]
         doc = [doc for doc in self.dataset if doc['document_id'] == doc_id][0]
         self.docs = {
             'bioelectra-discriminator': self.pre_processors['bioelectra-discriminator'](doc),
@@ -220,6 +226,7 @@ class QualitativeVisualizer:
                 chosen_entities.append(self.entities[self.huggingface_models[0]][attribution_types[0]][i])
             self.entity = chosen_entities[0]
 
+        print(self.entity)
         doc_id = self.entity['doc_id']
         idx = self.entity['index']
         doc = [doc for doc in self.dataset if doc['document_id'] == doc_id][0]
