@@ -300,6 +300,7 @@ class QualitativeVisualizer:
                     if len(labels_to_attribute) == 0 or len(labels_to_attribute) > 1:
                         print('possible error!', main_entity_labels, main_other_labels)
                     else:
+                        print(f'get attributions for other entity ({attr_type})')
                         explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
                         token_class_index_tuples = [(reference_token_idx, labels_to_attribute[0])]
                         explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples,
@@ -309,6 +310,7 @@ class QualitativeVisualizer:
                         self.other_entity['other_attribution_scores'] = word_attributions[self.id2label[labels_to_attribute[0]]][reference_token_idx]
 
             else:
+                print(f'get attributions {attr_type}')
                 token_class_index_tuples = [(reference_token_idx, self.entity['gold_label']), (reference_token_idx, self.entity['pred_label'])]
                 explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
                 explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples,
