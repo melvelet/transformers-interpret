@@ -299,7 +299,7 @@ class QualitativeVisualizer:
             for prefix in ['', 'other_']:
                 if prefix == 'other_' and entity['other_entity'] in [None, 'O']:
                     continue
-                entity['rationales'][f'{prefix}top_k'][k_value] = get_rationale(entity[f'{prefix}attribution_scores'], k_value)
+                entity['rationales'][f'{prefix}top_k'][str(k_value)] = get_rationale(entity[f'{prefix}attribution_scores'], k_value)
 
         other_model = self.huggingface_models[1]
         other_doc = self.docs[other_model]
