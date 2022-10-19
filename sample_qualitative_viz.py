@@ -5,6 +5,7 @@ import random
 from argparse import ArgumentParser
 
 import numpy as np
+import torch
 from bigbio.dataloader import BigBioConfigHelpers
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 
@@ -40,6 +41,13 @@ huggingface_models = [
     'bert',
 ]
 
+CUDA_VISIBLE_DEVICES = os.environ.get('CUDA_VISIBLE_DEVICES') if os.environ.get('CUDA_VISIBLE_DEVICES') else 'cpu'
+CUDA_DEVICE = torch.device('cpu') if CUDA_VISIBLE_DEVICES == 'cpu' else torch.device('cuda')
+if os.environ.get('BATCH_SIZE'):
+    BATCH_SIZE = os.environ.get('BATCH_SIZE')
+else:
+    BATCH_SIZE = 16 if CUDA_VISIBLE_DEVICES != 'cpu' else 32
+
 
 def generate_latex_text(attributions,
                         tokens,
@@ -52,9 +60,9 @@ def generate_latex_text(attributions,
                         ):
     if rationale_1 is None:
         rationale_1 = []
-    if rationale_2 is None:
-        rationale_2 = []
-    rationale_2 = list(filter(lambda x: x not in rationale_1, rationale_2))
+    # if rationale_2 is None:
+    #     rationale_2 = []
+    # rationale_2 = list(filter(lambda x: x not in rationale_1, rationale_2))
     latex_text = ""
     # print(len(attributions), len(tokens))
 
@@ -122,9 +130,9 @@ class QualitativeVisualizer:
             self.dataset = shuffled_dataset.select(
                 range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
 
-    def load_other_pipeline(self):
+    def load_other_pipeline(self, base_path):
         # print(os.getcwd())
-        finetuned_huggingface_model = f"../trained_models/{self.huggingface_models[1]}/{self.dataset_name.replace('_bigbio_kb', '')}/final"
+        finetuned_huggingface_model = f"{base_path}{self.huggingface_models[1]}/{self.dataset_name.replace('_bigbio_kb', '')}/final"
         other_model: AutoModelForTokenClassification = AutoModelForTokenClassification\
             .from_pretrained(finetuned_huggingface_model,
                              local_files_only=True,
@@ -149,7 +157,9 @@ class QualitativeVisualizer:
                                          max_tokens=512),
         }
 
-    def load_entities(self, base_path, entity_type=0, attributions=[0]):
+    def load_entities(self, base_path, entity_type=0, attributions=None):
+        if attributions is None:
+            attributions = [0, 1, 3]
         self.attribution_types = [attribution_types[i] for i in attributions]
         self.entity_type = 'drug' if entity_type == 1 else 'disease'
         exclude_string = 'include'
@@ -158,6 +168,33 @@ class QualitativeVisualizer:
                 base_file_name = f"{base_path}{self.dataset_name.replace('_bigbio_kb', '')}_{self.entity_type}_{model}_{attribution_type}_{exclude_string}"
                 with open(f'{base_file_name}_raw_entities.json', 'r') as f:
                     self.entities.update({model: {attribution_type: json.load(f)}})
+
+    def prepare(self, doc_id, ref_token_idx):
+        self.doc_id = doc_id
+        self.ref_token_idx = ref_token_idx
+        self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]]
+                       if e['doc_id'] == str(doc_id) and e['index'] == ref_token_idx][0]
+        doc = [doc for doc in self.dataset if doc['document_id'] == doc_id][0]
+        self.docs = {
+            'bioelectra-discriminator': self.pre_processors['bioelectra-discriminator'](doc),
+            'roberta': self.pre_processors['roberta'](doc)
+        }
+
+    def print_table(self, k_value=5):
+        latex_tables = ''
+        for model in self.huggingface_models:
+            tokens = self.tokenizers[model].batch_decode(self.docs[model]['input_ids'])
+            for attribution_type in self.attribution_types:
+                entity = [e for e in self.entities[model][attribution_type]
+                          if e['doc_id'] == self.doc_id and e['index'] == self.ref_token_idx][0]
+                for prefix in ['', 'other_']:
+                    text = generate_latex_text(
+                        entity[f'{prefix}attribution_scores'],
+                        tokens,
+                        reference_token_idx=entity['index'],
+                        rationale_1=entity['rationales']['top_k'][str(k_value)],
+                    )
+                    print(f'\n\n{text}')
 
     def pick_entities(self, eval_=None, doc_id=None, n_value=1, k_values=[5, 10]):
         if eval_:
@@ -265,7 +302,8 @@ class QualitativeVisualizer:
                     else:
                         explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
                         token_class_index_tuples = [(reference_token_idx, labels_to_attribute[0])]
-                        explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples)
+                        explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples,
+                                  internal_batch_size=BATCH_SIZE)
                         word_attributions = explainer.word_attributions
                         self.other_entity['other_entity'] = self.id2label[labels_to_attribute[0]]
                         self.other_entity['other_attribution_scores'] = word_attributions[self.id2label[labels_to_attribute[0]]][reference_token_idx]
@@ -273,7 +311,8 @@ class QualitativeVisualizer:
             else:
                 token_class_index_tuples = [(reference_token_idx, self.entity['gold_label']), (reference_token_idx, self.entity['pred_label'])]
                 explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
-                explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples)
+                explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples,
+                          internal_batch_size=BATCH_SIZE)
                 word_attributions = explainer.word_attributions
                 other_entity = {
                     'eval': 'TN',
