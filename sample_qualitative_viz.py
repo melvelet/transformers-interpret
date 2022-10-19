@@ -10,6 +10,7 @@ from bigbio.dataloader import BigBioConfigHelpers
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 
 from transformers_interpret import TokenClassificationExplainer
+from transformers_interpret.evaluation import get_rationale
 from transformers_interpret.evaluation.input_pre_processor import get_labels_from_dataset, InputPreProcessor
 
 continuous = True
@@ -292,7 +293,14 @@ class QualitativeVisualizer:
         # )
         print(text)
 
-    def ensure_attr_scores_in_other_model(self, reference_token_idx):
+    def ensure_attr_scores_in_other_model(self, reference_token_idx, k_value):
+        def write_rationale(entity):
+            entity['rationales'] = {'top_k': {}, 'other_top_k': {}}
+            for prefix in ['', 'other_']:
+                if prefix == 'other_' and entity['other_entity'] in [None, 'O']:
+                    continue
+                entity['rationales'][f'{prefix}top_k'][k_value] = get_rationale(entity[f'{prefix}attribution_scores'], k_value)
+
         other_model = self.huggingface_models[1]
         other_doc = self.docs[other_model]
         for attr_type in self.attribution_types:
@@ -317,6 +325,7 @@ class QualitativeVisualizer:
                         word_attributions = explainer.word_attributions
                         self.other_entity['other_entity'] = self.id2label[labels_to_attribute[0]]
                         self.other_entity['other_attribution_scores'] = word_attributions[self.id2label[labels_to_attribute[0]]][reference_token_idx]
+                        write_rationale(self.other_entity)
 
             else:
                 print(f'get attributions {attr_type}')
@@ -334,5 +343,6 @@ class QualitativeVisualizer:
                     'other_entity': self.id2label[self.entity['pred_label']],
                     'other_attribution_scores': word_attributions[self.id2label[self.entity['pred_label']]][reference_token_idx],
                 }
+                write_rationale(self.other_entity)
                 self.entities[other_model][attr_type].append(self.other_entity)
 
