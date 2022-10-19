@@ -136,7 +136,7 @@ class QualitativeVisualizer:
         other_model: AutoModelForTokenClassification = AutoModelForTokenClassification\
             .from_pretrained(finetuned_huggingface_model,
                              local_files_only=True,
-                             num_labels=len(self.label2id))
+                             num_labels=len(self.label2id)).to(CUDA_DEVICE)
         self.pipeline = TokenClassificationPipeline(model=other_model, tokenizer=self.tokenizers[self.huggingface_models[1]])
 
     def load_tokenizers(self, models=[1, 2]):
