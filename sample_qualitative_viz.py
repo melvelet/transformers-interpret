@@ -177,13 +177,13 @@ class QualitativeVisualizer:
         self.doc_id = doc_id
         self.ref_token_idx = ref_token_idx
         self.entity = None
-        for e in self.entities[self.huggingface_models[0]][attribution_types[0]]:
-            print(e['doc_id'] == str(doc_id), e['doc_id'], str(doc_id), e['index'] == ref_token_idx, e['index'], ref_token_idx)
-            if e['doc_id'] == str(doc_id) and e['index'] == ref_token_idx:
-                self.entity = e
-        assert self.entity is not None
-        # self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]]
-        #                if e['doc_id'] == str(doc_id) and e['index'] == ref_token_idx][0]
+        # for e in self.entities[self.huggingface_models[0]][attribution_types[0]]:
+        #     print(e['doc_id'] == str(doc_id), e['doc_id'], str(doc_id), e['index'] == ref_token_idx, e['index'], ref_token_idx)
+        #     if e['doc_id'] == str(doc_id) and e['index'] == ref_token_idx:
+        #         self.entity = e
+        # assert self.entity is not None
+        self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]]
+                       if e['doc_id'] == str(doc_id) and e['index'] == ref_token_idx][0]
         doc = [doc for doc in self.dataset if doc['document_id'] == doc_id][0]
         self.docs = {
             'bioelectra-discriminator': self.pre_processors['bioelectra-discriminator'](doc),
