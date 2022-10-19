@@ -317,7 +317,7 @@ class QualitativeVisualizer:
                 explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples,
                           internal_batch_size=BATCH_SIZE)
                 word_attributions = explainer.word_attributions
-                other_entity = {
+                self.other_entity = {
                     'eval': 'TN',
                     'index': reference_token_idx,
                     'doc_id': other_doc['document_id'],
@@ -326,5 +326,5 @@ class QualitativeVisualizer:
                     'other_entity': self.id2label[self.entity['pred_label']],
                     'other_attribution_scores': word_attributions[self.id2label[self.entity['pred_label']]][reference_token_idx],
                 }
-                self.entities[other_model][attr_type].append(other_entity)
+                self.entities[other_model][attr_type].append(self.other_entity)
 
