@@ -25,7 +25,7 @@ k_value = args.k_value
 viz = QualitativeVisualizer()
 viz.load_dataset(dataset=args.dataset_no)
 viz.load_tokenizers(models=huggingface_models)
-viz.load_other_pipeline(base_path='./trained_models/scores/')
+viz.load_other_pipeline(base_path='./trained_models/')
 viz.load_entities(base_path='./results/scores/')
 viz.prepare(doc_id=doc_id, ref_token_idx=ref_token_idx)
 viz.ensure_attr_scores_in_other_model(ref_token_idx)
