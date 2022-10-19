@@ -320,6 +320,7 @@ class QualitativeVisualizer:
                 other_entity = {
                     'eval': 'TN',
                     'index': reference_token_idx,
+                    'doc_id': other_doc['document_id'],
                     'entity': self.id2label[self.entity['gold_label']],
                     'attribution_scores': word_attributions[self.id2label[self.entity['gold_label']]][reference_token_idx],
                     'other_entity': self.id2label[self.entity['pred_label']],
