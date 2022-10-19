@@ -205,7 +205,7 @@ class QualitativeVisualizer:
                 #         else:
                 #             print(e['index'], )
                 entity = [e for e in self.entities[model][attribution_type]
-                          if e['doc_id'] == self.doc_id and e['index'] == self.ref_token_idx][0]
+                          if e['doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
                 for prefix in ['', 'other_']:
                     text = generate_latex_text(
                         entity[f'{prefix}attribution_scores'],
