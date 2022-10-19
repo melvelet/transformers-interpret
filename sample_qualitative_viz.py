@@ -195,6 +195,7 @@ class QualitativeVisualizer:
         for model in self.huggingface_models:
             tokens = self.tokenizers[model].batch_decode(self.docs[model]['input_ids'])
             for attribution_type in self.attribution_types:
+                print(model, attribution_type)
                 entity = [e for e in self.entities[model][attribution_type]
                           if e['doc_id'] == self.doc_id and e['index'] == self.ref_token_idx][0]
                 for prefix in ['', 'other_']:
