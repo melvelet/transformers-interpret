@@ -54,6 +54,7 @@ CLASS_NAMES = {
     'B-SpecificDisease': 'Disease',
     'B-Disease': 'Disease',
     'B-Chemical': 'Chemical',
+    'O': 'O',
 }
 
 
