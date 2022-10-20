@@ -49,6 +49,11 @@ if os.environ.get('BATCH_SIZE'):
 else:
     BATCH_SIZE = 16 if CUDA_VISIBLE_DEVICES != 'cpu' else 32
 
+CLASS_NAMES = {
+    'B-CompositeMention': 'Composite',
+    'B-SpecificDisease': 'Disease',
+}
+
 
 def generate_latex_text(attributions,
                         tokens,
@@ -194,7 +199,7 @@ class QualitativeVisualizer:
 
     def print_table(self, model_i, k_value=5, collapse_threshold=0.05):
         def _get_cell(content, multirow=1):
-            return f"\\parbox[b]{{4mm}}{{\\multirow{{1}}{{*}}{{\\rotatebox[origin=t]{{90}}{{{content}}}}}}} &"
+            return f"\\parbox[b]{{4mm}}{{\\multirow{{{multirow}}}{{*}}{{\\rotatebox[origin=t]{{90}}{{{content}}}}}}} &"
 
         model = self.huggingface_models[model_i]
         model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
@@ -220,7 +225,7 @@ class QualitativeVisualizer:
                     else:
                         row += '\\cmidrule{3-3}\n'
                 if not prefix:
-                    row += f"{_get_cell(attribution_type.upper(), 2)} {_get_cell(entity[f'{prefix}entity'])}"
+                    row += f"{_get_cell(attribution_type.upper(), 2)} {_get_cell(CLASS_NAMES[entity[f'{prefix}entity']])}"
                 else:
                     row += f"& {_get_cell(entity[f'{prefix}entity'])}"
                 text = generate_latex_text(
