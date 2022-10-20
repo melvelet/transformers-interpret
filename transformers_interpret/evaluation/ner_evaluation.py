@@ -383,6 +383,7 @@ class NERSentenceEvaluator:
 
     def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False, exclude_reference_token: bool = False):
         for e in self.entities:
+            print(e)
             exclude_reference_token_idx = e['index'] if exclude_reference_token else None
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
