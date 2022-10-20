@@ -192,29 +192,42 @@ class QualitativeVisualizer:
             'roberta': self.pre_processors['roberta'](doc)
         }
 
-    def print_table(self, k_value=5):
-        latex_tables = ''
+    def print_table(self, k_value=5, collapse_threshold=0.05):
+        def _get_cell(content):
+            return f"\\parbox[b]{{4mm}}{{\\multirow{{1}}{{*}}{{\\rotatebox[origin=t]{{90}}{{{content}}}}} &"
+
+        latex_tables = '''
+\\begin{table}
+\\centering
+\\caption{\\label{tab:6_example_1}Example text}
+\\toprule
+\\begin{tabularx}{\\linewidth}{ccc|X@{}}
+\\textbf{Model}   & \\textbf{Attr} & \\textbf{Class}     &\\multicolumn{1}{c}{\\textbf{Text}}       \\\\
+\\midrule
+'''
         for model_i, model in enumerate(self.huggingface_models):
             ref_token_idx = self.ref1_token_idx if model_i == 0 else self.ref2_token_idx
             tokens = self.tokenizers[model].batch_decode(self.docs[model]['input_ids'])
             for attribution_type in self.attribution_types:
                 print(model, attribution_type)
-                # for e in self.entities[model][attribution_type]:
-                #     if e['doc_id'] == self.doc_id:
-                #         if e['index'] == self.ref_token_idx:
-                #             entity = e
-                #         else:
-                #             print(e['index'], )
                 entity = [e for e in self.entities[model][attribution_type]
                           if e['doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
                 for prefix in ['', 'other_']:
+                    row = f"{_get_cell(model)} {_get_cell(attribution_type.upper())} {_get_cell(entity[f'{prefix}entity'])}"
                     text = generate_latex_text(
                         entity[f'{prefix}attribution_scores'],
                         tokens,
                         reference_token_idx=entity['index'],
                         rationale_1=entity['rationales']['top_k'][str(k_value)],
+                        collapse_threshold=collapse_threshold,
                     )
-                    print(f'\n\n{text}')
+                    latex_tables += f"{row} {text} \\\\\n"
+        latex_tables += '''
+\bottomrule
+\end{tabularx}
+\end{table}
+'''
+        return latex_tables
 
     def pick_entities(self, eval_=None, doc_id=None, n_value=1, k_values=[5, 10]):
         if eval_:

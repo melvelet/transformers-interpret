@@ -3,6 +3,16 @@ from traitlets.config.loader import ArgumentParser
 
 from sample_qualitative_viz import QualitativeVisualizer
 
+dataset_names = [
+    'bc5cdr',
+    'euadr',
+    'ncbi_disease',
+    'scai_disease',
+    'ddi_corpus',
+    'mlee',
+    'cadec',
+]
+
 parser = ArgumentParser()
 parser.add_argument("-m", "--model", dest="model_no", type=int)
 parser.add_argument("-d", "--dataset", dest="dataset_no", type=int)
@@ -33,4 +43,7 @@ viz.load_entities(base_path='./results/scores/')
 viz.prepare(doc_id=doc_id, ref1_token_idx=mod1_ref_token_idx, ref2_token_idx=mod2_ref_token_idx)
 with torch.no_grad():
     viz.ensure_attr_scores_in_other_model(mod2_ref_token_idx, k_value)
-viz.print_table(k_value=k_value)
+for collapse_threshold in [0.05, 0.02, 0.1]:
+    latex_tables = viz.print_table(k_value=k_value, collapse_threshold=collapse_threshold)
+    with open(f"viz/example_{'bioelectra' if args.model_no == 1 else 'roberta'}_{dataset_names[args.dataset_no]}_{doc_id}_{mod1_ref_token_idx}_{mod2_ref_token_idx}_{k_value}.txt", 'w+') as f:
+        f.write(latex_tables)
