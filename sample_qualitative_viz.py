@@ -145,12 +145,16 @@ class QualitativeVisualizer:
             .from_pretrained(finetuned_huggingface_model,
                              local_files_only=True,
                              num_labels=len(self.label2id)).to(CUDA_DEVICE)
+        model.config.label2id = self.label2id
+        model.config.id2label = self.id2label
         self.pipeline = TokenClassificationPipeline(model=model, tokenizer=self.tokenizers[self.huggingface_models[0]])
         finetuned_other_huggingface_model = f"{base_path}{self.huggingface_models[1]}/{self.dataset_name.replace('_bigbio_kb', '')}/final"
         other_model: AutoModelForTokenClassification = AutoModelForTokenClassification\
             .from_pretrained(finetuned_other_huggingface_model,
                              local_files_only=True,
                              num_labels=len(self.label2id)).to(CUDA_DEVICE)
+        other_model.config.label2id = self.label2id
+        other_model.config.id2label = self.id2label
         self.other_pipeline = TokenClassificationPipeline(model=other_model, tokenizer=self.tokenizers[self.huggingface_models[1]])
 
     def load_tokenizers(self, models=[1, 2]):
