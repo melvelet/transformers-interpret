@@ -76,7 +76,7 @@ def generate_latex_text(attributions,
     # print(len(attributions), len(tokens))
 
     # Pre_processing
-    tokens = [t.replace('%', '\\%').replace('Ġ', '##') for t in tokens]
+    tokens = [t.replace('%', '\\%').replace('-', '--').replace('Ġ', '##') for t in tokens]
     # print(reference_token_idx, rationale_1)
     for idx in rationale_1:
         if idx == reference_token_idx:
