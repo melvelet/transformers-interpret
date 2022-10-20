@@ -45,5 +45,5 @@ with torch.no_grad():
     viz.ensure_attr_scores_in_other_model(mod2_ref_token_idx, k_value)
 for collapse_threshold in [0.05, 0.02, 0.1]:
     latex_tables = viz.print_table(k_value=k_value, collapse_threshold=collapse_threshold)
-    with open(f"viz/example_{'bioelectra' if args.model_no == 1 else 'roberta'}_{dataset_names[args.dataset_no]}_{doc_id}_{mod1_ref_token_idx}_{mod2_ref_token_idx}_{k_value}.txt", 'w+') as f:
+    with open(f"results/viz/example_{'bioelectra' if args.model_no == 1 else 'roberta'}_{dataset_names[args.dataset_no]}_{doc_id}_{mod1_ref_token_idx}_{mod2_ref_token_idx}_{k_value}.txt", 'w+') as f:
         f.write(latex_tables)
