@@ -201,8 +201,8 @@ class QualitativeVisualizer:
 \\centering
 \\caption{\\label{tab:6_example_1}Example text}
 \\toprule
-\\begin{tabularx}{\\linewidth}{ccc|X@{}}
-\\textbf{Attr} & \\textbf{Class}     &\\multicolumn{1}{c}{\\textbf{Text}}       \\\\
+\\begin{tabularx}{\\linewidth}{cc|X@{}}
+\\textbf{Attr} & \\textbf{Class}     & \\textbf{Text}       \\\\
 \\midrule'''
         line = 0
         # model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
@@ -215,11 +215,11 @@ class QualitativeVisualizer:
             for prefix in ['', 'other_']:
                 row = '\n'
                 if line > 0:
-                    row += '\\cmidrule{{3-3}}\n'
+                    row += '\\cmidrule{3-3}\n'
                 if not prefix:
                     row += f"{_get_cell(attribution_type.upper(), 2)} {_get_cell(entity[f'{prefix}entity'])}"
                 else:
-                    row += f"& & {_get_cell(entity[f'{prefix}entity'])}"
+                    row += f"& {_get_cell(entity[f'{prefix}entity'])}"
                 text = generate_latex_text(
                     entity[f'{prefix}attribution_scores'],
                     tokens,
