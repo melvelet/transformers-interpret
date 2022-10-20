@@ -101,7 +101,7 @@ def generate_latex_text(attributions,
     collapsing = False
     for i, data in enumerate(zip(attributions, tokens)):
         attr, token = data
-        if token in ['[SEP]', '[CLS]']:
+        if token in ['[SEP]', '[CLS]', '<s>', '</s>']:
             continue
         if 0 not in indices_below_threshold[i:i + 2 * collapse_margin]:
             if not collapsing:
@@ -235,7 +235,7 @@ class QualitativeVisualizer:
                     entity[f'{prefix}attribution_scores'],
                     tokens,
                     reference_token_idx=entity['index'],
-                    rationale_1=entity['rationales']['top_k'][str(k_value)],
+                    rationale_1=entity['rationales'][f'{prefix}top_k'][str(k_value)],
                     collapse_threshold=collapse_threshold,
                 )
                 latex_tables += f"{row} {text} \\\\"
