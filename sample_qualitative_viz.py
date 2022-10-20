@@ -214,7 +214,7 @@ class QualitativeVisualizer:
                       if e['doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
             for prefix in ['', 'other_']:
                 row = '\n'
-                if line > 0:
+                if line > 0 and line % 2 == 0:
                     row += '\\cmidrule{3-3}\n'
                 if not prefix:
                     row += f"{_get_cell(attribution_type.upper(), 2)} {_get_cell(entity[f'{prefix}entity'])}"
@@ -227,8 +227,8 @@ class QualitativeVisualizer:
                     rationale_1=entity['rationales']['top_k'][str(k_value)],
                     collapse_threshold=collapse_threshold,
                 )
-                latex_tables += f"{row} {text} \\\\\n"
-            line += 1
+                latex_tables += f"{row} {text} \\\\"
+                line += 1
         latex_tables += '''\\bottomrule
 \\end{tabularx}
 \\end{table}'''
