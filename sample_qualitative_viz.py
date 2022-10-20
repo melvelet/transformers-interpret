@@ -216,6 +216,7 @@ class QualitativeVisualizer:
         ref_token_idx = self.ref1_token_idx if model_i == 0 else self.ref2_token_idx
         tokens = self.tokenizers[model].batch_decode(self.docs[model]['input_ids'])
         for attribution_type in self.attribution_types:
+            attr_string = attribution_type.upper() if attribution_type != 'gradcam' else 'GradCAM'
             print(model, attribution_type)
             entity = [e for e in self.entities[model][attribution_type]
                       if e['doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
@@ -227,7 +228,7 @@ class QualitativeVisualizer:
                     row += '\\cmidrule{3-3}\n'
                 class_name = CLASS_NAMES[entity[f'{prefix}entity']]
                 if not prefix:
-                    row += f"{_get_cell(attribution_type.upper(), 2)} {_get_cell(class_name)}"
+                    row += f"{_get_cell(attr_string, 2)} {_get_cell(class_name)}"
                 else:
                     row += f"& {_get_cell(class_name)}"
                 text = generate_latex_text(
