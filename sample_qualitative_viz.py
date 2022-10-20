@@ -366,6 +366,8 @@ class QualitativeVisualizer:
                           internal_batch_size=BATCH_SIZE)
                 word_attributions = explainer.word_attributions
                 self.entity['other_entity'] = self.id2label[0]
+                test = [i for i in word_attributions]
+                print(test)
                 self.entity['other_attribution_scores'] = word_attributions[self.id2label[0]][reference_token_idx]
                 write_rationale(self.entity)
 
