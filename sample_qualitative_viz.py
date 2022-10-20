@@ -356,7 +356,7 @@ class QualitativeVisualizer:
         other_doc = self.docs[other_model]
         for attr_type in self.attribution_types:
             print(self.entity['other_entity'])
-            if self.entity['other_entity'] == 0:
+            if self.entity['other_entity'] in [0, 'O', None]:
                 print(f'get attributions for class 0 for entity ({attr_type})')
                 explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
                 token_class_index_tuples = [(reference_token_idx, 0)]
