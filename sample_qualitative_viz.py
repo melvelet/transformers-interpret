@@ -192,42 +192,42 @@ class QualitativeVisualizer:
             'roberta': self.pre_processors['roberta'](doc)
         }
 
-    def print_table(self, k_value=5, collapse_threshold=0.05):
+    def print_table(self, model_i, k_value=5, collapse_threshold=0.05):
         def _get_cell(content, multirow=1):
             return f"\\parbox[b]{{4mm}}{{\\multirow{{1}}{{*}}{{\\rotatebox[origin=t]{{90}}{{{content}}}}}}} &"
 
+        model = self.huggingface_models[model_i]
         latex_tables = '''\\begin{table}
 \\centering
 \\caption{\\label{tab:6_example_1}Example text}
 \\toprule
 \\begin{tabularx}{\\linewidth}{ccc|X@{}}
-\\textbf{Model}   & \\textbf{Attr} & \\textbf{Class}     &\\multicolumn{1}{c}{\\textbf{Text}}       \\\\
+\\textbf{Attr} & \\textbf{Class}     &\\multicolumn{1}{c}{\\textbf{Text}}       \\\\
 \\midrule'''
         line = 0
-        for model_i, model in enumerate(self.huggingface_models):
-            model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
-            ref_token_idx = self.ref1_token_idx if model_i == 0 else self.ref2_token_idx
-            tokens = self.tokenizers[model].batch_decode(self.docs[model]['input_ids'])
-            for attribution_type in self.attribution_types:
-                print(model, attribution_type)
-                entity = [e for e in self.entities[model][attribution_type]
-                          if e['doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
-                for prefix in ['', 'other_']:
-                    row = '\n'
-                    if line > 0:
-                        row += '\\cmidrule{{4-4}}\n'
-                    if not prefix:
-                        row += f"{_get_cell(model_string, 2)} {_get_cell(attribution_type.upper(), 2)} {_get_cell(entity[f'{prefix}entity'])}"
-                    else:
-                        row += f"& & {_get_cell(entity[f'{prefix}entity'])}"
-                    text = generate_latex_text(
-                        entity[f'{prefix}attribution_scores'],
-                        tokens,
-                        reference_token_idx=entity['index'],
-                        rationale_1=entity['rationales']['top_k'][str(k_value)],
-                        collapse_threshold=collapse_threshold,
-                    )
-                    latex_tables += f"{row} {text} \\\\\n"
+        # model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
+        ref_token_idx = self.ref1_token_idx if model_i == 0 else self.ref2_token_idx
+        tokens = self.tokenizers[model].batch_decode(self.docs[model]['input_ids'])
+        for attribution_type in self.attribution_types:
+            print(model, attribution_type)
+            entity = [e for e in self.entities[model][attribution_type]
+                      if e['doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
+            for prefix in ['', 'other_']:
+                row = '\n'
+                if line > 0:
+                    row += '\\cmidrule{{3-3}}\n'
+                if not prefix:
+                    row += f"{_get_cell(attribution_type.upper(), 2)} {_get_cell(entity[f'{prefix}entity'])}"
+                else:
+                    row += f"& & {_get_cell(entity[f'{prefix}entity'])}"
+                text = generate_latex_text(
+                    entity[f'{prefix}attribution_scores'],
+                    tokens,
+                    reference_token_idx=entity['index'],
+                    rationale_1=entity['rationales']['top_k'][str(k_value)],
+                    collapse_threshold=collapse_threshold,
+                )
+                latex_tables += f"{row} {text} \\\\\n"
         latex_tables += '''\\bottomrule
 \\end{tabularx}
 \\end{table}'''
