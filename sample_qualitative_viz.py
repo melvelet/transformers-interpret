@@ -384,6 +384,7 @@ class QualitativeVisualizer:
                 if self.other_entity['other_entity'] in [0, 'O', None]:
                     main_entity_labels = [self.entity['gold_label'], self.entity['pred_label']]
                     main_other_labels = [self.other_entity['gold_label'], self.other_entity['pred_label']]
+                    print(main_entity_labels, main_other_labels)
                     labels_to_attribute = [label for label in main_entity_labels if label not in main_other_labels]
                     if len(labels_to_attribute) == 0 or len(labels_to_attribute) > 1:
                         print('possible error!', main_entity_labels, main_other_labels)
