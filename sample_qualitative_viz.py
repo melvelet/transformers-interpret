@@ -352,7 +352,9 @@ class QualitativeVisualizer:
                 #     continue
                 entity['rationales'][f'{prefix}top_k'][str(k_value)] = get_rationale(entity[f'{prefix}attribution_scores'], k_value)
 
+        model = self.huggingface_models[1]
         other_model = self.huggingface_models[1]
+        doc = self.docs[model]
         other_doc = self.docs[other_model]
         for attr_type in self.attribution_types:
             print(self.entity['other_entity'])
@@ -360,7 +362,7 @@ class QualitativeVisualizer:
                 print(f'get attributions for class 0 for entity ({attr_type})')
                 explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
                 token_class_index_tuples = [(reference_token_idx, 0)]
-                explainer(self.docs[0]['text'], token_class_index_tuples=token_class_index_tuples,
+                explainer(doc['text'], token_class_index_tuples=token_class_index_tuples,
                           internal_batch_size=BATCH_SIZE)
                 word_attributions = explainer.word_attributions
                 self.entity['other_entity'] = self.id2label[0]
@@ -372,7 +374,7 @@ class QualitativeVisualizer:
                                  e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == other_doc['document_id'] and e['index'] == reference_token_idx]
             if self.other_entity:
                 self.other_entity = self.other_entity[0]
-                print('Entity existed already:', self.other_entity['eval'])
+                print('Entity existed already:', self.other_entity['eval'], self.other_entity['other_entity'])
                 # print(self.other_entity)
                 if self.other_entity['other_entity'] is None:
                     main_entity_labels = [self.entity['gold_label'], self.entity['pred_label']]
