@@ -65,7 +65,6 @@ def generate_latex_text(attributions,
                         rationale_2=None,
                         collapse_threshold=.05,
                         collapse_margin=15,
-                        show_idx_of_rationale=False,
                         ):
     if rationale_1 is None:
         rationale_1 = []
@@ -79,13 +78,11 @@ def generate_latex_text(attributions,
     tokens = [t.replace('%', '\\%').replace('-', '--').replace('Ġ', '##') for t in tokens]
     # print(reference_token_idx, rationale_1)
     for idx in rationale_1:
+        tokens[idx] = f"\\textit{{{tokens[idx]}}}"
         if idx == reference_token_idx:
             continue
         else:
-            if show_idx_of_rationale:
-                tokens[idx] = f"{tokens[idx]}(idx: {idx})"
             tokens[idx] = f"\\dotuline{{{tokens[idx]}}}"
-            tokens[idx] = f"\\textit{{{tokens[idx]}}}"
 
     if reference_token_idx >= 0:
         tokens[reference_token_idx] = f"\\underline{{{tokens[reference_token_idx]}}}"
