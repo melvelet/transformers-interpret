@@ -355,6 +355,7 @@ class QualitativeVisualizer:
         other_model = self.huggingface_models[1]
         other_doc = self.docs[other_model]
         for attr_type in self.attribution_types:
+            print(self.entity['other_entity'])
             if self.entity['other_entity'] == 0:
                 print(f'get attributions for class 0 for entity ({attr_type})')
                 explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
@@ -373,7 +374,7 @@ class QualitativeVisualizer:
                 self.other_entity = self.other_entity[0]
                 print('Entity existed already:', self.other_entity['eval'])
                 # print(self.other_entity)
-                if not self.other_entity['other_entity']:
+                if self.other_entity['other_entity'] is None:
                     main_entity_labels = [self.entity['gold_label'], self.entity['pred_label']]
                     main_other_labels = [self.other_entity['gold_label'], self.other_entity['pred_label']]
                     labels_to_attribute = [label for label in main_entity_labels if label not in main_other_labels]
