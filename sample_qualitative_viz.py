@@ -225,7 +225,8 @@ class QualitativeVisualizer:
             entity = [e for e in self.entities[model][attribution_type]
                       if e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
             for prefix in ['', 'other_']:
-                if entity['other_entity'] == 0:
+                print(entity['other_entity'])
+                if entity['other_entity'] == 'O':
                     continue
                 row = '\n'
                 if line % 2 == 0:
