@@ -16,7 +16,7 @@ dataset_names = [
 parser = ArgumentParser()
 parser.add_argument("-m", "--model", dest="model_no", type=int)
 parser.add_argument("-d", "--dataset", dest="dataset_no", type=int)
-# parser.add_argument("-a", "--attribution-type", dest="attribution_type_no", type=int, default=0)
+parser.add_argument("-a", "--attribution-types", dest="attributions", type=int, default=0)
 # parser.add_argument("-max", "--max-documents", dest="max_documents", type=int, default=0)
 # parser.add_argument("-s", "--start-document", dest="start_document", type=int, default=0)
 parser.add_argument("-k", "--k-value", dest="k_value", type=int, default=5)
@@ -33,13 +33,14 @@ doc_id = args.doc_id
 mod1_ref_token_idx = args.mod1_ref_token_idx
 mod2_ref_token_idx = args.mod2_ref_token_idx
 k_value = args.k_value
+attributions = [0] if args.attributions == 1 else [0, 1, 3]
 # eval = args.eval
 
 viz = QualitativeVisualizer()
 viz.load_dataset(dataset=args.dataset_no)
 viz.load_tokenizers(models=huggingface_models)
 viz.load_pipelines(base_path='./trained_models/')
-viz.load_entities(base_path='./results/scores/')
+viz.load_entities(base_path='./results/scores/', attributions=attributions)
 viz.prepare(doc_id=doc_id, ref1_token_idx=mod1_ref_token_idx, ref2_token_idx=mod2_ref_token_idx)
 with torch.no_grad():
     viz.ensure_attr_scores_in_models(mod2_ref_token_idx, k_value)
