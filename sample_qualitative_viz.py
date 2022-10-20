@@ -90,7 +90,7 @@ def generate_latex_text(attributions,
             if abs(attr[1]) < collapse_threshold and i not in rationale_1:
                 indices_below_threshold[i + collapse_margin] = 1
 
-    attrs = [attr[1] for attr in attributions]
+    # attrs = [attr[1] for attr in attributions]
     # print(attrs)
     # print(indices_below_threshold)
     collapsing = False
@@ -202,8 +202,8 @@ class QualitativeVisualizer:
 \\toprule
 \\begin{tabularx}{\\linewidth}{ccc|X@{}}
 \\textbf{Model}   & \\textbf{Attr} & \\textbf{Class}     &\\multicolumn{1}{c}{\\textbf{Text}}       \\\\
-\\midrule
-'''
+\\midrule'''
+        line = 0
         for model_i, model in enumerate(self.huggingface_models):
             model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
             ref_token_idx = self.ref1_token_idx if model_i == 0 else self.ref2_token_idx
@@ -213,10 +213,13 @@ class QualitativeVisualizer:
                 entity = [e for e in self.entities[model][attribution_type]
                           if e['doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
                 for prefix in ['', 'other_']:
+                    row = '\n'
+                    if line > 0:
+                        row += '\\cmidrule{{4-4}}\n'
                     if not prefix:
-                        row = f"{_get_cell(model_string, 2)} {_get_cell(attribution_type.upper(), 2)} {_get_cell(entity[f'{prefix}entity'])}"
+                        row += f"{_get_cell(model_string, 2)} {_get_cell(attribution_type.upper(), 2)} {_get_cell(entity[f'{prefix}entity'])}"
                     else:
-                        row = f"& & {_get_cell(entity[f'{prefix}entity'])}"
+                        row += f"& & {_get_cell(entity[f'{prefix}entity'])}"
                     text = generate_latex_text(
                         entity[f'{prefix}attribution_scores'],
                         tokens,
@@ -224,11 +227,10 @@ class QualitativeVisualizer:
                         rationale_1=entity['rationales']['top_k'][str(k_value)],
                         collapse_threshold=collapse_threshold,
                     )
-                    latex_tables += f"{row} {text} \\\\\n\\cmidrule{{4-4}}\n"
+                    latex_tables += f"{row} {text} \\\\\n"
         latex_tables += '''\\bottomrule
 \\end{tabularx}
-\\end{table}
-'''
+\\end{table}'''
         return latex_tables
 
     def pick_entities(self, eval_=None, doc_id=None, n_value=1, k_values=[5, 10]):
