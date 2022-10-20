@@ -202,7 +202,7 @@ class QualitativeVisualizer:
 \\caption{\\label{tab:6_example_1}Example text}
 \\toprule
 \\begin{tabularx}{\\linewidth}{cc|X@{}}
-\\textbf{Attr} & \\textbf{Class}     & \\textbf{Text}       \\\\
+\\textbf{Attr} & \\textbf{Class} & \\textbf{Text} \\\\
 \\midrule'''
         line = 0
         # model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
