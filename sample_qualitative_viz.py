@@ -190,7 +190,7 @@ class QualitativeVisualizer:
         #         self.entity = e
         # assert self.entity is not None
         self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]]
-                       if e['doc_id'] == str(doc_id) and e['index'] == ref1_token_idx][0]
+                       if e['doc_doc_id'] == str(doc_id) and e['index'] == ref1_token_idx][0]
         doc = [doc for doc in self.dataset if doc['document_id'] == doc_id][0]
         self.docs = {
             'bioelectra-discriminator': self.pre_processors['bioelectra-discriminator'](doc),
@@ -220,7 +220,7 @@ class QualitativeVisualizer:
             attr_string = attribution_type.upper() if attribution_type != 'gradcam' else 'GradCAM'
             print(model, attribution_type, collapse_threshold)
             entity = [e for e in self.entities[model][attribution_type]
-                      if e['doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
+                      if e['doc_doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
             for prefix in ['', 'other_']:
                 row = '\n'
                 if line % 2 == 0:
@@ -257,7 +257,7 @@ class QualitativeVisualizer:
                 self.entities[self.huggingface_models[0]][attribution_type] = filtered_entities
 
         if doc_id:
-            self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]] if e['doc_id'] == str(doc_id)][0]
+            self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]] if e['doc_doc_id'] == str(doc_id)][0]
         else:
             indices = [i for i in range(len(self.entities[self.huggingface_models[0]][attribution_types[0]]))]
             chosen_entities = []
@@ -267,9 +267,18 @@ class QualitativeVisualizer:
             self.entity = chosen_entities[0]
 
         # print(self.entity)
-        doc_id = self.entity['doc_id']
+        doc_id = self.entity['doc_doc_id']
         idx = self.entity['index']
-        doc = [doc for doc in self.dataset if doc['document_id'] == doc_id][0]
+        # doc_ids = [doc['document_id'] for doc in self.dataset][0:100]
+        # print(doc_id, doc_ids)
+        # print(self.entity)
+        doc = [doc for doc in self.dataset if doc['document_id'] == doc_id]
+        if not doc:
+            doc_id = self.entity['doc_id']
+            doc = [doc for doc in self.dataset if doc['document_id'] == doc_id]
+        if not doc:
+            print(f"doc {self.entity['doc_doc_id']} (id: {self.entity['doc_id']}) not found!")
+        doc = doc[0]
         self.docs = {
             'bioelectra-discriminator': self.pre_processors['bioelectra-discriminator'](doc),
             'roberta': self.pre_processors['roberta'](doc)
@@ -335,7 +344,7 @@ class QualitativeVisualizer:
         other_doc = self.docs[other_model]
         for attr_type in self.attribution_types:
             self.other_entity = [e for e in self.entities[other_model][attr_type] if
-                                 e['doc_id'] == other_doc['document_id'] and e['index'] == reference_token_idx]
+                                 e['doc_doc_id'] == other_doc['document_id'] and e['index'] == reference_token_idx]
             if self.other_entity:
                 self.other_entity = self.other_entity[0]
                 print('Entity existed already:', self.other_entity['eval'])
@@ -367,7 +376,7 @@ class QualitativeVisualizer:
                 self.other_entity = {
                     'eval': 'TN',
                     'index': reference_token_idx,
-                    'doc_id': other_doc['document_id'],
+                    'doc_doc_id': other_doc['document_id'],
                     'entity': self.id2label[self.entity['gold_label']],
                     'attribution_scores': word_attributions[self.id2label[self.entity['gold_label']]][reference_token_idx],
                     'other_entity': self.id2label[self.entity['pred_label']],
