@@ -217,7 +217,7 @@ class QualitativeVisualizer:
         tokens = self.tokenizers[model].batch_decode(self.docs[model]['input_ids'])
         for attribution_type in self.attribution_types:
             attr_string = attribution_type.upper() if attribution_type != 'gradcam' else 'GradCAM'
-            print(model, attribution_type)
+            print(model, attribution_type, collapse_threshold)
             entity = [e for e in self.entities[model][attribution_type]
                       if e['doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
             for prefix in ['', 'other_']:
