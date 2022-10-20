@@ -203,13 +203,14 @@ class QualitativeVisualizer:
 
         model = self.huggingface_models[model_i]
         model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
+        dataset_string = self.dataset_name.replace('_disease', '').replace('_bigio_kb', '').upper()
         latex_tables = '''\\begin{table}
-\\centering'''
-        latex_tables += f"\\caption{{\\label{{tab:6_example_1}}{model_string} of Example x (dataset {self.dataset_name})}}"
+\\centering
+'''
+        latex_tables += f"\\caption{{\\label{{tab:6_example_1}}{model_string} attributions for Example x (dataset {dataset_string})}}\n"
         latex_tables += '''\\toprule
 \\begin{tabularx}{\\linewidth}{cc|X@{}}
-\\textbf{Attr} & \\textbf{Class} & \\textbf{Text} \\\\
-\\midrule'''
+\\textbf{Attr} & \\textbf{Class} & \\textbf{Text} \\\\'''
         line = 0
         ref_token_idx = self.ref1_token_idx if model_i == 0 else self.ref2_token_idx
         tokens = self.tokenizers[model].batch_decode(self.docs[model]['input_ids'])
@@ -219,11 +220,10 @@ class QualitativeVisualizer:
                       if e['doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
             for prefix in ['', 'other_']:
                 row = '\n'
-                if line > 0:
-                    if line % 2 == 0:
-                        row += '\\midrule\n'
-                    else:
-                        row += '\\cmidrule{3-3}\n'
+                if line % 2 == 0:
+                    row += '\\midrule\n'
+                elif line > 0:
+                    row += '\\cmidrule{3-3}\n'
                 if not prefix:
                     row += f"{_get_cell(attribution_type.upper(), 2)} {_get_cell(CLASS_NAMES[entity[f'{prefix}entity']])}"
                 else:
