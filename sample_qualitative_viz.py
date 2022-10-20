@@ -204,11 +204,12 @@ class QualitativeVisualizer:
         model = self.huggingface_models[model_i]
         model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
         dataset_string = self.dataset_name.replace('_disease', '').replace('_bigbio_kb', '').upper()
+        entity_eval = self.entity['eval'] if model_i == 0 else self.other_entity['eval']
         latex_tables = '''\\begin{table}
 \\small
 \\centering
 '''
-        latex_tables += f"\\caption{{\\label{{tab:6_example_1}}{model_string} attributions for Example x (dataset {dataset_string})}}\n"
+        latex_tables += f"\\caption{{\\label{{tab:6_example_1}}{model_string} attributions for Example x (dataset {dataset_string}, {entity_eval})}}\n"
         latex_tables += '''\\toprule
 \\begin{tabularx}{\\linewidth}{cc|X@{}}
 \\textbf{Attr} & \\textbf{Class} & \\textbf{Text} \\\\'''
@@ -337,7 +338,7 @@ class QualitativeVisualizer:
                                  e['doc_id'] == other_doc['document_id'] and e['index'] == reference_token_idx]
             if self.other_entity:
                 self.other_entity = self.other_entity[0]
-                print('Entity existed already:')
+                print('Entity existed already:', self.other_entity['eval'])
                 # print(self.other_entity)
                 if not self.other_entity['other_entity']:
                     main_entity_labels = [self.entity['gold_label'], self.entity['pred_label']]
