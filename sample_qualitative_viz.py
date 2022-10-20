@@ -139,14 +139,19 @@ class QualitativeVisualizer:
             self.dataset = shuffled_dataset.select(
                 range(math.floor(dataset_length * 0.8), math.floor(dataset_length * 0.9)))
 
-    def load_other_pipeline(self, base_path):
-        # print(os.getcwd())
-        finetuned_huggingface_model = f"{base_path}{self.huggingface_models[1]}/{self.dataset_name.replace('_bigbio_kb', '')}/final"
-        other_model: AutoModelForTokenClassification = AutoModelForTokenClassification\
+    def load_pipelines(self, base_path):
+        finetuned_huggingface_model = f"{base_path}{self.huggingface_models[0]}/{self.dataset_name.replace('_bigbio_kb', '')}/final"
+        model: AutoModelForTokenClassification = AutoModelForTokenClassification \
             .from_pretrained(finetuned_huggingface_model,
                              local_files_only=True,
                              num_labels=len(self.label2id)).to(CUDA_DEVICE)
-        self.pipeline = TokenClassificationPipeline(model=other_model, tokenizer=self.tokenizers[self.huggingface_models[1]])
+        self.pipeline = TokenClassificationPipeline(model=model, tokenizer=self.tokenizers[self.huggingface_models[0]])
+        finetuned_other_huggingface_model = f"{base_path}{self.huggingface_models[1]}/{self.dataset_name.replace('_bigbio_kb', '')}/final"
+        other_model: AutoModelForTokenClassification = AutoModelForTokenClassification\
+            .from_pretrained(finetuned_other_huggingface_model,
+                             local_files_only=True,
+                             num_labels=len(self.label2id)).to(CUDA_DEVICE)
+        self.other_pipeline = TokenClassificationPipeline(model=other_model, tokenizer=self.tokenizers[self.huggingface_models[1]])
 
     def load_tokenizers(self, models=[1, 2]):
         self.huggingface_models = [huggingface_models[i] for i in models]
@@ -226,9 +231,9 @@ class QualitativeVisualizer:
             entity = [e for e in self.entities[model][attribution_type]
                       if e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
             for prefix in ['', 'other_']:
-                if prefix == 'other_' and entity['other_entity'] == 'O':
-                    line += 1
-                    continue
+                # if prefix == 'other_' and entity['other_entity'] == 'O':
+                #     line += 1
+                #     continue
                 row = '\n'
                 if line % 2 == 0:
                     row += '\\midrule\n'
@@ -339,17 +344,29 @@ class QualitativeVisualizer:
         # )
         print(text)
 
-    def ensure_attr_scores_in_other_model(self, reference_token_idx, k_value):
+    def ensure_attr_scores_in_models(self, reference_token_idx, k_value):
         def write_rationale(entity):
             entity['rationales'] = {'top_k': {}, 'other_top_k': {}}
             for prefix in ['', 'other_']:
-                if prefix == 'other_' and entity['other_entity'] in [None, 'O']:
-                    continue
+                # if prefix == 'other_' and entity['other_entity'] in [None, 'O']:
+                #     continue
                 entity['rationales'][f'{prefix}top_k'][str(k_value)] = get_rationale(entity[f'{prefix}attribution_scores'], k_value)
 
         other_model = self.huggingface_models[1]
         other_doc = self.docs[other_model]
         for attr_type in self.attribution_types:
+            if self.entity['other_entity'] == 0:
+                print(f'get attributions for class 0 for entity ({attr_type})')
+                explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
+                token_class_index_tuples = [(reference_token_idx, 0)]
+                explainer(self.docs[0]['text'], token_class_index_tuples=token_class_index_tuples,
+                          internal_batch_size=BATCH_SIZE)
+                word_attributions = explainer.word_attributions
+                self.entity['other_entity'] = self.id2label[0]
+                self.entity['other_attribution_scores'] = word_attributions[self.id2label[0]][reference_token_idx]
+                write_rationale(self.entity)
+
+
             self.other_entity = [e for e in self.entities[other_model][attr_type] if
                                  e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == other_doc['document_id'] and e['index'] == reference_token_idx]
             if self.other_entity:
@@ -364,7 +381,7 @@ class QualitativeVisualizer:
                         print('possible error!', main_entity_labels, main_other_labels)
                     else:
                         print(f'get attributions for other entity ({attr_type})')
-                        explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
+                        explainer = TokenClassificationExplainer(self.other_pipeline.model, self.other_pipeline.tokenizer, attr_type)
                         token_class_index_tuples = [(reference_token_idx, labels_to_attribute[0])]
                         explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples,
                                   internal_batch_size=BATCH_SIZE)

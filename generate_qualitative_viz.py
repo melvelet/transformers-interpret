@@ -38,11 +38,11 @@ k_value = args.k_value
 viz = QualitativeVisualizer()
 viz.load_dataset(dataset=args.dataset_no)
 viz.load_tokenizers(models=huggingface_models)
-viz.load_other_pipeline(base_path='./trained_models/')
+viz.load_pipelines(base_path='./trained_models/')
 viz.load_entities(base_path='./results/scores/')
 viz.prepare(doc_id=doc_id, ref1_token_idx=mod1_ref_token_idx, ref2_token_idx=mod2_ref_token_idx)
 with torch.no_grad():
-    viz.ensure_attr_scores_in_other_model(mod2_ref_token_idx, k_value)
+    viz.ensure_attr_scores_in_models(mod2_ref_token_idx, k_value)
 for collapse_threshold in [0.05, 0.02, 0.1]:
     for model_i in [0, 1]:
         latex_tables = viz.print_table(model_i=model_i, k_value=k_value, collapse_threshold=collapse_threshold)
