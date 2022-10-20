@@ -214,8 +214,11 @@ class QualitativeVisualizer:
                       if e['doc_id'] == self.doc_id and e['index'] == ref_token_idx][0]
             for prefix in ['', 'other_']:
                 row = '\n'
-                if line > 0 and line % 2 == 0:
-                    row += '\\cmidrule{3-3}\n'
+                if line > 0:
+                    if line % 2 == 0:
+                        row += '\\midrule\n'
+                    else:
+                        row += '\\cmidrule{3-3}\n'
                 if not prefix:
                     row += f"{_get_cell(attribution_type.upper(), 2)} {_get_cell(entity[f'{prefix}entity'])}"
                 else:
