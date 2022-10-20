@@ -194,7 +194,7 @@ class QualitativeVisualizer:
 
     def print_table(self, k_value=5, collapse_threshold=0.05):
         def _get_cell(content):
-            return f"\\parbox[b]{{4mm}}{{\\multirow{{1}}{{*}}{{\\rotatebox[origin=t]{{90}}{{{content}}}}} &"
+            return f"\\parbox[b]{{4mm}}{{\\multirow{{1}}{{*}}{{\\rotatebox[origin=t]{{90}}{{{content}}}}}}} &"
 
         latex_tables = '''\\begin{table}
 \\centering
