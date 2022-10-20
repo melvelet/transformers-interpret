@@ -203,8 +203,9 @@ class QualitativeVisualizer:
 
         model = self.huggingface_models[model_i]
         model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
-        dataset_string = self.dataset_name.replace('_disease', '').replace('_bigio_kb', '').upper()
+        dataset_string = self.dataset_name.replace('_disease', '').replace('_bigbio_kb', '').upper()
         latex_tables = '''\\begin{table}
+\\small
 \\centering
 '''
         latex_tables += f"\\caption{{\\label{{tab:6_example_1}}{model_string} attributions for Example x (dataset {dataset_string})}}\n"
@@ -224,10 +225,11 @@ class QualitativeVisualizer:
                     row += '\\midrule\n'
                 elif line > 0:
                     row += '\\cmidrule{3-3}\n'
+                class_name = CLASS_NAMES[entity[f'{prefix}entity']]
                 if not prefix:
-                    row += f"{_get_cell(attribution_type.upper(), 2)} {_get_cell(CLASS_NAMES[entity[f'{prefix}entity']])}"
+                    row += f"{_get_cell(attribution_type.upper(), 2)} {_get_cell(class_name)}"
                 else:
-                    row += f"& {_get_cell(entity[f'{prefix}entity'])}"
+                    row += f"& {_get_cell(class_name)}"
                 text = generate_latex_text(
                     entity[f'{prefix}attribution_scores'],
                     tokens,
