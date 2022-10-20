@@ -208,11 +208,12 @@ class QualitativeVisualizer:
         model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
         dataset_string = self.dataset_name.replace('_disease', '').replace('_bigbio_kb', '').upper()
         entity_eval = self.entity['eval'] if model_i == 0 else self.other_entity['eval']
+        true_class = self.id2label[self.entity['gold_label']]
         latex_tables = '''\\begin{table}
 \\small
 \\centering
 '''
-        latex_tables += f"\\caption{{\\label{{tab:6_example_1}}{model_string} attributions for Example x (dataset {dataset_string}, {entity_eval})}}\n"
+        latex_tables += f"\\caption{{\\label{{tab:6_example_1}}{model_string} attributions for example x (dataset {dataset_string}, {entity_eval}, true class: {true_class})}}\n"
         latex_tables += '''\\toprule
 \\begin{tabularx}{\\linewidth}{cc|X@{}}
 \\textbf{Attr} & \\textbf{Class} & \\textbf{Text} \\\\'''
