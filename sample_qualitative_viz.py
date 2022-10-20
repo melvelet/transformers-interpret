@@ -219,7 +219,7 @@ class QualitativeVisualizer:
                 if not prefix:
                     row += f"{_get_cell(attribution_type.upper(), 2)} {_get_cell(entity[f'{prefix}entity'])}"
                 else:
-                    row += f"& & {_get_cell(entity[f'{prefix}entity'])}"
+                    row += f"& {_get_cell(entity[f'{prefix}entity'])}"
                 text = generate_latex_text(
                     entity[f'{prefix}attribution_scores'],
                     tokens,
