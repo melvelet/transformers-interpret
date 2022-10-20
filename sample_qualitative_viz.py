@@ -356,23 +356,25 @@ class QualitativeVisualizer:
                 #     continue
                 entity['rationales'][f'{prefix}top_k'][str(k_value)] = get_rationale(entity[f'{prefix}attribution_scores'], k_value)
 
-        model = self.huggingface_models[1]
+        model = self.huggingface_models[0]
         other_model = self.huggingface_models[1]
         doc = self.docs[model]
         other_doc = self.docs[other_model]
         for attr_type in self.attribution_types:
-            self.entity = [e for e in self.entities[model][attr_type] if
+            entity = [e for e in self.entities[model][attr_type] if
                       e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == doc['document_id'] and e['index'] == reference_token_idx][0]
-            if self.entity['other_entity'] in [0, 'O', None]:
+            if entity['other_entity'] in [0, 'O', None]:
                 print(f'get attributions for class 0 for entity ({attr_type})')
                 explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
                 token_class_index_tuples = [(reference_token_idx, 0)]
                 explainer(doc['text'], token_class_index_tuples=token_class_index_tuples,
                           internal_batch_size=BATCH_SIZE)
                 word_attributions = explainer.word_attributions
-                self.entity['other_entity'] = self.id2label[0]
-                self.entity['other_attribution_scores'] = word_attributions[self.id2label[0]][reference_token_idx]
-                write_rationale(self.entity)
+                entity['other_entity'] = self.id2label[0]
+                entity['other_attribution_scores'] = word_attributions[self.id2label[0]][reference_token_idx]
+                write_rationale(entity)
+                idx = self.entities[model][attr_type].index(entity)
+                self.entities[model][attr_type][idx] = entity
 
 
             self.other_entity = [e for e in self.entities[other_model][attr_type] if
@@ -397,6 +399,8 @@ class QualitativeVisualizer:
                         self.other_entity['other_entity'] = self.id2label[labels_to_attribute[0]]
                         self.other_entity['other_attribution_scores'] = word_attributions[self.id2label[labels_to_attribute[0]]][reference_token_idx]
                         write_rationale(self.other_entity)
+                        idx = self.entities[other_model][attr_type].index(self.other_entity)
+                        self.entities[other_model][attr_type][idx] = self.other_entity
 
             else:
                 print(f'get attributions {attr_type}')
