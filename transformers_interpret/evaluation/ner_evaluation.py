@@ -738,7 +738,7 @@ class NERDatasetEvaluator:
                     if len(first_entity['attribution_scores']) != len(document['input_ids']):
                         print('truncate', len(first_entity['attribution_scores']), 'to', len(document['input_ids']))
                         doc_attributions['entities'] = list(
-                            filter(lambda x: x['index'] <= len(document['input_ids']) - 1,
+                            filter(lambda x: x['index'] < len(document['input_ids']) - 1,
                                    doc_attributions['entities']))
                         for e in doc_attributions['entities']:
                             e['attribution_scores'] = e['attribution_scores'][:len(document['input_ids']) - 1]
