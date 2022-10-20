@@ -197,15 +197,15 @@ class QualitativeVisualizer:
             return f"\\parbox[b]{{4mm}}{{\\multirow{{1}}{{*}}{{\\rotatebox[origin=t]{{90}}{{{content}}}}}}} &"
 
         model = self.huggingface_models[model_i]
+        model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
         latex_tables = '''\\begin{table}
-\\centering
-\\caption{\\label{tab:6_example_1}Example text}
-\\toprule
+\\centering'''
+        latex_tables += f"\\caption{{\\label{{tab:6_example_1}}{model_string} of Example x (dataset {self.dataset_name})}}"
+        latex_tables += '''\\toprule
 \\begin{tabularx}{\\linewidth}{cc|X@{}}
 \\textbf{Attr} & \\textbf{Class} & \\textbf{Text} \\\\
 \\midrule'''
         line = 0
-        # model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
         ref_token_idx = self.ref1_token_idx if model_i == 0 else self.ref2_token_idx
         tokens = self.tokenizers[model].batch_decode(self.docs[model]['input_ids'])
         for attribution_type in self.attribution_types:
