@@ -383,7 +383,6 @@ class NERSentenceEvaluator:
 
     def write_rationales(self, k: int, continuous: bool = False, bottom_k: bool = False, exclude_reference_token: bool = False):
         for e in self.entities:
-            print(e)
             exclude_reference_token_idx = e['index'] if exclude_reference_token else None
             for prefix in self.prefixes:
                 if prefix == 'other_' and e['other_entity'] in [None, 'O']:
@@ -735,6 +734,7 @@ class NERDatasetEvaluator:
                             assert entity_word == doc_word, f"{entity_word} ({len(entity_word)}) != {doc_word} ({len(doc_word)})"
                         else:
                             first_entity_no_word += 1
+                    print(len(document['input_ids']), len(first_entity['attribution_scores']))
                     if len(first_entity['attribution_scores']) != len(document['input_ids']):
                         print('truncate', len(first_entity['attribution_scores']), 'to', len(document['input_ids']))
                         doc_attributions['entities'] = list(
