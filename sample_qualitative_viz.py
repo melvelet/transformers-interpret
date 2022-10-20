@@ -224,7 +224,7 @@ class QualitativeVisualizer:
                         rationale_1=entity['rationales']['top_k'][str(k_value)],
                         collapse_threshold=collapse_threshold,
                     )
-                    latex_tables += f"{row} {text} \\\\\n\\midrule\\n"
+                    latex_tables += f"{row} {text} \\\\\n\\cmidrule{{4-4}}\n"
         latex_tables += '''\\bottomrule
 \\end{tabularx}
 \\end{table}
