@@ -361,6 +361,8 @@ class QualitativeVisualizer:
         doc = self.docs[model]
         other_doc = self.docs[other_model]
         for attr_type in self.attribution_types:
+            self.entity = [e for e in self.entities[model][attr_type] if
+                      e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == doc['document_id'] and e['index'] == reference_token_idx][0]
             if self.entity['other_entity'] in [0, 'O', None]:
                 print(f'get attributions for class 0 for entity ({attr_type})')
                 explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
@@ -369,8 +371,6 @@ class QualitativeVisualizer:
                           internal_batch_size=BATCH_SIZE)
                 word_attributions = explainer.word_attributions
                 self.entity['other_entity'] = self.id2label[0]
-                test = [i for i in word_attributions]
-                print(test)
                 self.entity['other_attribution_scores'] = word_attributions[self.id2label[0]][reference_token_idx]
                 write_rationale(self.entity)
 
