@@ -180,6 +180,12 @@ class QualitativeVisualizer:
                     self.entities[model][attribution_type] = entities
 
     def prepare(self, doc_id, ref1_token_idx, ref2_token_idx):
+        def _compare(e):
+            if 'doc_doc_id' in e:
+                return e['doc_doc_id'] == str(doc_id) and e['index'] == ref1_token_idx
+            else:
+                return e['doc_id'] == str(doc_id) and e['index'] == ref1_token_idx
+
         self.doc_id = doc_id
         self.ref1_token_idx = ref1_token_idx
         self.ref2_token_idx = ref2_token_idx
@@ -266,7 +272,7 @@ class QualitativeVisualizer:
                 chosen_entities.append(self.entities[self.huggingface_models[0]][attribution_types[0]][i])
             self.entity = chosen_entities[0]
 
-        # print(self.entity)
+        print(self.entity['eval'], 'pred', self.id2label[self.entity['pred_label']], 'gold', self.id2label[self.entity['gold_label']])
         doc_id = self.entity['doc_doc_id']
         idx = self.entity['index']
         # doc_ids = [doc['document_id'] for doc in self.dataset][0:100]
