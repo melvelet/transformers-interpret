@@ -88,6 +88,17 @@ eval-gradcam-rob:
 	python run_pipeline.py -a 3 -m 2 -d 6 --exclude ${EXCLUDE}
 	python run_pipeline.py -a 3 -m 2 -d 6 -ent 1 --exclude ${EXCLUDE}
 
+eval-ele-rest:
+	python run_pipeline.py -a 0 -m 1 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 1 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 1 -d 4 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 0 -m 1 -d 6 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 1 -d 6 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 1 -d 6 -ent 1 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 0 -m 1 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 1 -m 1 -d 6 --exclude ${EXCLUDE}
+	python run_pipeline.py -a 3 -m 1 -d 6 --exclude ${EXCLUDE}
+
 train-all: train-disease train-drug cleanup
 
 train-disease:
