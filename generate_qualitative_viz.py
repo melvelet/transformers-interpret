@@ -44,7 +44,7 @@ viz.prepare(doc_id=doc_id, ref1_token_idx=mod1_ref_token_idx, ref2_token_idx=mod
 with torch.no_grad():
     viz.ensure_attr_scores_in_other_model(mod2_ref_token_idx, k_value)
 for collapse_threshold in [0.05, 0.02, 0.1]:
-    for model_i in [1, 2]:
+    for model_i in [0, 1]:
         latex_tables = viz.print_table(model_i=model_i, k_value=k_value, collapse_threshold=collapse_threshold)
-        with open(f"results/viz/example_{'bioelectra' if model_i == 1 else 'roberta'}_{dataset_names[args.dataset_no]}_doc={doc_id}_ref1={mod1_ref_token_idx}_ref2={mod2_ref_token_idx}_k={k_value}_col={collapse_threshold}.txt", 'w+') as f:
+        with open(f"results/viz/example_{'bioelectra' if model_i == 0 else 'roberta'}_{dataset_names[args.dataset_no]}_doc={doc_id}_ref1={mod1_ref_token_idx}_ref2={mod2_ref_token_idx}_k={k_value}_col={collapse_threshold}.txt", 'w+') as f:
             f.write(latex_tables)
