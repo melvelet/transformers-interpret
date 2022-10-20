@@ -196,8 +196,7 @@ class QualitativeVisualizer:
         def _get_cell(content):
             return f"\\parbox[b]{{4mm}}{{\\multirow{{1}}{{*}}{{\\rotatebox[origin=t]{{90}}{{{content}}}}} &"
 
-        latex_tables = '''
-\\begin{table}
+        latex_tables = '''\\begin{table}
 \\centering
 \\caption{\\label{tab:6_example_1}Example text}
 \\toprule
@@ -222,10 +221,9 @@ class QualitativeVisualizer:
                         collapse_threshold=collapse_threshold,
                     )
                     latex_tables += f"{row} {text} \\\\\n"
-        latex_tables += '''
-\bottomrule
-\end{tabularx}
-\end{table}
+        latex_tables += '''\\bottomrule
+\\end{tabularx}
+\\end{table}
 '''
         return latex_tables
 
