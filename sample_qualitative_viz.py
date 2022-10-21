@@ -383,7 +383,7 @@ class QualitativeVisualizer:
         # )
         print(text)
 
-    def ensure_attr_scores_in_models(self, reference_token_idx, k_value):
+    def ensure_attr_scores_in_models(self, k_value):
         def write_rationale(entity):
             entity['rationales'] = {'top_k': {}, 'other_top_k': {}}
             for prefix in ['', 'other_']:
@@ -399,23 +399,23 @@ class QualitativeVisualizer:
         for attr_type in self.attribution_types:
             entity = [e for e in self.entities[model][attr_type] if
                       (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] in [doc['document_id'], doc['id']]
-                       or e['doc_id'] in [doc['document_id'], doc['id']]) and e['index'] == reference_token_idx][0]
+                       or e['doc_id'] in [doc['document_id'], doc['id']]) and e['index'] == self.ref1_token_idx][0]
             if entity['other_entity'] in [0, 'O', None]:
                 print(f'get attributions for class 0 for entity ({attr_type})')
                 explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
-                token_class_index_tuples = [(reference_token_idx, 0)]
+                token_class_index_tuples = [(self.ref1_token_idx, 0)]
                 explainer(doc['text'], token_class_index_tuples=token_class_index_tuples,
                           internal_batch_size=BATCH_SIZE)
                 word_attributions = explainer.word_attributions
                 entity['other_entity'] = self.id2label[0]
-                entity['other_attribution_scores'] = word_attributions[self.id2label[0]][reference_token_idx]
+                entity['other_attribution_scores'] = word_attributions[self.id2label[0]][self.ref1_token_idx]
                 write_rationale(entity)
                 idx = self.entities[model][attr_type].index(entity)
                 self.entities[model][attr_type][idx] = entity
 
             self.other_entity = [e for e in self.entities[other_model][attr_type] if
                                  (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] in [other_doc['document_id'], other_doc['id']]
-                                  or e['doc_id'] in [other_doc['document_id'], other_doc['id']]) and e['index'] == reference_token_idx]
+                                  or e['doc_id'] in [other_doc['document_id'], other_doc['id']]) and e['index'] == self.ref2_token_idx]
             if self.other_entity:
                 self.other_entity = self.other_entity[0]
                 print('Entity existed already:', self.other_entity['eval'], self.other_entity['other_entity'])
@@ -429,31 +429,31 @@ class QualitativeVisualizer:
                     else:
                         print(f'get attributions for other entity ({attr_type})')
                         explainer = TokenClassificationExplainer(self.other_pipeline.model, self.other_pipeline.tokenizer, attr_type)
-                        token_class_index_tuples = [(reference_token_idx, labels_to_attribute[0])]
+                        token_class_index_tuples = [(self.ref2_token_idx, labels_to_attribute[0])]
                         explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples,
                                   internal_batch_size=BATCH_SIZE)
                         word_attributions = explainer.word_attributions
                         self.other_entity['other_entity'] = self.id2label[labels_to_attribute[0]]
-                        self.other_entity['other_attribution_scores'] = word_attributions[self.id2label[labels_to_attribute[0]]][reference_token_idx]
+                        self.other_entity['other_attribution_scores'] = word_attributions[self.id2label[labels_to_attribute[0]]][self.ref2_token_idx]
                         write_rationale(self.other_entity)
                         idx = self.entities[other_model][attr_type].index(self.other_entity)
                         self.entities[other_model][attr_type][idx] = self.other_entity
 
             else:
                 print(f'get attributions {attr_type}')
-                token_class_index_tuples = [(reference_token_idx, self.entity['gold_label']), (reference_token_idx, self.entity['pred_label'])]
+                token_class_index_tuples = [(self.ref2_token_idx, self.entity['gold_label']), (self.ref2_token_idx, self.entity['pred_label'])]
                 explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
                 explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples,
                           internal_batch_size=BATCH_SIZE)
                 word_attributions = explainer.word_attributions
                 self.other_entity = {
                     'eval': 'TN',
-                    'index': reference_token_idx,
+                    'index': self.ref2_token_idx,
                     'doc_doc_id': other_doc['document_id'],
                     'entity': self.id2label[self.entity['gold_label']],
-                    'attribution_scores': word_attributions[self.id2label[self.entity['gold_label']]][reference_token_idx],
+                    'attribution_scores': word_attributions[self.id2label[self.entity['gold_label']]][self.ref2_token_idx],
                     'other_entity': self.id2label[self.entity['pred_label']],
-                    'other_attribution_scores': word_attributions[self.id2label[self.entity['pred_label']]][reference_token_idx],
+                    'other_attribution_scores': word_attributions[self.id2label[self.entity['pred_label']]][self.ref2_token_idx],
                 }
                 write_rationale(self.other_entity)
                 self.entities[other_model][attr_type].append(self.other_entity)
