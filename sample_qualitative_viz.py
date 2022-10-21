@@ -279,33 +279,35 @@ class QualitativeVisualizer:
         return latex_tables
 
     def pick_entities(self, eval_=None, doc_id=None, n_value=1, k_values=[5, 10], allow_zero=False, ref1_token_idx=None):
+        filtered_entities = None
+        attribution_type = self.attribution_types[0]
         if eval_:
-            for attribution_type in self.attribution_types:
-                test = [i for i in self.entities[self.huggingface_models[0]]]
-                print(test)
-                if not ref1_token_idx:
+            test = [i for i in self.entities[self.huggingface_models[0]]]
+            print(test)
+            if not ref1_token_idx:
+                filtered_entities = list(
+                    filter(lambda x: x['eval'] == eval_ and x['entity'].startswith('B'),
+                           self.entities[self.huggingface_models[0]][attribution_type]))
+                if not allow_zero:
                     filtered_entities = list(
-                        filter(lambda x: x['eval'] == eval_ and x['entity'].startswith('B'),
-                               self.entities[self.huggingface_models[0]][attribution_type]))
-                    if not allow_zero:
-                        filtered_entities = list(
-                            filter(lambda x: x['gold_label'] != 0 and x['pred_label'] != 0,
-                                   filtered_entities))
-                else:
-                    filtered_entities = list(
-                        filter(lambda x: (x['doc_id'] == str(doc_id) or x['doc_doc_id' if 'doc_doc_id' in x else 'doc_id'] == str(doc_id))
-                                         and x['index'] == ref1_token_idx,
-                               self.entities[self.huggingface_models[0]][attribution_type]))
-                self.entities[self.huggingface_models[0]][attribution_type] = filtered_entities
-
-        if doc_id and not ref1_token_idx:
-            self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]] if (e['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id'] == str(doc_id)) or e['doc_id'] == str(doc_id)][0]
+                        filter(lambda x: x['gold_label'] != 0 and x['pred_label'] != 0,
+                               filtered_entities))
+            else:
+                filtered_entities = list(
+                    filter(lambda x: (x['doc_id'] == str(doc_id) or x['doc_doc_id' if 'doc_doc_id' in x else 'doc_id'] == str(doc_id))
+                                     and x['index'] == ref1_token_idx,
+                           self.entities[self.huggingface_models[0]][attribution_type]))
+            self.entities[self.huggingface_models[0]][attribution_type] = filtered_entities
         else:
-            indices = [i for i in range(len(self.entities[self.huggingface_models[0]][attribution_types[0]]))]
+            filtered_entities = self.entities[self.huggingface_models[0]][attribution_type]
+        if doc_id and not ref1_token_idx:
+            self.entity = [e for e in filtered_entities if (e['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id'] == str(doc_id)) or e['doc_id'] == str(doc_id)][0]
+        else:
+            indices = [i for i in range(len(self.entities[self.huggingface_models[0]][attribution_type]))]
             chosen_entities = []
             for n in range(n_value):
                 i = indices.pop(random.choice(indices))
-                chosen_entities.append(self.entities[self.huggingface_models[0]][attribution_types[0]][i])
+                chosen_entities.append(self.entities[self.huggingface_models[0]][attribution_type][i])
             self.entity = chosen_entities[0]
 
         print(self.entity['eval'], ', pred:', self.id2label[self.entity['pred_label']], ', gold:', self.id2label[self.entity['gold_label']])
@@ -346,10 +348,11 @@ class QualitativeVisualizer:
         return idx, tokens[idx], doc_id, doc_id2
 
     def find_in_other_model(self, model_1_token, reference_token_idx=-1):
+        model_1_token = model_1_token.replace('##', '')
         other_model = self.huggingface_models[1]
         other_doc = self.docs[other_model]
-        # tokens_other_model = self.tokenizers[other_model].batch_decode(other_doc['input_ids'])
-        tokens_other_model = self.tokenizers[other_model].convert_ids_to_tokens(self.docs[other_model]['input_ids'])
+        tokens_other_model = self.tokenizers[other_model].batch_decode(other_doc['input_ids'])
+        # tokens_other_model = self.tokenizers[other_model].convert_ids_to_tokens(self.docs[other_model]['input_ids'])
         self.other_entity = [e for e in self.entities[other_model][self.attribution_types[0]] if
                              e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == other_doc['document_id'] and e['index'] == reference_token_idx]
         if self.other_entity:
