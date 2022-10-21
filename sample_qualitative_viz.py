@@ -424,20 +424,20 @@ class QualitativeVisualizer:
                     main_entity_labels = [self.entity['gold_label'], self.entity['pred_label']]
                     main_other_labels = [self.other_entity['gold_label'], self.other_entity['pred_label']]
                     labels_to_attribute = [label for label in main_entity_labels if label not in main_other_labels or label == 0]
-                    if len(labels_to_attribute) == 0 or len(labels_to_attribute) > 1:
-                        print('possible error!', main_entity_labels, main_other_labels)
-                    else:
-                        print(f'get attributions for other entity ({attr_type})')
-                        explainer = TokenClassificationExplainer(self.other_pipeline.model, self.other_pipeline.tokenizer, attr_type)
-                        token_class_index_tuples = [(self.ref2_token_idx, labels_to_attribute[0])]
-                        explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples,
-                                  internal_batch_size=BATCH_SIZE)
-                        word_attributions = explainer.word_attributions
-                        self.other_entity['other_entity'] = self.id2label[labels_to_attribute[0]]
-                        self.other_entity['other_attribution_scores'] = word_attributions[self.id2label[labels_to_attribute[0]]][self.ref2_token_idx]
-                        write_rationale(self.other_entity)
-                        idx = self.entities[other_model][attr_type].index(self.other_entity)
-                        self.entities[other_model][attr_type][idx] = self.other_entity
+                    # if len(labels_to_attribute) == 0 or len(labels_to_attribute) > 1:
+                    #     print('possible error!', main_entity_labels, main_other_labels)
+                    # else:
+                    print(f'get attributions for other entity ({attr_type})')
+                    explainer = TokenClassificationExplainer(self.other_pipeline.model, self.other_pipeline.tokenizer, attr_type)
+                    token_class_index_tuples = [(self.ref2_token_idx, labels_to_attribute[0])]
+                    explainer(other_doc['text'], token_class_index_tuples=token_class_index_tuples,
+                              internal_batch_size=BATCH_SIZE)
+                    word_attributions = explainer.word_attributions
+                    self.other_entity['other_entity'] = self.id2label[labels_to_attribute[0]]
+                    self.other_entity['other_attribution_scores'] = word_attributions[self.id2label[labels_to_attribute[0]]][self.ref2_token_idx]
+                    write_rationale(self.other_entity)
+                    idx = self.entities[other_model][attr_type].index(self.other_entity)
+                    self.entities[other_model][attr_type][idx] = self.other_entity
 
             else:
                 print(f'get attributions {attr_type}')
