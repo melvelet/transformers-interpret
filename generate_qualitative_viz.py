@@ -14,7 +14,7 @@ dataset_names = [
 ]
 
 parser = ArgumentParser()
-parser.add_argument("-m", "--model", dest="model_no", type=int)
+parser.add_argument("-m", "--model", dest="model_no", type=int, default=1)
 parser.add_argument("-d", "--dataset", dest="dataset_no", type=int)
 parser.add_argument("-a", "--attribution-types", dest="attributions", type=int, default=0)
 # parser.add_argument("-max", "--max-documents", dest="max_documents", type=int, default=0)
