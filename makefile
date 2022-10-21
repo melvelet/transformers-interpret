@@ -100,9 +100,9 @@ eval-ele-rest:
 	python run_pipeline.py -a 3 -m 1 -d 6 --exclude ${EXCLUDE}
 
 eval-rob-rest:
-	python run_pipeline.py -a 1 -m 2 -d 6 -ent 1 --exclude false
+	python run_pipeline.py -a 1 -m 2 -d 6 -ent 1
 	python run_pipeline.py -a 1 -m 2 -d 6 -ent 1 --exclude true
-	python run_pipeline.py -a 1 -m 2 -d 6 -ent 0 --exclude false
+	python run_pipeline.py -a 1 -m 2 -d 6 -ent 0
 	python run_pipeline.py -a 1 -m 2 -d 6 -ent 0 --exclude true
 
 train-all: train-disease train-drug cleanup
