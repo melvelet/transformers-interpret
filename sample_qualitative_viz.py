@@ -81,6 +81,10 @@ def generate_latex_text(attributions,
         for i, tok in enumerate(tokens):
             if tok.startswith('Ġ'):
                 tokens[i] = tok.replace('Ġ', '')
+            elif tok == 'Ċ':
+                tokens[i] = '\n'
+            elif tok in [',', ':', '.', '-']:
+                continue
             else:
                 tokens[i] = f"##{tok}"
     # print(reference_token_idx, rationale_1)
