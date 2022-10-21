@@ -394,6 +394,7 @@ class QualitativeVisualizer:
         model = self.huggingface_models[0]
         other_model = self.huggingface_models[1]
         doc = self.docs[model]
+        print(type(doc['document_id']), type(doc['id']))
         other_doc = self.docs[other_model]
         for attr_type in self.attribution_types:
             entity = [e for e in self.entities[model][attr_type] if
