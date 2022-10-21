@@ -65,6 +65,7 @@ def generate_latex_text(attributions,
                         rationale_2=None,
                         collapse_threshold=.05,
                         collapse_margin=15,
+                        is_roberta=False,
                         ):
     if rationale_1 is None:
         rationale_1 = []
@@ -75,7 +76,13 @@ def generate_latex_text(attributions,
     # print(len(attributions), len(tokens))
 
     # Pre_processing
-    tokens = [t.replace('%', '\\%').replace('-', '--').replace('Ġ', '##') for t in tokens]
+    tokens = [t.replace('%', '\\%').replace('-', '--') for t in tokens]
+    if is_roberta:
+        for i, tok in enumerate(tokens):
+            if tok.startswith('Ġ'):
+                tokens[i] = tok.replace('Ġ', '')
+            else:
+                tokens[i] = f"##{tok}"
     # print(reference_token_idx, rationale_1)
     for idx in rationale_1:
         tokens[idx] = f"\\textit{{{tokens[idx]}}}"
@@ -252,6 +259,7 @@ class QualitativeVisualizer:
                     reference_token_idx=entity['index'],
                     rationale_1=entity['rationales'][f'{prefix}top_k'][str(k_value)],
                     collapse_threshold=collapse_threshold,
+                    is_roberta=model == 'roberta',
                 )
                 latex_tables += f"{row} {text} \\\\"
                 line += 1
