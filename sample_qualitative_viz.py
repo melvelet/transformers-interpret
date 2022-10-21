@@ -212,7 +212,7 @@ class QualitativeVisualizer:
         assert self.entity is not None
         # self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]]
         #                if e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == str(doc_id) and e['index'] == ref1_token_idx][0]
-        doc = [doc for doc in self.dataset if doc['document_id'] == doc_id][0]
+        doc = [doc for doc in self.dataset if doc_id in [doc['document_id'], doc['id']]][0]
         self.docs = {
             'bioelectra-discriminator': self.pre_processors['bioelectra-discriminator'](doc),
             'roberta': self.pre_processors['roberta'](doc)
