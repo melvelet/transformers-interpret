@@ -83,7 +83,7 @@ def generate_latex_text(attributions,
                 tokens[i] = tok.replace('Ġ', '')
             elif tok == 'Ċ':
                 tokens[i] = '\n'
-            elif tok in [',', ':', '.', '-', '(', ')']:
+            elif tok in [',', ':', '.', '-', '(', ')', '<s>', '</s>']:
                 continue
             else:
                 tokens[i] = f"##{tok}"
@@ -224,14 +224,16 @@ class QualitativeVisualizer:
 
         model = self.huggingface_models[model_i]
         model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
+        first_model_string = 'BioElectra' if self.huggingface_models[0].startswith('bioele') else 'RoBERTa'
         dataset_string = self.dataset_name.replace('_disease', '').replace('_bigbio_kb', '').upper()
         entity_eval = self.entity['eval'] if model_i == 0 else self.other_entity['eval']
-        true_class = self.id2label[self.entity['gold_label']]
+        true_class = self.id2label[self.entity['gold_label']] if model_i == 0 else self.id2label[self.other_entity['gold_label']]
+        pred_class = self.id2label[self.entity['pred_label']] if model_i == 0 else self.id2label[self.other_entity['pred_label']]
         latex_tables = '''\\begin{table}
 \\smaller
 \\centering
 '''
-        latex_tables += f"\\caption{{\\label{{tab:6_example_1}}{model_string} attributions for example x (dataset {dataset_string}, {entity_eval}, true class: {true_class})}}\n"
+        latex_tables += f"\\caption{{\\label{{tab:6_example_1}}{model_string} attributions for example x (dataset {dataset_string}, {entity_eval} in {first_model_string}, true class: {true_class}, predicted class: {pred_class})}}\n"
         latex_tables += '''\\toprule
 \\begin{tabularx}{\\linewidth}{cc|X@{}}
 \\textbf{Attr} & \\textbf{Class} & \\textbf{Text} \\\\'''
@@ -273,22 +275,28 @@ class QualitativeVisualizer:
 \\end{table}'''
         return latex_tables
 
-    def pick_entities(self, eval_=None, doc_id=None, n_value=1, k_values=[5, 10], allow_zero=False):
+    def pick_entities(self, eval_=None, doc_id=None, n_value=1, k_values=[5, 10], allow_zero=False, ref1_token_idx=None):
         if eval_:
             for attribution_type in self.attribution_types:
                 test = [i for i in self.entities[self.huggingface_models[0]]]
                 print(test)
-                filtered_entities = list(
-                    filter(lambda x: x['eval'] == eval_ and x['entity'].startswith('B'),
-                           self.entities[self.huggingface_models[0]][attribution_type]))
-                if not allow_zero:
+                if not ref1_token_idx:
                     filtered_entities = list(
-                        filter(lambda x: x['gold_label'] != 0 and x['pred_label'] != 0,
-                               filtered_entities))
+                        filter(lambda x: x['eval'] == eval_ and x['entity'].startswith('B'),
+                               self.entities[self.huggingface_models[0]][attribution_type]))
+                    if not allow_zero:
+                        filtered_entities = list(
+                            filter(lambda x: x['gold_label'] != 0 and x['pred_label'] != 0,
+                                   filtered_entities))
+                else:
+                    filtered_entities = list(
+                        filter(lambda x: (x['doc_id'] == str(doc_id) or x['doc_doc_id' if 'doc_doc_id' in x else 'doc_id'] == str(doc_id))
+                                         and x['index'] == ref1_token_idx,
+                               self.entities[self.huggingface_models[0]][attribution_type]))
                 self.entities[self.huggingface_models[0]][attribution_type] = filtered_entities
 
-        if doc_id:
-            self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]] if e['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id'] == str(doc_id)][0]
+        if doc_id and not ref1_token_idx:
+            self.entity = [e for e in self.entities[self.huggingface_models[0]][attribution_types[0]] if (e['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id'] == str(doc_id)) or e['doc_id'] == str(doc_id)][0]
         else:
             indices = [i for i in range(len(self.entities[self.huggingface_models[0]][attribution_types[0]]))]
             chosen_entities = []
@@ -297,7 +305,7 @@ class QualitativeVisualizer:
                 chosen_entities.append(self.entities[self.huggingface_models[0]][attribution_types[0]][i])
             self.entity = chosen_entities[0]
 
-        print(self.entity['eval'], 'pred', self.id2label[self.entity['pred_label']], 'gold', self.id2label[self.entity['gold_label']])
+        print(self.entity['eval'], ', pred:', self.id2label[self.entity['pred_label']], ', gold:', self.id2label[self.entity['gold_label']])
         doc_id = self.entity['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id']
         doc_id2 = self.entity['doc_id']
         idx = self.entity['index']
@@ -342,7 +350,7 @@ class QualitativeVisualizer:
         self.other_entity = [e for e in self.entities[other_model][self.attribution_types[0]] if
                              e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == other_doc['document_id'] and e['index'] == reference_token_idx]
         if self.other_entity:
-            print(f"Other entity exists: {self.other_entity[0]['eval']}")
+            print(f"Other entity exists: {self.other_entity[0]['eval']}, pred: {self.id2label[self.other_entity[0]['pred_label']]}, gold: {self.id2label[self.other_entity[0]['gold_label']]}")
         potential_tokens = []
         for i, tok in enumerate(tokens_other_model):
             if model_1_token.lower() in tok.lower() or tok.lower() in model_1_token.lower():
