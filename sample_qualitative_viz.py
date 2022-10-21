@@ -200,9 +200,9 @@ class QualitativeVisualizer:
         self.ref1_token_idx = ref1_token_idx
         self.ref2_token_idx = ref2_token_idx
         self.entity = None
-        print(doc_id)
         for e in self.entities[self.huggingface_models[0]][attribution_types[0]]:
-            print(e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == str(doc_id), 'doc_doc_id' in e, e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'], str(doc_id), e['index'] == ref1_token_idx, e['index'], ref1_token_idx)
+            if e['index'] == ref1_token_idx:
+                print(e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == str(doc_id), 'doc_doc_id' in e, e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'], str(doc_id), e['index'] == ref1_token_idx, e['index'], ref1_token_idx)
             if e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == str(doc_id) and e['index'] == ref1_token_idx:
                 self.entity = e
         assert self.entity is not None
