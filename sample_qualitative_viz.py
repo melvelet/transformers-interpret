@@ -397,7 +397,8 @@ class QualitativeVisualizer:
         other_doc = self.docs[other_model]
         for attr_type in self.attribution_types:
             entity = [e for e in self.entities[model][attr_type] if
-                      (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == doc['document_id'] or e['doc_id'] == doc['id']) and e['index'] == reference_token_idx][0]
+                      (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] in [doc['document_id'], doc['id']]
+                       or e['doc_id'] in [doc['document_id'], doc['id']]) and e['index'] == reference_token_idx][0]
             if entity['other_entity'] in [0, 'O', None]:
                 print(f'get attributions for class 0 for entity ({attr_type})')
                 explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
@@ -412,7 +413,8 @@ class QualitativeVisualizer:
                 self.entities[model][attr_type][idx] = entity
 
             self.other_entity = [e for e in self.entities[other_model][attr_type] if
-                                 e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == other_doc['document_id'] and e['index'] == reference_token_idx]
+                                 (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] in [other_doc['document_id'], other_doc['id']]
+                                  or e['doc_id'] in [other_doc['document_id'], other_doc['id']]) and e['index'] == reference_token_idx]
             if self.other_entity:
                 self.other_entity = self.other_entity[0]
                 print('Entity existed already:', self.other_entity['eval'], self.other_entity['other_entity'])
