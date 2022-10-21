@@ -53,7 +53,9 @@ CLASS_NAMES = {
     'B-CompositeMention': 'Composite',
     'B-SpecificDisease': 'Disease',
     'B-Disease': 'Disease',
+    'I-Disease': 'Disease',
     'B-Chemical': 'Chemical',
+    'I-Chemical': 'Chemical',
     'O': 'O',
 }
 
