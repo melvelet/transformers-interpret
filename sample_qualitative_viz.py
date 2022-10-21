@@ -202,7 +202,7 @@ class QualitativeVisualizer:
         self.entity = None
         for e in self.entities[self.huggingface_models[0]][attribution_types[0]]:
             if e['index'] == ref1_token_idx:
-                print(e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == str(doc_id), 'doc_doc_id' in e, e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'], e['doc_id'], str(doc_id), e['index'] == ref1_token_idx, e['index'], ref1_token_idx)
+                # print(e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == str(doc_id), 'doc_doc_id' in e, e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'], e['doc_id'], str(doc_id), e['index'] == ref1_token_idx, e['index'], ref1_token_idx)
                 if ('doc_doc_id' in e and e['doc_doc_id'] == str(doc_id)) or e['doc_id'] == str(doc_id):
                     self.entity = e
         assert self.entity is not None
@@ -295,6 +295,7 @@ class QualitativeVisualizer:
 
         print(self.entity['eval'], 'pred', self.id2label[self.entity['pred_label']], 'gold', self.id2label[self.entity['gold_label']])
         doc_id = self.entity['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id']
+        doc_id2 = self.entity['doc_id']
         idx = self.entity['index']
         # doc_ids = [doc['document_id'] for doc in self.dataset][0:100]
         # print(doc_id, doc_ids)
@@ -327,7 +328,7 @@ class QualitativeVisualizer:
 
         # latex_texts += f"{text}\n\n"
         print(text)
-        return idx, tokens[idx], doc_id
+        return idx, tokens[idx], doc_id, doc_id2
 
     def find_in_other_model(self, model_1_token, reference_token_idx=-1):
         other_model = self.huggingface_models[1]
