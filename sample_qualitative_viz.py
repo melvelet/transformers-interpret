@@ -83,7 +83,7 @@ def generate_latex_text(attributions,
                 tokens[i] = tok.replace('Ġ', '')
             elif tok == 'Ċ':
                 tokens[i] = '\n'
-            elif tok in [',', ':', '.', '-']:
+            elif tok in [',', ':', '.', '-', '(', ')']:
                 continue
             else:
                 tokens[i] = f"##{tok}"
