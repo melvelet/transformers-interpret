@@ -227,8 +227,11 @@ class QualitativeVisualizer:
         first_model_string = 'BioElectra' if self.huggingface_models[0].startswith('bioele') else 'RoBERTa'
         dataset_string = self.dataset_name.replace('_disease', '').replace('_bigbio_kb', '').upper()
         entity_eval = self.entity['eval'] if model_i == 0 else self.other_entity['eval']
-        true_class = self.id2label[self.entity['gold_label']] if model_i == 0 else self.id2label[self.other_entity['gold_label']]
-        pred_class = self.id2label[self.entity['pred_label']] if model_i == 0 else self.id2label[self.other_entity['pred_label']]
+        true_class = self.id2label[self.entity['gold_label']]
+        if model_i == 0:
+            pred_class = self.id2label[self.entity['pred_label']]
+        else:
+            pred_class = self.id2label[self.other_entity['pred_label']] if 'pred_label' in self.other_entity else '?'
         latex_tables = '''\\begin{table}
 \\smaller
 \\centering
