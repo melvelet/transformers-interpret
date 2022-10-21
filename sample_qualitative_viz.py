@@ -305,11 +305,11 @@ class QualitativeVisualizer:
         if doc_id and not ref1_token_idx:
             self.entity = [e for e in filtered_entities if (e['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id'] == str(doc_id)) or e['doc_id'] == str(doc_id)][0]
         else:
-            indices = [i for i in range(len(self.entities[self.huggingface_models[0]][attribution_type]))]
+            indices = [i for i in range(len(filtered_entities))]
             chosen_entities = []
             for n in range(n_value):
                 i = indices.pop(random.choice(indices))
-                chosen_entities.append(self.entities[self.huggingface_models[0]][attribution_type][i])
+                chosen_entities.append(filtered_entities[i])
             self.entity = chosen_entities[0]
 
         print(self.entity['eval'], ', pred:', self.id2label[self.entity['pred_label']], ', gold:', self.id2label[self.entity['gold_label']])
