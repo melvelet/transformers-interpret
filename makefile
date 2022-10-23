@@ -106,13 +106,13 @@ eval-rob-rest:
 	python run_pipeline.py -a 1 -m 2 -d 6 -ent 0 --exclude true
 
 qual-viz:
-	python generate_qualitative_viz.py -m 2 -d 0 -doc 9591 -ref1 4 -ref2 4
-	python generate_qualitative_viz.py -m 2 -d 0 -doc 17643 -ref1 20 -ref2 20
-	python generate_qualitative_viz.py -m 1 -d 2 -doc 9724771 -ref1 314 -ref2 395
-	python generate_qualitative_viz.py -m 1 -d 2 -doc 9950360 -ref1 55 -ref2 79
-	python generate_qualitative_viz.py -m 2 -d 2 -doc 9580132 -ref1 68 -ref2 54
-	python generate_qualitative_viz.py -m 2 -d 2 -doc 9856499 -ref1 1 -ref2 21
-	python generate_qualitative_viz.py -m 1 -d 4 -ent 1 -doc Rituximab -ref1 16 -ref2 18
+# 	python generate_qualitative_viz.py -m 2 -d 0 -doc 9591 -ref1 4 -ref2 4
+# 	python generate_qualitative_viz.py -m 2 -d 0 -doc 17643 -ref1 20 -ref2 20
+# 	python generate_qualitative_viz.py -m 1 -d 2 -doc 9724771 -ref1 314 -ref2 395
+# 	python generate_qualitative_viz.py -m 1 -d 2 -doc 9950360 -ref1 55 -ref2 79
+# 	python generate_qualitative_viz.py -m 2 -d 2 -doc 9580132 -ref1 68 -ref2 54
+# 	python generate_qualitative_viz.py -m 2 -d 2 -doc 9856499 -ref1 1 -ref2 21
+# 	python generate_qualitative_viz.py -m 1 -d 4 -ent 1 -doc Rituximab -ref1 16 -ref2 18
 	python generate_qualitative_viz.py -m 1 -d 4 -ent 1 -doc Succimer -ref1 65 -ref2 56
 	python generate_qualitative_viz.py -m 2 -d 4 -ent 1 -doc Medroxyprogesterone -ref1 124 -ref2 106
 	python generate_qualitative_viz.py -m 2 -d 4 -ent 1 -doc Steptokinase -ref1 93 -ref2 73
