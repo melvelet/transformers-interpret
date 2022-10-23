@@ -34,7 +34,7 @@ mod1_ref_token_idx = args.mod1_ref_token_idx
 mod2_ref_token_idx = args.mod2_ref_token_idx
 k_value = args.k_value
 attributions = [0] if args.attributions == 1 else [0, 1, 3]
-entity = 'disease' if args.entity == 0 else 'drug'
+entity = args.entity
 print(entity)
 # eval = args.eval
 
