@@ -34,13 +34,14 @@ mod1_ref_token_idx = args.mod1_ref_token_idx
 mod2_ref_token_idx = args.mod2_ref_token_idx
 k_value = args.k_value
 attributions = [0] if args.attributions == 1 else [0, 1, 3]
+entity = 'disease' if args.entity == 0 else 'drug'
 # eval = args.eval
 
 viz = QualitativeVisualizer()
 viz.load_dataset(dataset=args.dataset_no)
 viz.load_tokenizers(models=huggingface_models)
 viz.load_pipelines(base_path='./trained_models/')
-viz.load_entities(base_path='./results/scores/', attributions=attributions)
+viz.load_entities(base_path='./results/scores/', attributions=attributions, entity_type=entity)
 viz.prepare(doc_id=doc_id, ref1_token_idx=mod1_ref_token_idx, ref2_token_idx=mod2_ref_token_idx)
 with torch.no_grad():
     viz.ensure_attr_scores_in_models(k_value)

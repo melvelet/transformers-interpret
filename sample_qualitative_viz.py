@@ -2,9 +2,7 @@ import json
 import math
 import os
 import random
-from argparse import ArgumentParser
 
-import numpy as np
 import torch
 from bigbio.dataloader import BigBioConfigHelpers
 from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
@@ -56,6 +54,7 @@ CLASS_NAMES = {
     'I-Disease': 'Disease',
     'B-Chemical': 'Chemical',
     'I-Chemical': 'Chemical',
+    'B-ADR': 'ADR',
     'O': 'O',
 }
 
@@ -281,11 +280,13 @@ class QualitativeVisualizer:
         return latex_tables
 
     def pick_entities(self, eval_=None, doc_id=None, n_value=1, k_values=[5, 10], allow_zero=False, ref1_token_idx=None):
+        # if allow_zero:
+        #     allow_zero = random.randint(0, 99) > 66
         filtered_entities = None
         attribution_type = self.attribution_types[0]
         if eval_:
-            test = [i for i in self.entities[self.huggingface_models[0]]]
-            print(test)
+            # test = [i for i in self.entities[self.huggingface_models[0]]]
+            # print(test)
             if not ref1_token_idx:
                 filtered_entities = list(
                     filter(lambda x: x['eval'] == eval_ and x['entity'].startswith('B'),
@@ -299,13 +300,14 @@ class QualitativeVisualizer:
                     filter(lambda x: (x['doc_id'] == str(doc_id) or x['doc_doc_id' if 'doc_doc_id' in x else 'doc_id'] == str(doc_id))
                                      and x['index'] == ref1_token_idx,
                            self.entities[self.huggingface_models[0]][attribution_type]))
-            self.entities[self.huggingface_models[0]][attribution_type] = filtered_entities
+
         else:
             filtered_entities = self.entities[self.huggingface_models[0]][attribution_type]
         if doc_id and not ref1_token_idx:
             self.entity = [e for e in filtered_entities if (e['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id'] == str(doc_id)) or e['doc_id'] == str(doc_id)][0]
         else:
             indices = [i for i in range(len(filtered_entities))]
+            # print(len(filtered_entities))
             chosen_entities = []
             for n in range(n_value):
                 i = indices.pop(random.choice(indices))
