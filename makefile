@@ -108,10 +108,10 @@ eval-rob-rest:
 qual-viz:
 # 	python generate_qualitative_viz.py -m 2 -d 0 -doc 9591 -ref1 4 -ref2 4
 # 	python generate_qualitative_viz.py -m 2 -d 0 -doc 17643 -ref1 20 -ref2 20
-# 	python generate_qualitative_viz.py -m 1 -d 2 -doc 9724771 -ref1 314 -ref2 395
-# 	python generate_qualitative_viz.py -m 1 -d 2 -doc 9950360 -ref1 55 -ref2 79
-# 	python generate_qualitative_viz.py -m 2 -d 2 -doc 9580132 -ref1 68 -ref2 54
-# 	python generate_qualitative_viz.py -m 2 -d 2 -doc 9856499 -ref1 1 -ref2 21
+	python generate_qualitative_viz.py -m 1 -d 2 -doc 9724771 -ref1 314 -ref2 395
+	python generate_qualitative_viz.py -m 1 -d 2 -doc 9950360 -ref1 55 -ref2 79
+	python generate_qualitative_viz.py -m 2 -d 2 -doc 9580132 -ref1 68 -ref2 54
+	python generate_qualitative_viz.py -m 2 -d 2 -doc 9856499 -ref1 1 -ref2 21
 # 	python generate_qualitative_viz.py -m 1 -d 4 -ent 1 -doc Rituximab -ref1 16 -ref2 18
 # 	python generate_qualitative_viz.py -m 1 -d 4 -ent 1 -doc Succimer -ref1 65 -ref2 56
 # 	python generate_qualitative_viz.py -m 2 -d 4 -ent 1 -doc Medroxyprogesterone -ref1 124 -ref2 106
@@ -119,10 +119,10 @@ qual-viz:
 # 	python generate_qualitative_viz.py -m 1 -d 6 -ent 1 -doc 76 -ref1 142 -ref2 145
 # 	python generate_qualitative_viz.py -m 1 -d 6 -ent 1 -doc 75 -ref1 61 -ref2 96
 # 	python generate_qualitative_viz.py -m 2 -d 6 -ent 1 -doc 358 -ref1 355 -ref2 337
-	python generate_qualitative_viz.py -m 1 -d 2 -doc 9848786 -ref1 36 -ref2 41
-	python generate_qualitative_viz.py -m 1 -d 2 -doc 9448273 -ref1 59 -ref2 67
-	python generate_qualitative_viz.py -m 2 -d 2 -doc 941901 -ref1 16 -ref2 13
-	python generate_qualitative_viz.py -m 2 -d 2 -doc 9590284 -ref1 5 -ref2 5
+# 	python generate_qualitative_viz.py -m 1 -d 2 -doc 9848786 -ref1 36 -ref2 41
+# 	python generate_qualitative_viz.py -m 1 -d 2 -doc 9448273 -ref1 59 -ref2 67
+# 	python generate_qualitative_viz.py -m 2 -d 2 -doc 941901 -ref1 16 -ref2 13
+# 	python generate_qualitative_viz.py -m 2 -d 2 -doc 9590284 -ref1 5 -ref2 5
 
 train-all: train-disease train-drug cleanup
 
