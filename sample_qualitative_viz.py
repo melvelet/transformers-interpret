@@ -62,7 +62,7 @@ CLASS_NAMES = {
     'B-Drug': 'Drug',
     'B-DRUG': 'Drug',
     'B-BRAND': 'Brand',
-    'B-Drug_n': 'Drug_N',
+    'B-DRUG_N': 'Drug_N',
     'B-Modifier': 'Modifier',
     'O': 'O',
 }
