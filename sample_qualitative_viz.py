@@ -51,6 +51,7 @@ CLASS_NAMES = {
     'B-CompositeMention': 'Composite',
     'B-SpecificDisease': 'SpecificDisease',
     'B-DiseaseClass': 'DiseaseClass',
+    'I-DiseaseClass': 'DiseaseClass',
     'I-SpecificDisease': 'SpecificDisease',
     'B-Disease': 'Disease',
     'I-Disease': 'Disease',
