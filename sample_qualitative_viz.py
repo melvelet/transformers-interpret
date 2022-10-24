@@ -49,8 +49,9 @@ else:
 
 CLASS_NAMES = {
     'B-CompositeMention': 'Composite',
-    'B-SpecificDisease': 'Disease',
-    'I-SpecificDisease': 'Disease',
+    'B-SpecificDisease': 'SpecificDisease',
+    'B-DiseaseClass': 'DiseaseClass',
+    'I-SpecificDisease': 'SpecificDisease',
     'B-Disease': 'Disease',
     'I-Disease': 'Disease',
     'B-Chemical': 'Chemical',
