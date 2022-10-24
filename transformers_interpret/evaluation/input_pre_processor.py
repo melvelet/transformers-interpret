@@ -34,7 +34,7 @@ class InputPreProcessor:
         self.id2label = {y: x for x, y in self.label2id.items()}
 
     def __call__(self, input_document):
-        raw_input_text = '\n'.join([i[0] for i in [passage['text'] for passage in input_document['passages']]])\
+        raw_input_text = ' '.join([i[0] for i in [passage['text'] for passage in input_document['passages']]])\
             .replace('(ABSTRACT TRUNCATED AT 250 WORDS)', '')
         result_text, truncated_tokens, cutoff_index = self.truncate_input(raw_input_text)
         if len(result_text) == 0:
