@@ -96,7 +96,9 @@ def generate_latex_text(attributions,
             else:
                 tokens[i] = f"##{tok}"
     # print(reference_token_idx, rationale_1)
-    for idx in rationale_1 and idx <= len(tokens):
+    for idx in rationale_1:
+        if idx <= len(tokens):
+            continue
         tokens[idx] = f"\\textit{{{tokens[idx]}}}"
         if idx == reference_token_idx:
             continue
