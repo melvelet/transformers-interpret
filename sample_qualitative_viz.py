@@ -231,6 +231,7 @@ class QualitativeVisualizer:
             return f"\\parbox[b]{{4mm}}{{\\multirow{{{multirow}}}{{*}}{{\\rotatebox[origin=t]{{90}}{{{content}}}}}}} &"
 
         model = self.huggingface_models[model_i]
+        doc = self.docs[model]
         model_string = 'BioElectra' if model.startswith('bioele') else 'RoBERTa'
         first_model_string = 'BioElectra' if self.huggingface_models[0].startswith('bioele') else 'RoBERTa'
         dataset_string = self.dataset_name.replace('_disease', '').replace('_bigbio_kb', '').upper()
@@ -256,7 +257,7 @@ class QualitativeVisualizer:
             attr_string = attribution_type.upper() if attribution_type != 'gradcam' else 'GradCAM'
             print(model, attribution_type, collapse_threshold)
             entity = [e for e in self.entities[model][attribution_type]
-                      if (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == self.doc_id or e.get('doc_id') == self.doc_id) and e['index'] == ref_token_idx][0]
+                      if (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] in [doc.get('document_id'), doc.get('id')] or e.get('doc_id') in [doc.get('document_id'), doc.get('id')]) and e['index'] == ref_token_idx][0]
             for prefix in ['', 'other_']:
                 # if prefix == 'other_' and entity['other_entity'] == 'O':
                 #     line += 1
