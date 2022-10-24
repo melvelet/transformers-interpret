@@ -256,7 +256,7 @@ class QualitativeVisualizer:
             attr_string = attribution_type.upper() if attribution_type != 'gradcam' else 'GradCAM'
             print(model, attribution_type, collapse_threshold)
             entity = [e for e in self.entities[model][attribution_type]
-                      if (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == self.doc_id or e['doc_id'] == self.doc_id) and e['index'] == ref_token_idx][0]
+                      if (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] == self.doc_id or e.get('doc_id') == self.doc_id) and e['index'] == ref_token_idx][0]
             for prefix in ['', 'other_']:
                 # if prefix == 'other_' and entity['other_entity'] == 'O':
                 #     line += 1
@@ -304,14 +304,14 @@ class QualitativeVisualizer:
                                filtered_entities))
             else:
                 filtered_entities = list(
-                    filter(lambda x: (x['doc_id'] == str(doc_id) or x['doc_doc_id' if 'doc_doc_id' in x else 'doc_id'] == str(doc_id))
+                    filter(lambda x: (x.get('doc_id') == str(doc_id) or x['doc_doc_id' if 'doc_doc_id' in x else 'doc_id'] == str(doc_id))
                                      and x['index'] == ref1_token_idx,
                            self.entities[self.huggingface_models[0]][attribution_type]))
 
         else:
             filtered_entities = self.entities[self.huggingface_models[0]][attribution_type]
         if doc_id and not ref1_token_idx:
-            self.entity = [e for e in filtered_entities if (e['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id'] == str(doc_id)) or e['doc_id'] == str(doc_id)][0]
+            self.entity = [e for e in filtered_entities if (e['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id'] == str(doc_id)) or e.get('doc_id') == str(doc_id)][0]
         else:
             indices = [i for i in range(len(filtered_entities))]
             # print(len(filtered_entities))
@@ -323,7 +323,7 @@ class QualitativeVisualizer:
 
         print(self.entity['eval'], ', pred:', self.id2label[self.entity['pred_label']], ', gold:', self.id2label[self.entity['gold_label']])
         doc_id = self.entity['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id']
-        doc_id2 = self.entity['doc_id']
+        doc_id2 = self.entity.get('doc_id')
         idx = self.entity['index']
         # doc_ids = [doc['document_id'] for doc in self.dataset][0:100]
         # print(doc_id, doc_ids)
@@ -333,7 +333,7 @@ class QualitativeVisualizer:
             # doc_id = self.entity['doc_id']
             doc = [doc for doc in self.dataset if doc['id'] == doc_id]
         if not doc:
-            print(f"doc {self.entity['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id']} (id: {self.entity['doc_id']}) not found!")
+            print(f"doc {self.entity['doc_doc_id' if 'doc_doc_id' in self.entities else 'doc_id']} (id: {self.entity.get('doc_id')}) not found!")
         doc = doc[0]
         self.docs = {
             'bioelectra-discriminator': self.pre_processors['bioelectra-discriminator'](doc),
@@ -410,7 +410,7 @@ class QualitativeVisualizer:
         for attr_type in self.attribution_types:
             entity = [e for e in self.entities[model][attr_type] if
                       (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] in [doc['document_id'], doc['id']]
-                       or e['doc_id'] in [doc['document_id'], doc['id']]) and e['index'] == self.ref1_token_idx][0]
+                       or e.get('doc_id') in [doc['document_id'], doc['id']]) and e['index'] == self.ref1_token_idx][0]
             if entity['other_entity'] in [0, 'O', None]:
                 print(f'get attributions for class 0 for entity ({attr_type})')
                 explainer = TokenClassificationExplainer(self.pipeline.model, self.pipeline.tokenizer, attr_type)
@@ -426,7 +426,7 @@ class QualitativeVisualizer:
 
             self.other_entity = [e for e in self.entities[other_model][attr_type] if
                                  (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] in [other_doc['document_id'], other_doc['id']]
-                                  or e['doc_id'] in [other_doc['document_id'], other_doc['id']]) and e['index'] == self.ref2_token_idx]
+                                  or e.get('doc_id') in [other_doc['document_id'], other_doc['id']]) and e['index'] == self.ref2_token_idx]
             if self.other_entity:
                 self.other_entity = self.other_entity[0]
                 print('Entity existed already:', self.other_entity['eval'], self.other_entity['other_entity'])
