@@ -106,12 +106,12 @@ eval-rob-rest:
 	python run_pipeline.py -a 1 -m 2 -d 6 -ent 0 --exclude true
 
 qual-viz:
-	python generate_qualitative_viz.py -m 2 -d 0 -doc 20235 -ref1 312 -ref2 241
-	python generate_qualitative_viz.py -m 2 -d 0 -doc 12601 -ref1 28 -ref2 21
-	python generate_qualitative_viz.py -m 1 -d 2 -doc 9869602 -ref1 226 -ref2 248
-	python generate_qualitative_viz.py -m 1 -d 2 -doc 9856499 -ref1 83 -ref2 99
-	python generate_qualitative_viz.py -m 2 -d 2 -doc 9450866 -ref1 34 -ref2 33
-	python generate_qualitative_viz.py -m 2 -d 2 -doc 9689113 -ref1 191 -ref2 156
+# 	python generate_qualitative_viz.py -m 2 -d 0 -doc 20235 -ref1 312 -ref2 241
+# 	python generate_qualitative_viz.py -m 2 -d 0 -doc 12601 -ref1 28 -ref2 21
+# 	python generate_qualitative_viz.py -m 1 -d 2 -doc 9869602 -ref1 226 -ref2 248
+# 	python generate_qualitative_viz.py -m 1 -d 2 -doc 9856499 -ref1 83 -ref2 99
+# 	python generate_qualitative_viz.py -m 2 -d 2 -doc 9450866 -ref1 34 -ref2 33
+# 	python generate_qualitative_viz.py -m 2 -d 2 -doc 9689113 -ref1 191 -ref2 156
 	python generate_qualitative_viz.py -m 1 -d 4 -ent 1 -doc Trastuzumab -ref1 55 -ref2 59
 	python generate_qualitative_viz.py -m 1 -d 4 -ent 1 -doc 21868520 -ref1 67 -ref2 75
 	python generate_qualitative_viz.py -m 2 -d 4 -ent 1 -doc Pseudoephedrine -ref1 47 -ref2 34

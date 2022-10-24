@@ -60,6 +60,7 @@ CLASS_NAMES = {
     'I-Chemical': 'Chemical',
     'B-ADR': 'ADR',
     'B-Drug': 'Drug',
+    'B-DRUG': 'Drug',
     'B-Drug_n': 'Drug_N',
     'B-Modifier': 'Modifier',
     'O': 'O',
