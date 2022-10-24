@@ -54,11 +54,13 @@ CLASS_NAMES = {
     'I-DiseaseClass': 'DiseaseClass',
     'I-SpecificDisease': 'SpecificDisease',
     'B-Disease': 'Disease',
+    'B-Finding': 'Finding',
     'I-Disease': 'Disease',
     'B-Chemical': 'Chemical',
     'I-Chemical': 'Chemical',
     'B-ADR': 'ADR',
     'B-Drug': 'Drug',
+    'B-Drug_n': 'Drug_N',
     'B-Modifier': 'Modifier',
     'O': 'O',
 }
