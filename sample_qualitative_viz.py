@@ -257,7 +257,7 @@ class QualitativeVisualizer:
             attr_string = attribution_type.upper() if attribution_type != 'gradcam' else 'GradCAM'
             print(model, attribution_type, collapse_threshold)
             entity = [e for e in self.entities[model][attribution_type]
-                      if (e['doc_doc_id' if 'doc_doc_id' in e else 'doc_id'] in [doc.get('document_id'), doc.get('id')] or e.get('doc_id') in [doc.get('document_id'), doc.get('id')]) and e['index'] == ref_token_idx][0]
+                      if (e.get('doc_doc_id') in [doc.get('document_id'), doc.get('id')] or e.get('doc_id') in [doc.get('document_id'), doc.get('id')]) and e['index'] == ref_token_idx][0]
             for prefix in ['', 'other_']:
                 # if prefix == 'other_' and entity['other_entity'] == 'O':
                 #     line += 1
