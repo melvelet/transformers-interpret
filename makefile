@@ -112,8 +112,8 @@ qual-viz:
 # 	python generate_qualitative_viz.py -m 1 -d 2 -doc 9856499 -ref1 83 -ref2 99
 # 	python generate_qualitative_viz.py -m 2 -d 2 -doc 9450866 -ref1 34 -ref2 33
 # 	python generate_qualitative_viz.py -m 2 -d 2 -doc 9689113 -ref1 191 -ref2 156
-	python generate_qualitative_viz.py -m 1 -d 4 -ent 1 -doc Trastuzumab -ref1 55 -ref2 59
-	python generate_qualitative_viz.py -m 1 -d 4 -ent 1 -doc 21868520 -ref1 67 -ref2 75
+# 	python generate_qualitative_viz.py -m 1 -d 4 -ent 1 -doc Trastuzumab -ref1 55 -ref2 59
+# 	python generate_qualitative_viz.py -m 1 -d 4 -ent 1 -doc 21868520 -ref1 67 -ref2 75
 	python generate_qualitative_viz.py -m 2 -d 4 -ent 1 -doc Pseudoephedrine -ref1 47 -ref2 34
 	python generate_qualitative_viz.py -m 2 -d 4 -ent 1 -doc Methotrimeprazine -ref1 189 -ref2 170
 	python generate_qualitative_viz.py -m 1 -d 6 -ent 1 -doc 76 -ref1 142 -ref2 145
