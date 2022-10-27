@@ -345,11 +345,12 @@ class NERSentenceEvaluator:
                     if measure == 'comprehensiveness':
                         # print(rationale, len(self.input_token_ids), 'bottom_k', bottom_k, 'continuous', continuous)
                         for j in rationale:
-                            masked_inputs[i][j] = self.tokenizer.mask_token_id
+                            if masked_inputs[i][j] not in [self.tokenizer.cls_token_id, self.tokenizer.pad_token_id, self.tokenizer.sep_token_id]:
+                                masked_inputs[i][j] = self.tokenizer.mask_token_id
                     elif measure == 'sufficiency':
-                        for j, _ in enumerate(masked_inputs[i][1:-1]):
-                            if j + 1 not in rationale:
-                                masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
+                        for j, _ in enumerate(masked_inputs[i]):
+                            if j not in rationale and masked_inputs[i][j] not in [self.tokenizer.cls_token_id, self.tokenizer.pad_token_id, self.tokenizer.sep_token_id]:
+                                masked_inputs[i][j] = self.tokenizer.mask_token_id
 
         preds = []
         with torch.no_grad():
