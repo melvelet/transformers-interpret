@@ -26,7 +26,7 @@ def _calculate_statistical_function(attr: str, func: str = None, take_best_ratio
             for e in raw_scores:
                 best_rationale_compdiff = -1
                 best_rationale_per_mode_k_value = 0
-                best_rationale_compdiff_prev = 0
+                best_rationale_compdiff_prev = -1
                 prev_k = k_values[-1]
                 for k in reversed(k_values):
                     if best_rationale_compdiff_prev - e['compdiff'][mode][str(k)] > take_best_rationale_threshold:
@@ -68,5 +68,5 @@ for file in os.listdir(directory):
                                                                                                             take_best_rationale_threshold=best_rationale_threshold)
 
         with open(f"{base_dir}{new_file_name}_scores.json", 'w+') as f:
-            print(type(raw_scores))
+            print(new_file_name)
             json.dump(scores, f)
