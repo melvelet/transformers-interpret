@@ -53,6 +53,14 @@ attr-lgxa-ele:
 	python run_attribution_pipeline.py -a 1 -m 1 -d 6
 	python run_attribution_pipeline.py -a 1 -m 1 -d 6 -ent 1
 
+attr-rob:
+	python run_attribution_pipeline.py -m 2 -d 0
+	python run_attribution_pipeline.py -m 2 -d 4 -ent 1
+	python run_attribution_pipeline.py -m 2 -d 6 -ent 1
+	python run_attribution_pipeline.py -a 1 -m 2 -d 0
+	python run_attribution_pipeline.py -a 1 -m 2 -d 4 -ent 1
+	python run_attribution_pipeline.py -a 1 -m 2 -d 6 -ent 1
+
 eval-lig-ele-inc:
 	python run_pipeline.py -m 1 -d 0
 	python run_pipeline.py -m 1 -d 2
