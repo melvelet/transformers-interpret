@@ -345,11 +345,12 @@ class NERSentenceEvaluator:
                     if measure == 'comprehensiveness':
                         # print(rationale, len(self.input_token_ids), 'bottom_k', bottom_k, 'continuous', continuous)
                         for j in rationale:
-                            masked_inputs[i][j] = self.tokenizer.mask_token_id
+                            if masked_inputs[i][j] not in [self.tokenizer.cls_token_id, self.tokenizer.pad_token_id, self.tokenizer.sep_token_id]:
+                                masked_inputs[i][j] = self.tokenizer.mask_token_id
                     elif measure == 'sufficiency':
-                        for j, _ in enumerate(masked_inputs[i][1:-1]):
-                            if j + 1 not in rationale:
-                                masked_inputs[i][j + 1] = self.tokenizer.mask_token_id
+                        for j, _ in enumerate(masked_inputs[i]):
+                            if j not in rationale and masked_inputs[i][j] not in [self.tokenizer.cls_token_id, self.tokenizer.pad_token_id, self.tokenizer.sep_token_id]:
+                                masked_inputs[i][j] = self.tokenizer.mask_token_id
 
         preds = []
         with torch.no_grad():
@@ -526,7 +527,7 @@ class NERDatasetEvaluator:
                     for e in self.raw_scores:
                         best_rationale_compdiff = -1
                         best_rationale_per_mode_k_value = 0
-                        best_rationale_compdiff_prev = 0
+                        best_rationale_compdiff_prev = -1
                         prev_k = k_values[-1]
                         for k in reversed(k_values):
                             if best_rationale_compdiff_prev - e['compdiff'][mode][k] > take_best_rationale_threshold:
@@ -734,10 +735,11 @@ class NERDatasetEvaluator:
                             assert entity_word == doc_word, f"{entity_word} ({len(entity_word)}) != {doc_word} ({len(doc_word)})"
                         else:
                             first_entity_no_word += 1
+                    print(len(document['input_ids']), len(first_entity['attribution_scores']))
                     if len(first_entity['attribution_scores']) != len(document['input_ids']):
                         print('truncate', len(first_entity['attribution_scores']), 'to', len(document['input_ids']))
                         doc_attributions['entities'] = list(
-                            filter(lambda x: x['index'] <= len(document['input_ids']) - 1,
+                            filter(lambda x: x['index'] < len(document['input_ids']) - 1,
                                    doc_attributions['entities']))
                         for e in doc_attributions['entities']:
                             e['attribution_scores'] = e['attribution_scores'][:len(document['input_ids']) - 1]
