@@ -1,3 +1,16 @@
+## Introduction of melvelet/transformers-interpret
+
+This repository is a fork of cdpierse/transformers-interpret (v0.6.0) that was created for my Master's thesis "Interpretable Biomedical Named Entity Recognition" at Humboldt-Universität zu Berlin (HU Berlin), supervised by Prof. Dr. Ulf Leser and additionally reviewed by Prof. Dr. Alan Akbik.
+
+## Install
+
+```posh
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+```
+
+## Original readme of cdpierse/transformers-interpret
+
 <p align="center">
     <a id="transformers-intepret" href="#transformers-intepret">
         <img src="https://github.com/cdpierse/transformers-interpret/blob/master/images/tight%401920x_transparent.png" alt="Transformers Intepret Title" title="Transformers Intepret Title" width="600"/>
