@@ -1,6 +1,6 @@
 ## Introduction of melvelet/transformers-interpret
 
-This repository is a fork of cdpierse/transformers-interpret (v0.6.0) that was created for my Master's thesis "Interpretable Biomedical Named Entity Recognition" at Humboldt-Universität zu Berlin (HU Berlin), supervised by Prof. Dr. Ulf Leser and additionally reviewed by Prof. Dr. Alan Akbik.
+This repository is a fork of cdpierse/transformers-interpret (v0.6.0) that was created for my Master's thesis "Interpretable Biomedical Named Entity Recognition" at Humboldt-Universität zu Berlin (HU Berlin), supervised by Prof. Dr. Ulf Leser and additionally reviewed by Prof. Dr. Alan Akbik. Compared to the original repository there is an adaptation of the code to work with NER model from Huggingface (different to the NER implementation that was devoloped simultaneous by the authors of the original repository) and an evaluation pipeline (with implementations of the measures of comprehensiveness and sufficiency) for the use with datasets from BigBIO.
 
 ## Install
 
